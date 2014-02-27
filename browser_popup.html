@@ -13,18 +13,21 @@
     </style>
 
     <script type="text/javascript" src="jquery-1.8.2.min.js"></script>
+    <script type="text/javascript" src="handlers/david.js"></script>
+    <script src="util.js"></script>
+    <script src="message.js"></script>
     <script src="data/gaggle_data.js"></script>
     <script src="data/namelist.js"></script>
     <script src="browser_popup.js"></script>
-    <!--<script type="text/javascript" src="handlers/david.js"></script> -->
+
   </head>
   <body>
     <label>Gaggle Data:</label>
     <select id="selGaggleData">
-        <option>-- no data --</option>
+        <option value="-1">-- no data --</option>
     </select>
     <select id="selTarget">
-        <option>-- Select a target to broadcast data --</option>
+        <option value="-1">-- Select a target to broadcast data --</option>
     </select>
     <input id="btnBroadcast" type="button" value="Broadcast" click="broadcastData"/>
 

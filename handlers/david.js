@@ -7,12 +7,20 @@
  *   http://www.gnu.org/copyleft/lesser.html
  */
 
-var FG_david = new Object();
+function David()
+{
+    this._name = "David";
+}
+
+David.prototype.getName() = function ()
+{
+    return this._name;
+}
 
 /**
  * check the given doc to see if we can scrape it
  */
-FG_david.recognize = function(doc) {
+David.prototype.recognize = function(doc) {
 	if (doc) {
 		var url = doc.location.href;
 		return (url.indexOf("http://david.abcc.ncifcrf.gov/") >=0);
@@ -22,30 +30,29 @@ FG_david.recognize = function(doc) {
 }
 
 
-FG_david.show = function() {
-	var url = "http://david.abcc.ncifcrf.gov/";
-	var newTab = getBrowser().addTab(url);
-	getBrowser().selectedTab = newTab;
+David.prototype.show = function() {
+	var newurl = "http://david.abcc.ncifcrf.gov/";
+    chrome.tabs.create({ url: newurl });
 }
 
 /**
  * nothing so far
  */
-FG_david.getPageData = function(doc) {
+David.prototype.getPageData = function(doc) {
 }
 
 /**
  * takes a species and a Java Array of names
  */
-FG_david.handleNameList = function(species, names) {
+David.prototype.handleNameList = function(species, names) {
 
 	// store the species and names in this object
-	FG_trace("DAVID handle namelist " + names);
+	console.log("DAVID handle namelist " + names);
 	this.species = species;
 	this.names = names;
 
 	var url = "http://david.abcc.ncifcrf.gov/summary.jsp";
-	var doc = window.content.document;
+	/*var doc = window.content.document;
 	var element = null;
 
 	if (FG_util.startsWith(doc.location.href, "http://david.abcc.ncifcrf.gov/")) {
@@ -54,7 +61,7 @@ FG_david.handleNameList = function(species, names) {
 
 	if (element)
 	{
-		FG_David_selectUploadTab();
+		selectUploadTab();
 		this.insertNamelistIntoPasteBox(doc);
 	}
 	else {
@@ -62,6 +69,8 @@ FG_david.handleNameList = function(species, names) {
 		var newTab = getBrowser().addTab();
 		var browser = getBrowser().getBrowserForTab(newTab);
 		getBrowser().selectedTab = newTab;
+
+		chrome.tabs.create({ url: "" });
 
 		// create a closure which preserves a reference to this
 		// so the listener can remove itself after being called.
@@ -80,7 +89,7 @@ FG_david.handleNameList = function(species, names) {
 		browser.loadURI(url);
 
 		return newTab;
-	}
+	} */
 }
 
 /**
@@ -89,11 +98,11 @@ FG_david.handleNameList = function(species, names) {
  * this object because the onPageLoad function will be
  * passed as an event listener.
  */
-FG_david.onPageLoad = function(david, aEvent) {
+David.prototype.onPageLoad = function(david, aEvent) {
 	if (aEvent.originalTarget.nodeName == "#document") {
-		var doc = window.content.document;
-		FG_trace("Inserting namelist...");
-		david.insertNamelistIntoPasteBox(doc);
+		/*var doc = window.content.document;
+		console.log("Inserting namelist...");
+		this.insertNamelistIntoPasteBox(doc);
 
 		// hack: the David summary page selects the 'list'
 		// tab if you have a session open already in tabPane.js
@@ -101,8 +110,8 @@ FG_david.onPageLoad = function(david, aEvent) {
 		// apparently, so we kludge our way around by setting
 		// a timer and selecting the 'Upload' tab after their
 		// do_onload() has already run.
-		setTimeout("FG_David_selectUploadTab()", 800);
-        FG_Workflow_InProgress = false;
+		setTimeout("selectUploadTab()", 800);
+        FG_Workflow_InProgress = false; */
 	}
 }
 
@@ -110,8 +119,8 @@ FG_david.onPageLoad = function(david, aEvent) {
  * this is in the root namespace 'cause it has to be
  * called from a timer
  */
-function FG_David_selectUploadTab() {
-	try {
+function selectUploadTab() {
+	/*try {
 		var doc = window.content.document;
 		var tabobj=doc.getElementById("tablist");
 		var tabobjlinks=tabobj.getElementsByTagName("A");
@@ -119,23 +128,23 @@ function FG_David_selectUploadTab() {
 	}
 	catch (exception) {
 		FG_trace(exception);
-	}
+	} */
 }
 
 /**
  * insert the list of names held by the david
  * object into the html form.
  */
-FG_david.insertNamelistIntoPasteBox = function(doc) {
+David.prototype.insertNamelistIntoPasteBox = function(doc) {
 	var elements;
-	FG_trace("Names to be inserted " + this.names);
+	console.log("Names to be inserted " + this.names);
 	if (!this.names) return;
 
 	// put names in paste box
-	elements = doc.getElementsByName("pasteBox");
+	/*elements = doc.getElementsByName("pasteBox");
 	if (elements) {
 		// construct a string out of the name list
-		FG_trace("Inserting names into the paste box..." + elements);
+		console.log("Inserting names into the paste box..." + elements);
 		elements[0].value = FG_util.join(this.names, "\n");
 	}
 
@@ -143,7 +152,7 @@ FG_david.insertNamelistIntoPasteBox = function(doc) {
 	elements = doc.getElementsByName("rbUploadType");
 	if (elements) {
 		elements[0].checked = true;
-	}
+	} */
 
 	// too bad I can't select the naming system
 //	elements = doc.getElementsByName("Identifier");
@@ -153,6 +162,5 @@ FG_david.insertNamelistIntoPasteBox = function(doc) {
 //	}
 }
 
-// create and register websiteHandler
-FG_addWebsiteHandler("DAVID", FG_david);
+
 
