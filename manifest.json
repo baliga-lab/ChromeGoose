@@ -1,0 +1,38 @@
+{
+  "name": "Gaggle Chrome Goose",
+  "description": "Parse web pages for gaggle data and interact with other Gaggle Geese",
+  "version": "1.0",
+  "permissions": [
+    "tabs", "http://*/*", "https://*/*"
+  ],
+
+  "background": {
+          "persistent": false,
+          "scripts": ["background.js"]
+      },
+
+  "content_scripts": [
+      {
+        "matches": ["http://*/*", "https://*/*"],
+        "js": ["jquery-1.8.2.min.js", "data/gaggle_data.js", "data/namelist.js", "gaggle.js"],
+        "run_at": "document_idle"
+      }
+    ],
+
+  //"page_action": {
+  //    "default_title": "Gaggle Chrome Goose",
+  //        "default_icon": {
+  //            "19": "img/icon.png",
+  //            "38": "img/icon.png"
+  //        },
+  //        "default_popup": "page_popup.html"
+  //},
+
+  "browser_action": {
+      "default_title": "Gaggle Chrome Goose",
+      "default_icon": "img/icon.png",
+      "default_popup": "browser_popup.html"
+  },
+
+  "manifest_version": 2
+}
