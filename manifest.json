@@ -8,13 +8,13 @@
 
   "background": {
           "persistent": false,
-          "scripts": ["background.js"]
+          "scripts": ["message.js", "background.js"]
       },
 
   "content_scripts": [
       {
         "matches": ["http://*/*", "https://*/*"],
-        "js": ["jquery-1.8.2.min.js", "handlers/david.js", "util.js", "message.js",
+        "js": ["jquery-1.8.2.min.js", "message.js", "handlers/david.js", "util.js",
                 "data/gaggle_data.js", "data/namelist.js", "gaggle.js"],
         "run_at": "document_idle"
       }

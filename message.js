@@ -19,11 +19,30 @@ function Message(from, to, targetid, subject, data, callback)
 
 Message.prototype.send = function() {
     if (this._to != null) {
-        this._to.sendMessage(
-             this._targetid,
-             { from: this._from, subject: this._subject, data: ((this._data != null) ? JSON.stringify(this._data) : {}) },
-             /* ...also specifying a callback to be called
-              *    from the receiving end (content script) */
-             this._callback);
+        if (this._targetid != null) {
+            try {
+                this._to.sendMessage(
+                     this._targetid,
+                     { from: this._from, subject: this._subject, data: ((this._data != null) ? JSON.stringify(this._data) : {}) },
+                     /* ...also specifying a callback to be called
+                      *    from the receiving end (content script) */
+                     this._callback);
+            }
+            catch (e) {
+                alert(e);
+            }
+        }
+        else {
+            try {
+                this._to.sendMessage(
+                     { from: this._from, subject: this._subject, data: ((this._data != null) ? JSON.stringify(this._data) : {}) },
+                     /* ...also specifying a callback to be called
+                      *    from the receiving end (content script) */
+                     this._callback);
+                }
+                catch (e) {
+                    alert(e);
+                }
+        }
     }
 }

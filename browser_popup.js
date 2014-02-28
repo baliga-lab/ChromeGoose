@@ -45,7 +45,7 @@ function setDOMInfo(pageData) {
 
 function broadcastData()
 {
-    alert("Broadcasting...");
+    console.log("Broadcasting ...");
     var target = $("#selTarget").val();
     var selecteddataindex = $("#selGaggleData").val();
     //alert(target + " " + selecteddataindex);
@@ -57,6 +57,7 @@ function broadcastData()
             if (type == "Namelist") {
                 if (handler.handleNameList != null) {
                     // First pass the data to the Event page
+                    console.log("Sending data to event page");
                     var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_STOREDATA,
                                            data, handlerResponse);
                     msg.send();

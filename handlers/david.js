@@ -7,12 +7,6 @@
  *   http://www.gnu.org/copyleft/lesser.html
  */
 
-
-
-var david = new David();
-david.scanPage();
-
-
 function David()
 {
     this._name = "David";
@@ -25,31 +19,48 @@ David.prototype.getName = function ()
 
 David.prototype.scanPage = function ()
 {
+    console.log("DAVID scan page...");
     var url = document.location.href;
-    if (url.indexOf("http://david.abcc.ncifcrf.gov/") >=0) {
-        //alert("This is a David page...");
-        // Ask the background page for data
-        var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_RETRIEVEDATA,
-                              JSON.stringify(data), this.processData);
-        msg.send();
+    if (url.indexOf("http://david.abcc.ncifcrf.gov/") >= 0)
+    {
+        // Ask the background page for data to be processed
+        console.log("DAVID: Retrieving data from event page...");
+        try {
+            console.log("Retrieving data from event page...");
+            var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_RETRIEVEDATA,
+                                 "aaa", this.processData);
+            msg.send();
+        }
+        catch (e) {
+            console.log("DAVID failed to send message to event page: " + e);
+        }
     }
 }
 
 David.prototype.processData = function (jsondata) {
     if (jsondata != null) {
+        console.log("Data received: " + jsondata);
+
         var jsonobj = JSON.parse(jsondata);
         if (jsonobj != null) {
             var type = jsonobj["_type"];
             var gaggledata = null;
             if (type == "Namelist") {
                 try {
-                    gaggledata = new Namelist("", 0, "", null);
-                    gaggledata.parseJSON(jsonobj);
+                    namelist = new Namelist("", 0, "", null);
+                    namelist.parseJSON(jsonobj);
+                    this.species = namelist.getSpecies();
+                    this.names = namelist.getData();
 
-
+                    var element = document.getElementById("divUpload");
+                    if (element != null) {
+                        console.log("Global DAVID object: " + david);
+                        david.selectUploadTab();
+                        david.insertNamelistIntoPasteBox(this.species, this.names);
+                    }
                 }
                 catch (e) {
-                    alert(e);
+                    console.log("DAVID failed to process data " + e);
                 }
             }
         }
@@ -69,11 +80,6 @@ David.prototype.recognize = function(doc) {
 }
 
 
-David.prototype.show = function() {
-	var newurl = "http://david.abcc.ncifcrf.gov/";
-    chrome.tabs.create({ url: newurl });
-}
-
 /**
  * nothing so far
  */
@@ -86,118 +92,73 @@ David.prototype.getPageData = function(doc) {
 David.prototype.handleNameList = function(namelist) {
 
 	// store the species and names in this object
-	alert("Handling namelist " + namelist);
+	console.log("DAVID handling namelist " + namelist);
 	if (namelist == null)
 	    return;
-
-	this.species = namelist.getSpecies();
-	//this.names = namelist.getData();
-
-    console.log("DAVID handle namelist " + this.names);
 
 	var davidurl = "http://david.abcc.ncifcrf.gov/summary.jsp";
 	var element = null;
 
-    //alert(document.location.href);
+    console.log("DAVID checking page url:" + document.location.href);
 	if (cg_util.startsWith(document.location.href, "http://david.abcc.ncifcrf.gov/")) {
 		element = document.getElementById("divUpload");
 	}
 
-    //alert(element);
 	if (element)
 	{
-		selectUploadTab();
-		this.insertNamelistIntoPasteBox(doc);
+		console.log("Retrieving data from event page...");
+        var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_RETRIEVEDATA,
+                              null, this.processData);
+        msg.send();
 	}
 	else {
 		// open url in a new tab
-		//var newTab = getBrowser().addTab();
-		//var browser = getBrowser().getBrowserForTab(newTab);
-		//getBrowser().selectedTab = newTab;
-        //alert("Open new tab " + davidurl);
 		chrome.tabs.create({ url: davidurl });
-
-		// create a closure which preserves a reference to this
-		// so the listener can remove itself after being called.
-		// If the user browses away in the new browser, we don't
-		// want to keep performing the onPageLoad action.
-		/*var david = this;
-		var onPageLoadClosure = function(aEvent) {
-			david.onPageLoad(david, aEvent);
-			// listener removes itself
-			browser.removeEventListener("load", david.onPageLoadClosure, true);
-		}
-		this.onPageLoadClosure = onPageLoadClosure;
-
-		// register the closure as a listener
-		browser.addEventListener("load", onPageLoadClosure, true);
-		browser.loadURI(url);
-
-		return newTab; */
 	}
 }
 
-/**
- * when we open David in a new tab, this event listener
- * should be called. We have to pass in a reference to
- * this object because the onPageLoad function will be
- * passed as an event listener.
- */
-David.prototype.onPageLoad = function(david, aEvent) {
-	if (aEvent.originalTarget.nodeName == "#document") {
-		/*var doc = window.content.document;
-		console.log("Inserting namelist...");
-		this.insertNamelistIntoPasteBox(doc);
 
-		// hack: the David summary page selects the 'list'
-		// tab if you have a session open already in tabPane.js
-		// do_onload(). Our onload event fires before theirs
-		// apparently, so we kludge our way around by setting
-		// a timer and selecting the 'Upload' tab after their
-		// do_onload() has already run.
-		setTimeout("selectUploadTab()", 800);
-        FG_Workflow_InProgress = false; */
-	}
-}
 
 /**
  * this is in the root namespace 'cause it has to be
  * called from a timer
  */
-function selectUploadTab() {
-	/*try {
-		var doc = window.content.document;
-		var tabobj=doc.getElementById("tablist");
-		var tabobjlinks=tabobj.getElementsByTagName("A");
-		window.content.wrappedJSObject.expandcontent('divUpload', tabobjlinks[0]);
+David.prototype.selectUploadTab = function() {
+	try {
+		var tabobj = document.getElementById("tablist");
+		var tabobjlinks = tabobj.getElementsByTagName("A");
+
+		// TODO: Chrome extension content script cannot access javascript of a page.
+		// TODO: We need to come up with a workaround.
+		//window.content.wrappedJSObject.expandcontent('divUpload', tabobjlinks[0]);
 	}
 	catch (exception) {
-		FG_trace(exception);
-	} */
+		console.log(exception);
+	}
 }
 
 /**
  * insert the list of names held by the david
  * object into the html form.
  */
-David.prototype.insertNamelistIntoPasteBox = function(doc) {
+David.prototype.insertNamelistIntoPasteBox = function(species, names) {
 	var elements;
-	console.log("Names to be inserted " + this.names);
-	if (!this.names) return;
+	console.log("DAVID: Names to be inserted " + names);
+	if (!names) return;
 
 	// put names in paste box
-	/*elements = doc.getElementsByName("pasteBox");
+	elements = document.getElementsByName("pasteBox");
 	if (elements) {
 		// construct a string out of the name list
-		console.log("Inserting names into the paste box..." + elements);
-		elements[0].value = FG_util.join(this.names, "\n");
+		console.log("DAVID: Inserting names into the paste box..." + elements);
+		elements[0].value = cg_util.join(names, "\n");
 	}
 
 	// select type 'list' rather than 'background'
-	elements = doc.getElementsByName("rbUploadType");
+	elements = document.getElementsByName("rbUploadType");
 	if (elements) {
 		elements[0].checked = true;
-	} */
+	}
 
 	// too bad I can't select the naming system
 //	elements = doc.getElementsByName("Identifier");
@@ -209,3 +170,5 @@ David.prototype.insertNamelistIntoPasteBox = function(doc) {
 
 
 
+var david = new David();
+david.scanPage();

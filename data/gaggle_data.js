@@ -31,11 +31,10 @@ GaggleData.prototype.getSpecies = function() {
 }
 
 GaggleData.prototype.getData = function() {
-    dump("Gaggle prototype getData...\n");
 	return this._data;
 }
 
-gaggleData.prototype.getDescription = function() {
+GaggleData.prototype.getDescription = function() {
 	return this.getName() + ": " + this.getType() + this._sizeString();
 }
 
