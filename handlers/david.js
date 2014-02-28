@@ -7,14 +7,53 @@
  *   http://www.gnu.org/copyleft/lesser.html
  */
 
+
+
+var david = new David();
+david.scanPage();
+
+
 function David()
 {
     this._name = "David";
 }
 
-David.prototype.getName() = function ()
+David.prototype.getName = function ()
 {
     return this._name;
+}
+
+David.prototype.scanPage = function ()
+{
+    var url = document.location.href;
+    if (url.indexOf("http://david.abcc.ncifcrf.gov/") >=0) {
+        //alert("This is a David page...");
+        // Ask the background page for data
+        var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_RETRIEVEDATA,
+                              JSON.stringify(data), this.processData);
+        msg.send();
+    }
+}
+
+David.prototype.processData = function (jsondata) {
+    if (jsondata != null) {
+        var jsonobj = JSON.parse(jsondata);
+        if (jsonobj != null) {
+            var type = jsonobj["_type"];
+            var gaggledata = null;
+            if (type == "Namelist") {
+                try {
+                    gaggledata = new Namelist("", 0, "", null);
+                    gaggledata.parseJSON(jsonobj);
+
+
+                }
+                catch (e) {
+                    alert(e);
+                }
+            }
+        }
+    }
 }
 
 /**
@@ -44,21 +83,27 @@ David.prototype.getPageData = function(doc) {
 /**
  * takes a species and a Java Array of names
  */
-David.prototype.handleNameList = function(species, names) {
+David.prototype.handleNameList = function(namelist) {
 
 	// store the species and names in this object
-	console.log("DAVID handle namelist " + names);
-	this.species = species;
-	this.names = names;
+	alert("Handling namelist " + namelist);
+	if (namelist == null)
+	    return;
 
-	var url = "http://david.abcc.ncifcrf.gov/summary.jsp";
-	/*var doc = window.content.document;
+	this.species = namelist.getSpecies();
+	//this.names = namelist.getData();
+
+    console.log("DAVID handle namelist " + this.names);
+
+	var davidurl = "http://david.abcc.ncifcrf.gov/summary.jsp";
 	var element = null;
 
-	if (FG_util.startsWith(doc.location.href, "http://david.abcc.ncifcrf.gov/")) {
-		element = doc.getElementById("divUpload");
+    //alert(document.location.href);
+	if (cg_util.startsWith(document.location.href, "http://david.abcc.ncifcrf.gov/")) {
+		element = document.getElementById("divUpload");
 	}
 
+    //alert(element);
 	if (element)
 	{
 		selectUploadTab();
@@ -66,17 +111,17 @@ David.prototype.handleNameList = function(species, names) {
 	}
 	else {
 		// open url in a new tab
-		var newTab = getBrowser().addTab();
-		var browser = getBrowser().getBrowserForTab(newTab);
-		getBrowser().selectedTab = newTab;
-
-		chrome.tabs.create({ url: "" });
+		//var newTab = getBrowser().addTab();
+		//var browser = getBrowser().getBrowserForTab(newTab);
+		//getBrowser().selectedTab = newTab;
+        //alert("Open new tab " + davidurl);
+		chrome.tabs.create({ url: davidurl });
 
 		// create a closure which preserves a reference to this
 		// so the listener can remove itself after being called.
 		// If the user browses away in the new browser, we don't
 		// want to keep performing the onPageLoad action.
-		var david = this;
+		/*var david = this;
 		var onPageLoadClosure = function(aEvent) {
 			david.onPageLoad(david, aEvent);
 			// listener removes itself
@@ -88,8 +133,8 @@ David.prototype.handleNameList = function(species, names) {
 		browser.addEventListener("load", onPageLoadClosure, true);
 		browser.loadURI(url);
 
-		return newTab;
-	} */
+		return newTab; */
+	}
 }
 
 /**

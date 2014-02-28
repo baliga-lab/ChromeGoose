@@ -27,7 +27,12 @@ GaggleData.prototype.getSize = function() {
  * Be careful not to call getData() from within getSpecies().
  */
 GaggleData.prototype.getSpecies = function() {
-	return this._applyDefaultSpecies(this._species);
+	return (this._species);
+}
+
+GaggleData.prototype.getData = function() {
+    dump("Gaggle prototype getData...\n");
+	return this._data;
 }
 
 gaggleData.prototype.getDescription = function() {
@@ -41,13 +46,11 @@ GaggleData.prototype._sizeString = function() {
 		return "";
 }
 
-GaggleData.prototype.getData = function() {
-    dump("Gaggle prototype getData...\n");
-	return this._data;
-}
-
-
 GaggleData.prototype.toString = function() {
 	return this.getDescription();
+}
+
+GaggleData.prototype._applyDefaultSpecies = function(species) {
+	return species;
 }
 

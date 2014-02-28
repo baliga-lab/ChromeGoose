@@ -7,9 +7,10 @@ var webHandlers = [];
 function init()
 {
     //alert("Browser action init...");
-    webHandlers = loadHandlers(false);
+    webHandlers = cg_util.loadHandlers(true);
     for (var i = 0; i < webHandlers.length; i++) {
-        $("#selTarget").append($("<option></option>").attr("value", i.toString()).text(webHandlers[i]));
+        //alert("Browser action loading " + webHandlers[i].getName());
+        $("#selTarget").append($("<option></option>").attr("value", i.toString()).text(webHandlers[i].getName()));
     }
 }
 
@@ -49,13 +50,32 @@ function broadcastData()
     var selecteddataindex = $("#selGaggleData").val();
     //alert(target + " " + selecteddataindex);
     if (target != "-1" && selecteddataindex != "-1") {
-        getActiveTab(function (tab) {
+        var handler = webHandlers[parseInt(target)];
+        var data = currentPageData[parseInt(selecteddataindex)];  //  data is not json stringified
+        if (handler != null && data != null) {
+            var type = data.getType();
+            if (type == "Namelist") {
+                if (handler.handleNameList != null) {
+                    // First pass the data to the Event page
+                    var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_STOREDATA,
+                                           data, handlerResponse);
+                    msg.send();
+
+                    // Now we call the handler to handle data
+                    handler.handleNameList(data);
+                }
+            }
+        }
+
+
+        /*cg_util.getActiveTab(function (tab) {
             if (tab != null) {
+
                var msg = new Message(MSG_FROM_POPUP, chrome.tabs, tab.id, MSG_SUBJECT_HANDLER,
                                 {handler: target, dataindex: selecteddataindex}, handlerResponse);
                msg.send();
             }
-        });
+        }); */
     }
 }
 
@@ -69,7 +89,7 @@ function handlerResponse()
 document.addEventListener('DOMContentLoaded', function () {
   init();
 
-  getActiveTab(function (tab) {
+  cg_util.getActiveTab(function (tab) {
     if (tab != null) {
        var msg = new Message(MSG_FROM_POPUP, chrome.tabs, tab.id, MSG_SUBJECT_PAGEDATA, null, setDOMInfo);
        msg.send();

@@ -3,6 +3,8 @@ var MSG_FROM_CONTENT = "content";
 
 var MSG_SUBJECT_PAGEDATA = "PageData";
 var MSG_SUBJECT_HANDLER = "Handler";
+var MSG_SUBJECT_STOREDATA = "StoreData";
+var MSG_SUBJECT_RETRIEVEDATA = "RetrieveData";
 
 function Message(from, to, targetid, subject, data, callback)
 {

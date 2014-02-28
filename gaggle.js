@@ -3,7 +3,7 @@ var webHandlers = null;
 
 function init()
 {
-    webHandlers = loadHandlers(true);
+    webHandlers = cg_util.loadHandlers(true);
 }
 
 function getPageData()
@@ -55,8 +55,9 @@ chrome.runtime.onMessage.addListener(function(msg, sender, response) {
                             var data = pagedata.data;
                             //alert(data.getType());
                             if (data.getType() == "Namelist") {
-                                if (handler.handleNamelist != null) {
-                                    handler.handleNamelist(data);
+                                alert(handler.getName());
+                                if (handler.handleNameList != null) {
+                                    handler.handleNameList(data);
                                 }
                             }
                         }
