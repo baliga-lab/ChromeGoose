@@ -8,7 +8,7 @@ var MSG_SUBJECT_RETRIEVEDATA = "RetrieveData";
 
 function Message(from, to, targetid, subject, data, callback)
 {
-    //alert("Message from " + from + " Subject: " + subject + " targetid: " + targetid);
+    console.log("Message from " + from + " Subject: " + subject + " targetid: " + targetid);
     this._from = from;
     this._to = to;
     this._targetid = targetid;

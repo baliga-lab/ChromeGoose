@@ -8,17 +8,59 @@
  */
 
 
+var WEBHANDLERS_UPDATE_INTERVAL = 24 * 60 * 60 * 1000; // Update after 24 hour
 
 var cg_util = {
 
-loadHandlers: function(withObject)
-{
-   //alert("Loading handlers...");
+// Retrieve GA from storage
+retrieveFrom: function(key, url, callback) {
+    console.log("Retrieving " + key + " from " + url);
 
-   var handlers = new Array();
-   handlers[0] = (withObject ? new David() : "David");
-   return handlers;
+    try {
+        chrome.storage.local.get(key, function(items) {
+            console.log("local storage retrieval results: " + (typeof items));
+            if (items == null || items.code == undefined || (Date.now() - items.lastUpdated > WEBHANDLERS_UPDATE_INTERVAL)) {
+                // Get updated file, and if found, save it.
+                cg_util.getFileFromUrl(url, function(downloadedcode) {
+                    //console.log("Received code: " + downloadedcode);
+                    if (!downloadedcode) return;
+                    console.log("Save code to " + key);
+                    var obj = {}
+                    obj[key] = {lastUpdated: Date.now(), code: downloadedcode}
+                    chrome.storage.local.set(obj);
+                    if (callback != null)
+                        callback(downloadedcode);
+                });
+            }
+            if (items.code && callback != null) // Cached GA is available, use it
+                callback(items.code);
+        });
+    }
+    catch (e) {
+        console.log("Failed to retrieve code " + e);
+    }
 },
+
+checkHandlerData: function (handler, processDataFunc) {
+    if (handler == null)
+        return;
+
+    var url = document.location.href;
+    if (url.indexOf(handler.getPageUrl()) >= 0)
+    {
+        // Ask the background page for data to be processed
+        console.log(handler.getName() + ": Retrieving data from event page...");
+        try {
+            var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_RETRIEVEDATA,
+                                 "aaa", processDataFunc);
+            msg.send();
+        }
+        catch (e) {
+            console.log(handler.getName() + " failed to send message to event page: " + e);
+        }
+    }
+},
+
 
 getActiveTab: function(callback) {
     chrome.tabs.query({
@@ -100,6 +142,33 @@ objectToString: function(o) {
 	}
 	str += "}";
 	return str;
+},
+
+// Typically run within a few milliseconds
+executeCode: function (code) {
+    try
+    {
+        if (code != null) {
+            console.log("Executing code...");
+            window.eval(code);
+        }
+    }
+    catch (e)
+    {
+        console.error("Failed to execute code: " + e);
+    }
+},
+
+getFileFromUrl: function (url, callback) {
+    console.log("Downloading file from " + url);
+    var x = new XMLHttpRequest();
+    x.onload = x.onerror = function()
+    {
+        if (callback != null)
+            callback(x.responseText);
+    };
+    x.open('GET', url);
+    x.send();
 }
 
 }

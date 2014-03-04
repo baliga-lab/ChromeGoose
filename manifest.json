@@ -3,7 +3,7 @@
   "description": "Parse web pages for gaggle data and interact with other Gaggle Geese",
   "version": "1.0",
   "permissions": [
-    "tabs", "http://*/*", "https://*/*"
+    "storage", "tabs", "http://*/*", "https://*/*"
   ],
 
   "background": {
@@ -14,7 +14,7 @@
   "content_scripts": [
       {
         "matches": ["http://*/*", "https://*/*"],
-        "js": ["jquery-1.8.2.min.js", "message.js", "handlers/david.js", "util.js",
+        "js": ["jquery-1.8.2.min.js", "message.js", "util.js", "ufmt.js", "handlers/david.js", "handlers/kegg.js", "handlers/webhandler.js",
                 "data/gaggle_data.js", "data/namelist.js", "gaggle.js"],
         "run_at": "document_idle"
       }

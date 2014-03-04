@@ -17,10 +17,17 @@ David.prototype.getName = function ()
     return this._name;
 }
 
+David.prototype.getPageUrl = function ()
+{
+    return "http://david.abcc.ncifcrf.gov/";
+}
+
 David.prototype.scanPage = function ()
 {
     console.log("DAVID scan page...");
-    var url = document.location.href;
+    cg_util.checkHandlerData(david, this.processData);
+
+    /*var url = document.location.href;
     if (url.indexOf("http://david.abcc.ncifcrf.gov/") >= 0)
     {
         // Ask the background page for data to be processed
@@ -34,7 +41,8 @@ David.prototype.scanPage = function ()
         catch (e) {
             console.log("DAVID failed to send message to event page: " + e);
         }
-    }
+    } */
+
 }
 
 David.prototype.processData = function (jsondata) {

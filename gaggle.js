@@ -3,18 +3,27 @@ var webHandlers = null;
 
 function init()
 {
-    webHandlers = cg_util.loadHandlers(true);
+    // Load web handler content script
+    webHandlers = webhandlers.loadHandlers();
 }
 
 function getPageData()
 {
     //alert("Parsing page...");
-    var names = new Array("BC0478", "BC0706", "BC0772");
+    /*var names = new Array("BC0478", "BC0706", "BC0772");
     var nl = new Namelist("bcu namelist (5)", 5, "bcu", names);
     var pagedata = {value: "0", data: nl};
     var jsondata = JSON.stringify(pagedata);
     pagedata.jsondata = jsondata;
-    pageGaggleData.push(pagedata);
+    pageGaggleData.push(pagedata); */
+
+    console.log("Scanning page for gaggle data...");
+    for (var i = 0; i < webHandlers.length; i++) {
+        var handler = webHandlers[i];
+        handler.scanPage();
+    }
+    console.log("Parsed data: " + pageGaggleData.length);
+
 
     // Send to background.js
     /*chrome.runtime.sendMessage({
@@ -26,7 +35,7 @@ function getPageData()
 /* Listen for message from the popup */
 chrome.runtime.onMessage.addListener(function(msg, sender, response) {
     /* First, validate the message's structure */
-    //alert("Message received from " + msg.from + " subject: " + msg.subject);
+    console.log("Content script message received from " + msg.from + " subject: " + msg.subject);
 
     if (msg.from && (msg.from == MSG_FROM_POPUP))
     {
@@ -37,7 +46,9 @@ chrome.runtime.onMessage.addListener(function(msg, sender, response) {
 
             /* Directly respond to the sender (popup),
              * through the specified callback */
-            response(pageGaggleData);
+            console.log("Sending page data: " + pageGaggleData.length);
+            if (response != null)
+                response(pageGaggleData);
         }
         
     }

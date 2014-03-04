@@ -7,7 +7,9 @@ var webHandlers = [];
 function init()
 {
     //alert("Browser action init...");
-    webHandlers = cg_util.loadHandlers(true);
+    // Load web handlers at the browser action side. Note we need to load instances of web handlers
+    // for both browser action (to process data) and content scripts (to parse web pages).
+    webHandlers = webhandlers.loadHandlers();
     for (var i = 0; i < webHandlers.length; i++) {
         //alert("Browser action loading " + webHandlers[i].getName());
         $("#selTarget").append($("<option></option>").attr("value", i.toString()).text(webHandlers[i].getName()));
@@ -15,7 +17,7 @@ function init()
 }
 
 function setDOMInfo(pageData) {
-    //alert("Set DOM Info... " + pageData + " " + pageData.length);
+    console.log("Set DOM Info... " + pageData + " " + pageData.length);
     currentPageData = [];
     //alert("Page data stored");
     if (pageData != null) {
@@ -59,7 +61,7 @@ function broadcastData()
                     // First pass the data to the Event page
                     console.log("Sending data to event page");
                     var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_STOREDATA,
-                                           data, handlerResponse);
+                                           { handler: handler.getName(), source: data }, handlerResponse);
                     msg.send();
 
                     // Now we call the handler to handle data
@@ -92,6 +94,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   cg_util.getActiveTab(function (tab) {
     if (tab != null) {
+       // get gaggle data of the currently active tab
        var msg = new Message(MSG_FROM_POPUP, chrome.tabs, tab.id, MSG_SUBJECT_PAGEDATA, null, setDOMInfo);
        msg.send();
 
