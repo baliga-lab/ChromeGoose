@@ -10,12 +10,12 @@ function init()
 function getPageData()
 {
     //alert("Parsing page...");
-    /*var names = new Array("BC0478", "BC0706", "BC0772");
+    var names = new Array("BC0478", "BC0706", "BC0772");
     var nl = new Namelist("bcu namelist (5)", 5, "bcu", names);
-    var pagedata = {value: "0", data: nl};
+    var pagedata = {data: nl};
     var jsondata = JSON.stringify(pagedata);
     pagedata.jsondata = jsondata;
-    pageGaggleData.push(pagedata); */
+    pageGaggleData.push(pagedata);
 
     console.log("Scanning page for gaggle data...");
     for (var i = 0; i < webHandlers.length; i++) {

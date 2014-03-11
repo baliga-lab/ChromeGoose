@@ -9,7 +9,7 @@
 
 function David()
 {
-    this._name = "David";
+    this._name = "DAVID";
 }
 
 David.prototype.getName = function ()

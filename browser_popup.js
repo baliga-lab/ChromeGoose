@@ -1,18 +1,70 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-var currentPageData = null;
 var webHandlers = [];
+var currentPageData = [];
 
 function init()
 {
-    //alert("Browser action init...");
+    console.log("Browser action init...");
+
+    $("#selGaggleMenu").change(gaggleMenuItemSelected);
+
     // Load web handlers at the browser action side. Note we need to load instances of web handlers
     // for both browser action (to process data) and content scripts (to parse web pages).
     webHandlers = webhandlers.loadHandlers();
     for (var i = 0; i < webHandlers.length; i++) {
         //alert("Browser action loading " + webHandlers[i].getName());
         $("#selTarget").append($("<option></option>").attr("value", i.toString()).text(webHandlers[i].getName()));
+    }
+
+
+
+    // Verify if Boss is started
+    cg_util.bossStarted(function (started) {
+        console.log("Check boss response: " + started);
+        if (started) {
+            $("#imgGaggleConnected").attr("src", "img/connected.png");
+            cg_util.getGeese(function (results) {
+                console.log("Listening geese: " + results);
+
+                if (results != null) {
+                   try {
+                       var jsonobj = JSON.parse(results);
+                       //alert(jsonobj);
+                       var geesestring = jsonobj["result"];
+                       if (geesestring != null) {
+                           var splitted = geesestring.split(";;;");
+                           for (var i = 0; i < splitted.length; i++) {
+                                if (splitted[i] != null && splitted[i].length > 0)
+                                    $("#selTarget").prepend($("<option></option>").attr("value", splitted[i]).text(splitted[i]));
+                           }
+                       }
+                   }
+                   catch (e) {
+                       console.log(e);
+                   }
+                }
+                $("#selTarget").prepend($("<option></option>").attr("value", "Boss").text("Boss"));
+                $("#selTarget").prepend($("<option></option>").attr("value", "-1").text("-- Select a Target to Broadcast --"));
+            });
+        }
+        else {
+            $("#selTarget").prepend($("<option></option>").attr("value", "-1").text("-- Select a Target to Broadcast --"));
+        }
+    });
+
+    try {
+        alert(websocketconnection);
+        if (websocketconnection == null || !websocketconnection.connected) {
+            alert("Open websocket");
+            if (websocketconnection == null)
+                websocketconnection = new websocket('ws://localhost:8083/BossWebSocket', ['soap', 'xmpp'], connectionOpened, parseData);
+            websocketconnection.open();
+        }
+    }
+    catch(e) {
+        alert(e);
     }
 }
 
@@ -24,7 +76,7 @@ function setDOMInfo(pageData) {
         for (var i = 0; i < pageData.length; i++) {
             var pagedataobj = JSON.parse(pageData[i].jsondata);
             var pagedata = pagedataobj["data"];
-            var pagedatavalue = pagedataobj["value"];
+            //var pagedatavalue = pagedataobj["value"];
             var type = pagedata["_type"];
             var gaggledata = null;
             if (type == "Namelist") {
@@ -39,48 +91,36 @@ function setDOMInfo(pageData) {
             }
             //alert(pagedata.data.getName); //.data.getName());
             if (gaggledata != null)
-                $("#selGaggleData").append($("<option></option>").attr("value", pagedatavalue).text(gaggledata.getName()));
+                $("#selGaggleData").append($("<option></option>").attr("value", i.toString()).text(gaggledata.getName()));
         }
     }
 }
 
 
-function broadcastData()
-{
-    console.log("Broadcasting ...");
-    var target = $("#selTarget").val();
-    var selecteddataindex = $("#selGaggleData").val();
-    //alert(target + " " + selecteddataindex);
-    if (target != "-1" && selecteddataindex != "-1") {
-        var handler = webHandlers[parseInt(target)];
-        var data = currentPageData[parseInt(selecteddataindex)];  //  data is not json stringified
-        if (handler != null && data != null) {
-            var type = data.getType();
-            if (type == "Namelist") {
-                if (handler.handleNameList != null) {
-                    // First pass the data to the Event page
-                    console.log("Sending data to event page");
-                    var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_STOREDATA,
-                                           { handler: handler.getName(), source: data }, handlerResponse);
-                    msg.send();
+function gaggleMenuItemSelected(event) {
+    console.log("Gaggle menu item selected "); // + $("#selGaggleMenu").val());
 
-                    // Now we call the handler to handle data
-                    handler.handleNameList(data);
-                }
+    var selected = $("#selGaggleMenu").val();
+    if (selected == "0") {
+        // Start the Boss
+        cg_util.bossStarted(function (started) {
+            console.log("Check boss response: " + started);
+            if (!started) {
+                cg_util.startBoss();
+                $("#imgGaggleConnected").attr("src", "img/connected.png");
             }
-        }
-
-
-        /*cg_util.getActiveTab(function (tab) {
-            if (tab != null) {
-
-               var msg = new Message(MSG_FROM_POPUP, chrome.tabs, tab.id, MSG_SUBJECT_HANDLER,
-                                {handler: target, dataindex: selecteddataindex}, handlerResponse);
-               msg.send();
+            else {
+                $("#imgGaggleConnected").attr("src", "img/connected.png");
             }
-        }); */
+        });
+    }
+    else if (selected == "1") {
+        // Open the Gaggle Website
+        cg_util.openNewTab(GAGGLE_HOME);
     }
 }
+
+
 
 function handlerResponse()
 {

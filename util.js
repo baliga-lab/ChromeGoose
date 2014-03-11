@@ -9,17 +9,54 @@
 
 
 var WEBHANDLERS_UPDATE_INTERVAL = 24 * 60 * 60 * 1000; // Update after 24 hour
+var GAGGLE_SERVER = "http://localhost:8000";
+var GAGGLE_HOME = "http://gaggle.systemsbiology.net";
+var BOSS_JNLP = GAGGLE_SERVER + "/static/jnlp/boss.jnlp";
+var HTTPBOSS_ADDRESS = "http://localhost:8082/";
 
 var cg_util = {
 
-// Retrieve GA from storage
+startBoss: function() {
+    window.open(BOSS_JNLP);
+},
+
+bossStarted: function(callback) {
+    console.log("Verifying if boss has started...");
+    cg_util.urlExists(HTTPBOSS_ADDRESS, function(status){
+        if(status == 200){
+           // file was found
+           callback(true);
+        }
+        else if(status == 404 || status == 0){
+           // 404 not found
+           callback(false);
+        }
+    });
+},
+
+getGeese: function(callback) {
+    var url = HTTPBOSS_ADDRESS + "?command=getGeese";
+    cg_util.getFileFromUrl(url, callback);
+},
+
+// Retrieve data from storage
 retrieveFrom: function(key, url, callback) {
     console.log("Retrieving " + key + " from " + url);
 
     try {
+        var dataobj = {};
+        var result = null;
+
         chrome.storage.local.get(key, function(items) {
-            console.log("local storage retrieval results: " + (typeof items));
-            if (items == null || items.code == undefined || (Date.now() - items.lastUpdated > WEBHANDLERS_UPDATE_INTERVAL)) {
+            $.each(items, function(k, value) {
+                if (value != null && value['code'] != null
+                    && (Date.now() - value['lastUpdated'] <= WEBHANDLERS_UPDATE_INTERVAL))
+                   result = value['code'];
+            });
+
+            //alert(result);
+            if (result == null || result == undefined)
+            {
                 // Get updated file, and if found, save it.
                 cg_util.getFileFromUrl(url, function(downloadedcode) {
                     //console.log("Received code: " + downloadedcode);
@@ -32,8 +69,8 @@ retrieveFrom: function(key, url, callback) {
                         callback(downloadedcode);
                 });
             }
-            if (items.code && callback != null) // Cached GA is available, use it
-                callback(items.code);
+            else if (callback != null) // Cached data is available, use it
+                callback(result);
         });
     }
     catch (e) {
@@ -159,16 +196,58 @@ executeCode: function (code) {
     }
 },
 
+urlExists: function(url, callback){
+    console.log("Checking url exists: " + url);
+    try {
+        jQuery.ajax({
+            url:      url,
+            dataType: 'text',
+            type:     'GET',
+            complete:  function(xhr){
+                console.log("ajax completed " + xhr.status);
+                if (callback != null)
+                   callback(xhr.status);
+
+            }
+        });
+    }
+    catch (e) {
+        alert(e);
+    }
+},
+
 getFileFromUrl: function (url, callback) {
     console.log("Downloading file from " + url);
-    var x = new XMLHttpRequest();
-    x.onload = x.onerror = function()
-    {
-        if (callback != null)
-            callback(x.responseText);
-    };
-    x.open('GET', url);
-    x.send();
+    try {
+        var x = new XMLHttpRequest();
+        x.onload = x.onerror = function()
+        {
+            if (callback != null)
+                callback(x.responseText);
+        };
+        //alert("Open url");
+        x.open('GET', url);
+        //alert("Send request " + url);
+        x.send();
+    }
+    catch(e) {
+        //alert(e);
+        console.log("Failed to access url " + e);
+        if (callback != null) {
+            callback("error");
+        }
+    }
+},
+
+doPost: function(url, data, contentType, dataType, callback) {
+    $.ajax({
+      type: "POST",
+      contentType: contentType,
+      url: url,
+      data: data,
+      success: callback,
+      dataType: dataType
+    });
 }
 
 }
