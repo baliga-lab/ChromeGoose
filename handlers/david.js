@@ -9,18 +9,12 @@
 
 function David()
 {
-    this._name = "DAVID";
+    handler_base.call(this, "DAVID", true, "http://david.abcc.ncifcrf.gov/");
 }
 
-David.prototype.getName = function ()
-{
-    return this._name;
-}
+David.prototype = new handler_base();
 
-David.prototype.getPageUrl = function ()
-{
-    return "http://david.abcc.ncifcrf.gov/";
-}
+David.prototype.constructor = David;
 
 David.prototype.scanPage = function ()
 {
@@ -179,4 +173,4 @@ David.prototype.insertNamelistIntoPasteBox = function(species, names) {
 
 
 var david = new David();
-david.scanPage();
+//david.scanPage();

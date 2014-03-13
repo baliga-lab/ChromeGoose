@@ -13,6 +13,7 @@ var GAGGLE_SERVER = "http://localhost:8000";
 var GAGGLE_HOME = "http://gaggle.systemsbiology.net";
 var BOSS_JNLP = GAGGLE_SERVER + "/static/jnlp/boss.jnlp";
 var HTTPBOSS_ADDRESS = "http://localhost:8082/";
+var WEBHANDLER_BASEURL = GAGGLE_SERVER + "/static/javascripts/handlers/";
 
 var cg_util = {
 
@@ -55,7 +56,7 @@ retrieveFrom: function(key, url, callback) {
             });
 
             //alert(result);
-            if (result == null || result == undefined)
+            //if (result == null || result == undefined)
             {
                 // Get updated file, and if found, save it.
                 cg_util.getFileFromUrl(url, function(downloadedcode) {
@@ -69,8 +70,8 @@ retrieveFrom: function(key, url, callback) {
                         callback(downloadedcode);
                 });
             }
-            else if (callback != null) // Cached data is available, use it
-                callback(result);
+            //else if (callback != null) // Cached data is available, use it
+            //    callback(result);
         });
     }
     catch (e) {

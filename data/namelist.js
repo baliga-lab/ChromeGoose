@@ -1,6 +1,6 @@
 function Namelist(name, size, species, data) {
     // call the parent constructor
-    GaggleData.call(this, name, "Namelist", size, species, data);
+    GaggleData.call(this, name, "NameList", size, species, data);
 }
 
 Namelist.prototype = new GaggleData();

@@ -1,30 +1,24 @@
 function KEGG()
 {
-    this._name = "KEGG";
+    handler_base.call(this, "KEGG", true, "http://www.genome.jp/kegg-bin/", (WEBHANDLER_BASEURL + "kegg-server.js"));
 }
 
-KEGG.prototype.getName = function ()
-{
-    return this._name;
-}
+KEGG.prototype = new handler_base();
 
-KEGG.prototype.getPageUrl = function ()
-{
-    return "http://www.genome.jp/kegg-bin/";
-}
+KEGG.prototype.constructor = KEGG;
 
-KEGG.prototype.scanPage = function ()
+/*KEGG.prototype.scanPage = function ()
 {
     console.log("KEGG scan page...");
 
     // Then scan the page
-    cg_util.retrieveFrom("KEGG", "http://localhost:8000/static/javascripts/handlers/kegg-server.js", function(code) {
+    cg_util.retrieveFrom("KEGG", WEBHANDLER_BASEURL + "kegg-server.js", function(code) {
         console.log("Got KEGG code");
         if (code != null) {
             cg_util.executeCode(code);
         }
     });
-}
+} */
 
 KEGG.handleNameList = function(species, names) {
 	// construct a query string out of the name list
@@ -51,5 +45,5 @@ KEGG.handleNameList = function(species, names) {
     chrome.tabs.create({ url: keggurl });
 }
 
-var kegg = new KEGG();
-kegg.scanPage();
+//var kegg = new KEGG();
+//kegg.scanPage();

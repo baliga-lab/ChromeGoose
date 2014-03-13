@@ -31,23 +31,9 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 cg_util.retrieveFrom("KEGG", "http://localhost:8000/static/javascripts/handlers/kegg-server.js", null);
 
 // Establish a websocket with the Boss
-var websocketconnection = new websocket(BossWebSocketUrl, ['soap', 'xmpp'], connectionOpened, parseData);
-websocketconnection.open();
 
-function connectionOpened() {
-    //alert("Ping websocket...");
-    connection.send('GetID'); // Send the message 'Ping' to the server
-};
 
-function parseData(data) {
-    if (data != null) {
-        alert(data);
-        var jsondata = JSON.parse(data);
-        if (jsondata['socketid'] != null) {
-            websocket.socketid = jsondata['socketid'];
-        }
-    }
-};
+createWebSocket(BossWebSocketUrl, webSocketOpenCallback, parseData);
 
 /* Enable the page-action for the requesting tab */
             //chrome.pageAction.show(sender.tab.id);

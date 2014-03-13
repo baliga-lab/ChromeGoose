@@ -5,6 +5,7 @@ function GaggleData(name, dataType, size, species, data) {
 	this._size = size;
 	this._species = species;
 	this._data = data;
+	this._isAsync = false;
 }
 
 GaggleData.prototype.getName = function() {
@@ -51,5 +52,13 @@ GaggleData.prototype.toString = function() {
 
 GaggleData.prototype._applyDefaultSpecies = function(species) {
 	return species;
+}
+
+GaggleData.prototype.getAsync = function() {
+    return this._isAsync;
+}
+
+GaggleData.prototype.setAsync = function(isAsync) {
+    this._isAsync = isAsync;
 }
 

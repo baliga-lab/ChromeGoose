@@ -15,7 +15,8 @@ function init()
     webHandlers = webhandlers.loadHandlers();
     for (var i = 0; i < webHandlers.length; i++) {
         //alert("Browser action loading " + webHandlers[i].getName());
-        $("#selTarget").append($("<option></option>").attr("value", i.toString()).text(webHandlers[i].getName()));
+        if (webHandlers[i].showInMenu())
+            $("#selTarget").append($("<option></option>").attr("value", i.toString()).text(webHandlers[i].getName()));
     }
 
 
@@ -54,18 +55,16 @@ function init()
         }
     });
 
-    try {
+    /*try {
         alert(websocketconnection);
-        if (websocketconnection == null || !websocketconnection.connected) {
-            alert("Open websocket");
-            if (websocketconnection == null)
-                websocketconnection = new websocket('ws://localhost:8083/BossWebSocket', ['soap', 'xmpp'], connectionOpened, parseData);
-            websocketconnection.open();
+        if (websocketconnection == null) {
+            alert("Browser action opens websocket");
+            createWebSocket(BossWebSocketUrl, webSocketOpenCallback, parseData);
         }
     }
     catch(e) {
         alert(e);
-    }
+    } */
 }
 
 function setDOMInfo(pageData) {
@@ -74,19 +73,27 @@ function setDOMInfo(pageData) {
     //alert("Page data stored");
     if (pageData != null) {
         for (var i = 0; i < pageData.length; i++) {
+            //alert("JSON data: " + pageData[i].jsondata);
+            if (pageData[i].jsondata == undefined)
+                continue;
+
             var pagedataobj = JSON.parse(pageData[i].jsondata);
             var pagedata = pagedataobj["data"];
+            //alert(pagedata);
+
             //var pagedatavalue = pagedataobj["value"];
             var type = pagedata["_type"];
+            //alert(type);
+
             var gaggledata = null;
-            if (type == "Namelist") {
+            if (type == "NameList") {
                 try {
                     gaggledata = new Namelist("", 0, "", null);
                     gaggledata.parseJSON(pagedata);
                     currentPageData.push(gaggledata);
                 }
                 catch (e) {
-                    alert(e);
+                    //alert("Failed to parse gaggle data " + e);
                 }
             }
             //alert(pagedata.data.getName); //.data.getName());
