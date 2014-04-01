@@ -41,16 +41,19 @@ David.prototype.scanPage = function ()
 
 David.prototype.processData = function (jsondata) {
     if (jsondata != null) {
-        console.log("Data received: " + jsondata);
+        //alert("Data received: " + jsondata);
 
         var jsonobj = JSON.parse(jsondata);
         if (jsonobj != null) {
-            var type = jsonobj["_type"];
+            var handler = jsonobj["handler"];
+            var sourceobj = jsonobj["source"];
+            var type = sourceobj["_type"];
+            //alert(type);
             var gaggledata = null;
-            if (type == "Namelist") {
+            if (type == "NameList") {
                 try {
                     namelist = new Namelist("", 0, "", null);
-                    namelist.parseJSON(jsonobj);
+                    namelist.parseJSON(sourceobj);
                     this.species = namelist.getSpecies();
                     this.names = namelist.getData();
 

@@ -69,6 +69,8 @@ function init()
 
 function setDOMInfo(pageData) {
     console.log("Set DOM Info... " + pageData + " " + pageData.length);
+    //alert(pageData.length);
+
     currentPageData = [];
     //alert("Page data stored");
     if (pageData != null) {
@@ -79,13 +81,16 @@ function setDOMInfo(pageData) {
 
             var pagedataobj = JSON.parse(pageData[i].jsondata);
             var pagedata = pagedataobj["data"];
-            //alert(pagedata);
+
+
+            //alert(pagedata["_name"]);
 
             //var pagedatavalue = pagedataobj["value"];
-            var type = pagedata["_type"];
+
+            //var type = pagedata["_type"];
             //alert(type);
 
-            var gaggledata = null;
+            /*var gaggledata = null;
             if (type == "NameList") {
                 try {
                     gaggledata = new Namelist("", 0, "", null);
@@ -95,10 +100,12 @@ function setDOMInfo(pageData) {
                 catch (e) {
                     //alert("Failed to parse gaggle data " + e);
                 }
-            }
+            } */
+
+
             //alert(pagedata.data.getName); //.data.getName());
-            if (gaggledata != null)
-                $("#selGaggleData").append($("<option></option>").attr("value", i.toString()).text(gaggledata.getName()));
+            //if (gaggledata != null)
+            $("#selGaggleData").append($("<option></option>").attr("value", i.toString()).text(pagedata["_name"]));
         }
     }
 }
@@ -134,7 +141,71 @@ function handlerResponse()
 
 }
 
+function broadcastFetchedData(jsonobj)
+{
+    //alert(jsonobj);
+    var jsonObj = JSON.parse(jsonobj);
+    var handlerindexstr = jsonObj["handlerindex"];
+    var handler = webHandlers[parseInt(handlerindexstr)];
+    var data = jsonObj["data"];
+    var type = data["_type"];
+    //alert(type);
+    if (type == "NameList") {
+        var gaggledata = new Namelist("", 0, "", null);
+        gaggledata.parseJSON(data);
+        if (handler.handleNameList != null) {
+            // First pass the data to the Event page
+            console.log("Sending data to event page");
+            var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_STOREDATA,
+                                   { handler: handler.getName(), source: gaggledata }, handlerResponse);
+            msg.send();
 
+            // Now we call the handler to handle data
+            handler.handleNameList(data);
+        }
+    }
+}
+
+function broadcastData()
+{
+    //alert("Broadcasting ...");
+    var target = $("#selTarget").val();
+    var selecteddataindex = $("#selGaggleData").val();
+    //alert(target + " " + selecteddataindex);
+    if (target != "-1" && selecteddataindex != "-1") {
+        var handler = webHandlers[parseInt(target)];
+        //alert(handler.getName());
+
+        //var data = currentPageData[parseInt(selecteddataindex)];  //  data is not json stringified
+
+        if (handler != null) {// && data != null) {
+            //alert("Fetching async data ");
+            try {
+                cg_util.getActiveTab(function (tab) {
+                    if (tab != null) {
+                        //var msg = new Message(MSG_FROM_POPUP, chrome.tabs, tab.id, MSG_SUBJECT_PAGEDATA, null, setDOMInfo);
+                        var msg = new Message(MSG_FROM_POPUP, chrome.tabs, tab.id, MSG_SUBJECT_GETDATABYINDEX,
+                                               {handlerindex: target, dataindex: selecteddataindex }, broadcastFetchedData);
+                        msg.send();
+                    }
+                });
+            }
+            catch(e) {
+                alert(e);
+            }
+        }
+
+
+        /*cg_util.getActiveTab(function (tab) {
+            if (tab != null) {
+
+               var msg = new Message(MSG_FROM_POPUP, chrome.tabs, tab.id, MSG_SUBJECT_HANDLER,
+                                {handler: target, dataindex: selecteddataindex}, handlerResponse);
+               msg.send();
+            }
+        }); */
+    }
+}
 
 document.addEventListener('DOMContentLoaded', function () {
   init();

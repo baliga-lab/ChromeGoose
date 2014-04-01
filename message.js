@@ -5,10 +5,11 @@ var MSG_SUBJECT_PAGEDATA = "PageData";
 var MSG_SUBJECT_HANDLER = "Handler";
 var MSG_SUBJECT_STOREDATA = "StoreData";
 var MSG_SUBJECT_RETRIEVEDATA = "RetrieveData";
+var MSG_SUBJECT_GETDATABYINDEX = "GetDataByIndex";
 
 function Message(from, to, targetid, subject, data, callback)
 {
-    console.log("Message from " + from + " Subject: " + subject + " targetid: " + targetid);
+    //alert("Message from " + from + " Subject: " + subject + " targetid: " + targetid);
     this._from = from;
     this._to = to;
     this._targetid = targetid;

@@ -7,8 +7,17 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
         if (msg.from && (msg.from == MSG_FROM_CONTENT)) {
              if (msg.subject && (msg.subject == MSG_SUBJECT_RETRIEVEDATA)) {
                 console.log("Received retrieval request from content script " + dataToBeProcessed);
+                var handlerdata = JSON.parse(msg.data);
+                var handler = handlerdata["handler"];
+                var datatosend = null;
+                if (dataToBeProcessed != null) {
+                    var jsondata = JSON.parse(dataToBeProcessed);
+                    var datahandler = jsondata["handler"];
+                    if (datahandler == handler)
+                       datatosend = dataToBeProcessed;
+                }
                 if (sendResponse != null)
-                    sendResponse(dataToBeProcessed);
+                    sendResponse(datatosend);
              }
 
         }

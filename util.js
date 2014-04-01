@@ -90,7 +90,7 @@ checkHandlerData: function (handler, processDataFunc) {
         console.log(handler.getName() + ": Retrieving data from event page...");
         try {
             var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_RETRIEVEDATA,
-                                 "aaa", processDataFunc);
+                                 {handler: handler.getName()}, processDataFunc);
             msg.send();
         }
         catch (e) {

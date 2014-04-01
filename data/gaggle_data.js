@@ -62,3 +62,7 @@ GaggleData.prototype.setAsync = function(isAsync) {
     this._isAsync = isAsync;
 }
 
+GaggleData.prototype.setData = function(data) {
+    this._data = data;
+}
+
