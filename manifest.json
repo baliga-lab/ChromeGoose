@@ -20,7 +20,7 @@
                 "handlers/gaggleMicroformatHandler.js",
                 "handlers/functional-enrichment.js",
                 "handlers/webhandler.js",
-                "data/gaggle_data.js", "data/namelist.js", "gaggle.js"],
+                "data/gaggle_data.js", "data/namelist.js", "data/datamatrix.js", "data/cluster.js", "gaggle.js"],
         "run_at": "document_idle"
       }
     ],

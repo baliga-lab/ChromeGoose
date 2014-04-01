@@ -63,6 +63,8 @@ chrome.runtime.onMessage.addListener(function(msg, sender, response) {
                     var originaldata = pageGaggleData[parseInt(dataindex)].data;
                     //alert(originaldata);
                     //alert(originaldata.getData);
+
+                    // Call the lazy reader
                     var fetcheddata = originaldata.getData();
                     //alert(fetcheddata);
                     originaldata.setData(fetcheddata);

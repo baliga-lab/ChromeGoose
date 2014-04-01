@@ -144,25 +144,81 @@ function handlerResponse()
 function broadcastFetchedData(jsonobj)
 {
     //alert(jsonobj);
-    var jsonObj = JSON.parse(jsonobj);
-    var handlerindexstr = jsonObj["handlerindex"];
-    var handler = webHandlers[parseInt(handlerindexstr)];
-    var data = jsonObj["data"];
-    var type = data["_type"];
-    //alert(type);
-    if (type == "NameList") {
-        var gaggledata = new Namelist("", 0, "", null);
-        gaggledata.parseJSON(data);
-        if (handler.handleNameList != null) {
-            // First pass the data to the Event page
-            console.log("Sending data to event page");
-            var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_STOREDATA,
-                                   { handler: handler.getName(), source: gaggledata }, handlerResponse);
-            msg.send();
+    try {
+        var jsonObj = JSON.parse(jsonobj);
+        var handlerindexstr = jsonObj["handlerindex"];
+        var handler = webHandlers[parseInt(handlerindexstr)];
+        var data = jsonObj["data"];
+        var type = data["_type"];
+        //alert(type);
+        var gaggledata = null;
+        if (type == "NameList") {
+            gaggledata = new Namelist("", 0, "", null);
+            gaggledata.parseJSON(data);
+            if (handler.handleNameList != null) {
+                // First pass the data to the Event page
+                console.log("Sending data to event page");
+                var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_STOREDATA,
+                                       { handler: handler.getName(), source: gaggledata }, handlerResponse);
+                msg.send();
 
-            // Now we call the handler to handle data
-            handler.handleNameList(data);
+                // Now we call the handler to handle data
+                handler.handleNameList(gaggledata.getData());
+            }
         }
+        else if (type == "DataMatrix") {
+            gaggledata = new DataMatrix("", "", null, 0, 0, null, null, null);
+            gaggledata.parseJSON(data);
+            if (gaggledata.getData() != null) {
+                if (handler.handleDataMatrix != null)
+                {
+                    var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_STOREDATA,
+                                         { handler: handler.getName(), source: gaggledata }, handlerResponse);
+                    msg.send();
+                    handler.handleDataMatrix(gaggledata);
+                }
+                else {
+                    var namelist = gaggledata.getDataAsNameList();
+                    var newdata = new Namelist(gaggledata.getName(), gaggledata.getSize(),
+                                               gaggledata.getSpecies(),
+                                               namelist);
+                    //alert(namelist);
+
+                    var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_STOREDATA,
+                                         { handler: handler.getName(), source: newdata }, handlerResponse);
+                    msg.send();
+                    handler.handleNameList(namelist);
+                }
+            }
+        }
+        else if (type == "Cluster") {
+            gaggledata = new Cluster("", "", null, 0, 0, null, null);
+            gaggledata.parseJSON(data);
+            if (gaggledata.getData() != null) {
+                if (handler.handleCluster != null)
+                {
+                    var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_STOREDATA,
+                                         { handler: handler.getName(), source: gaggledata }, handlerResponse);
+                    msg.send();
+                    handler.handleCluster(gaggledata);
+                }
+                else {
+                    var namelist = gaggledata.getDataAsNameList();
+                    var newdata = new Namelist(gaggledata.getName(), gaggledata.getSize(),
+                                               gaggledata.getSpecies(),
+                                               namelist);
+                    //alert(namelist);
+
+                    var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_STOREDATA,
+                                         { handler: handler.getName(), source: newdata }, handlerResponse);
+                    msg.send();
+                    handler.handleNameList(namelist);
+                }
+            }
+        }
+    }
+    catch(e) {
+        alert("Failed to dispatch data " + e);
     }
 }
 
