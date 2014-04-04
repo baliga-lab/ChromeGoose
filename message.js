@@ -6,6 +6,7 @@ var MSG_SUBJECT_HANDLER = "Handler";
 var MSG_SUBJECT_STOREDATA = "StoreData";
 var MSG_SUBJECT_RETRIEVEDATA = "RetrieveData";
 var MSG_SUBJECT_GETDATABYINDEX = "GetDataByIndex";
+var MSG_SUBJECT_WEBSOCKETSEND = "SendToWebSocket";
 
 function Message(from, to, targetid, subject, data, callback)
 {

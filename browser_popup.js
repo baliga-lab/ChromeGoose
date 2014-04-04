@@ -132,6 +132,13 @@ function gaggleMenuItemSelected(event) {
         // Open the Gaggle Website
         cg_util.openNewTab(GAGGLE_HOME);
     }
+    else if (selected == "1000") {
+        // DEBUG send data through the websocket
+        alert("Send data to websocket");
+        var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_WEBSOCKETSEND,
+                               { data: "GetID" }, null);
+        msg.send();
+    }
 }
 
 

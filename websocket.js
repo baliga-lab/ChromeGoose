@@ -8,7 +8,8 @@ function webSocketOpenCallback()
     if (websocketconnection != null)
         try
         {
-            websocketconnection.send('GetID'); // Send the message 'Ping' to the server
+            sendDataWebSocket("", "Register", "ChromeGoose");
+            //websocketconnection.send('GetID'); // Send the message 'Ping' to the server
         }
         catch (e) {
             alert("Failed to send GetID " + e);
@@ -19,8 +20,17 @@ function parseData(data) {
     if (data != null) {
         alert(data);
         var jsondata = JSON.parse(data);
-        if (jsondata['socketid'] != null) {
-            websocketid = jsondata['socketid'];
+        if (jsondata['ID'] != null) {
+            websocketid = jsondata['ID'];
+        }
+
+        var data = jsondata['Data'];
+        if (jsondata['Action'] != null) {
+            var action = jsondata["Action"];
+            if (action == "GetGeese") {
+                var geese = data.split(";;;");
+
+            }
         }
     }
 };
@@ -41,7 +51,7 @@ function createWebSocket(serverurl, onOpenCallback, onMessageCallback)
 {
     if (websocketconnection == null) {
         try {
-            websocketconnection = new WebSocket(serverurl); // (BossWebSocketUrl, ['soap', 'xmpp'], connectionOpened, parseData);
+            websocketconnection = new WebSocket(serverurl); //, ['chat', 'super-awesome-chat']); // (BossWebSocketUrl, ['soap', 'xmpp'], connectionOpened, parseData);
             websocketconnection.onopen = onOpenCallback;
             websocketconnection.onclose = onWebsocketClose;
             websocketconnection.onmessage = onMessageCallback;
@@ -53,4 +63,17 @@ function createWebSocket(serverurl, onOpenCallback, onMessageCallback)
     }
 }
 
-
+function sendDataWebSocket(id, action, data)
+{
+    var jsonobj = {};
+    try {
+        jsonobj.ID = id;
+        jsonobj.Action = action;
+        jsonobj.Data = data;
+        if (websocketconnection != null)
+            websocketconnection.send(JSON.stringify(jsonobj));
+    }
+    catch (e) {
+        alert("Failed to send data over websocket " + e);
+    }
+}

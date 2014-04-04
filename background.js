@@ -22,12 +22,29 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 
         }
         else if (msg.from && (msg.from == MSG_FROM_POPUP)) {
-            if (msg.subject && (msg.subject == MSG_SUBJECT_STOREDATA))  {
-                // data is json stringified
-                console.log("Received data storage request from popup " + msg.data);
-                dataToBeProcessed = msg.data;
-                if (sendResponse != null)
-                    sendResponse("Done!");
+            if (msg.subject) {
+                if (msg.subject == MSG_SUBJECT_STOREDATA)  {
+                    // data is json stringified
+                    console.log("Received data storage request from popup " + msg.data);
+                    dataToBeProcessed = msg.data;
+                    if (sendResponse != null)
+                        sendResponse("Done!");
+                }
+                else if (msg.subject == MSG_SUBJECT_WEBSOCKETSEND) {
+                    console.log("Received data to be sent to websocket " + msg.data);
+                    //alert(websocketconnection);
+                    if (websocketconnection == null) {
+                        createWebSocket(BossWebSocketUrl, webSocketOpenCallback, parseData);
+                    }
+                    else {
+                        alert("Send data to websocket");
+                        websocketconnection.send("GetID");
+                    }
+                }
+                else if (msg.subject == MSG_SUBJECT_CONNECTBOSS) {
+                    // Connect to Boss through websocket
+
+                }
             }
         }
     }
