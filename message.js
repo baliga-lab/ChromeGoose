@@ -20,6 +20,7 @@ function Message(from, to, targetid, subject, data, callback)
 }
 
 Message.prototype.send = function() {
+    //alert(this._callback);
     if (this._to != null) {
         if (this._targetid != null) {
             try {
@@ -36,6 +37,7 @@ Message.prototype.send = function() {
         }
         else {
             try {
+                // chrome.runtime.sendMessage
                 this._to.sendMessage(
                      { from: this._from, subject: this._subject, data: ((this._data != null) ? JSON.stringify(this._data) : {}) },
                      /* ...also specifying a callback to be called

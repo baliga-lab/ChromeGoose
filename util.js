@@ -35,10 +35,6 @@ bossStarted: function(callback) {
     });
 },
 
-getGeese: function(callback) {
-    var url = HTTPBOSS_ADDRESS + "?command=getGeese";
-    cg_util.getFileFromUrl(url, callback);
-},
 
 // Retrieve data from storage
 retrieveFrom: function(key, url, callback) {

@@ -3,12 +3,58 @@
 // found in the LICENSE file.
 var webHandlers = [];
 var currentPageData = [];
+var bossConnected = false;
+
+function getGeese(callback) {
+    //var url = HTTPBOSS_ADDRESS + "?command=getGeese";
+    //cg_util.getFileFromUrl(url, callback);
+    var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_WEBSOCKETSEND,
+                                   {ID: "", Action: "GetGeese", data: "" }, callback);
+    //alert(callback);
+    msg.send();
+}
 
 function init()
 {
     console.log("Browser action init...");
 
     $("#selGaggleMenu").change(gaggleMenuItemSelected);
+
+    getGeese(function (response) {
+        //alert("Listening geese: " + response);
+        if (response == null)
+            bossConnected = false;
+        else {
+           try {
+               var jsonobj = JSON.parse(response);
+               var geesestring = jsonobj["Data"];
+               var socketid = jsonobj["ID"];
+               //alert(socketid);
+               bossConnected = (socketid != null && socketid.length > 0) ? true : false;
+               if (geesestring != null) {
+                   var splitted = geesestring.split(";;;");
+                   for (var i = 0; i < splitted.length; i++) {
+                        if (splitted[i] != null && splitted[i].length > 0)
+                            $("#selTarget").prepend($("<option></option>").attr("value", splitted[i]).text(splitted[i]));
+                   }
+               }
+           }
+           catch (e) {
+               console.log(e);
+           }
+        }
+
+        console.log("Check boss response: " + bossConnected);
+        if (bossConnected) {
+            $("#imgGaggleConnected").attr("src", "img/connected.png");
+            $("#selTarget").prepend($("<option></option>").attr("value", "Boss").text("Boss"));
+            $("#selTarget").prepend($("<option></option>").attr("value", "-1").text("-- Select a Target to Broadcast --"));
+        }
+        else {
+            $("#selTarget").prepend($("<option></option>").attr("value", "-1").text("-- Select a Target to Broadcast --"));
+        }
+    });
+
 
     // Load web handlers at the browser action side. Note we need to load instances of web handlers
     // for both browser action (to process data) and content scripts (to parse web pages).
@@ -22,38 +68,9 @@ function init()
 
 
     // Verify if Boss is started
-    cg_util.bossStarted(function (started) {
-        console.log("Check boss response: " + started);
-        if (started) {
-            $("#imgGaggleConnected").attr("src", "img/connected.png");
-            cg_util.getGeese(function (results) {
-                console.log("Listening geese: " + results);
+    //cg_util.bossStarted(function (bossConnected) {
 
-                if (results != null) {
-                   try {
-                       var jsonobj = JSON.parse(results);
-                       //alert(jsonobj);
-                       var geesestring = jsonobj["result"];
-                       if (geesestring != null) {
-                           var splitted = geesestring.split(";;;");
-                           for (var i = 0; i < splitted.length; i++) {
-                                if (splitted[i] != null && splitted[i].length > 0)
-                                    $("#selTarget").prepend($("<option></option>").attr("value", splitted[i]).text(splitted[i]));
-                           }
-                       }
-                   }
-                   catch (e) {
-                       console.log(e);
-                   }
-                }
-                $("#selTarget").prepend($("<option></option>").attr("value", "Boss").text("Boss"));
-                $("#selTarget").prepend($("<option></option>").attr("value", "-1").text("-- Select a Target to Broadcast --"));
-            });
-        }
-        else {
-            $("#selTarget").prepend($("<option></option>").attr("value", "-1").text("-- Select a Target to Broadcast --"));
-        }
-    });
+    //});
 
     /*try {
         alert(websocketconnection);

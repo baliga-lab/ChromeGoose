@@ -1,4 +1,5 @@
 var dataToBeProcessed = null;
+var geeseJSONString = null;  //  JSON result of calling GetGeese from the Boss
 
 chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
     /* First, validate the message's structure */
@@ -37,9 +38,11 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                         createWebSocket(BossWebSocketUrl, webSocketOpenCallback, parseData);
                     }
                     else {
-                        alert("Send data to websocket");
-                        websocketconnection.send("GetID");
+                        //alert("Send data to websocket " + msg.data);
+                        websocketconnection.send(msg.data);
                     }
+
+                    sendResponse(geeseJSONString);
                 }
                 else if (msg.subject == MSG_SUBJECT_CONNECTBOSS) {
                     // Connect to Boss through websocket
