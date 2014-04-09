@@ -16,7 +16,8 @@ function getGeese(callback) {
 
 function init()
 {
-    console.log("Browser action init...");
+    //alert("Browser action init...");
+    currentPageData = new Array();
 
     $("#selGaggleMenu").change(gaggleMenuItemSelected);
 
@@ -106,14 +107,14 @@ function setDOMInfo(pageData) {
     console.log("Set DOM Info... " + pageData + " " + pageData.length);
     //alert(pageData.length);
 
-    currentPageData = [];
     //alert("Page data stored");
     if (pageData != null) {
         for (var i = 0; i < pageData.length; i++) {
-            //alert("JSON data: " + pageData[i].jsondata);
+            //alert("Page data index: " + currentPageData.length + " Data: " + pageData[i].jsondata + " From: " + pageData[i].source);
             if (pageData[i].jsondata == undefined)
                 continue;
 
+            currentPageData.push(pageData[i]);
             var pagedataobj = JSON.parse(pageData[i].jsondata);
             var pagedata = pagedataobj["data"];
 
@@ -192,19 +193,21 @@ function handlerResponse()
 
 }
 
-function broadcastFetchedData(jsonobj)
+function broadcastFetchedData(jsonobj, handler)
 {
     //alert(jsonobj);
     try {
         var jsonObj = JSON.parse(jsonobj);
         var handlerindexstr = jsonObj["handlerindex"];
-        var handler = webHandlers[parseInt(handlerindexstr)];
+        if (handler == null)
+            handler = webHandlers[parseInt(handlerindexstr)];
         var data = jsonObj["data"];
-        var type = data["_type"];
+        var type = (data["_type"] != null) ? data["_type"] : data["type"];
         //alert(type);
         var gaggledata = null;
         if (type.toLowerCase() == "namelist") {
             gaggledata = new Namelist("", 0, "", null);
+            //alert(handler.getName() + " " + data);
             gaggledata.parseJSON(data);
             if (handler.handleNameList != null) {
                 // First pass the data to the Event page
@@ -288,14 +291,23 @@ function broadcastData()
         if (handler != null) {// && data != null) {
             //alert("Fetching async data ");
             try {
-                cg_util.getActiveTab(function (tab) {
-                    if (tab != null) {
-                        //var msg = new Message(MSG_FROM_POPUP, chrome.tabs, tab.id, MSG_SUBJECT_PAGEDATA, null, setDOMInfo);
-                        var msg = new Message(MSG_FROM_POPUP, chrome.tabs, tab.id, MSG_SUBJECT_GETDATABYINDEX,
-                                               {handlerindex: target, dataindex: selecteddataindex }, broadcastFetchedData);
-                        msg.send();
-                    }
-                });
+                var pagedata = currentPageData[parseInt(selecteddataindex)];
+                var source = (pagedata["source"] == null) ? pagedata.source : pagedata["source"];
+                //alert(pagedata.jsondata + "\n\n" + source);
+                if (source == "Page") {
+                    cg_util.getActiveTab(function (tab) {
+                        if (tab != null) {
+                            //var msg = new Message(MSG_FROM_POPUP, chrome.tabs, tab.id, MSG_SUBJECT_PAGEDATA, null, setDOMInfo);
+                            var msg = new Message(MSG_FROM_POPUP, chrome.tabs, tab.id, MSG_SUBJECT_GETDATABYINDEX,
+                                                   {handlerindex: target, dataindex: selecteddataindex }, broadcastFetchedData);
+                            msg.send();
+                        }
+                    });
+                }
+                else if (source == "Broadcast") {
+                    //alert("Send broadcast data to " + handler.getName());
+                    broadcastFetchedData(pagedata.jsondata, handler);
+                }
             }
             catch(e) {
                 alert(e);
@@ -317,15 +329,16 @@ function broadcastData()
 document.addEventListener('DOMContentLoaded', function () {
   init();
 
+  var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_BROADCASTDATA,
+                                                 null, setDOMInfo);
+  msg.send();
+
   cg_util.getActiveTab(function (tab) {
     if (tab != null) {
        // get gaggle data of the currently active tab
+       //alert("Get page data...");
         var msg = new Message(MSG_FROM_POPUP, chrome.tabs, tab.id, MSG_SUBJECT_PAGEDATA, null, setDOMInfo);
         msg.send();
-
-        var msg1 = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_BROADCASTDATA,
-                                           null, setDOMInfo);
-        msg1.send();
 
        //chrome.tabs.sendMessage(
        //      tab.id,

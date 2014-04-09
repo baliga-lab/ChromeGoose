@@ -12,6 +12,6 @@ Namelist.prototype.parseJSON = function(jsonObj) {
         this._name = jsonObj["_name"];
         this._species = jsonObj["_species"];
         this._size = parseInt(jsonObj["_size"]);
-        this._data = jsonObj["_data"];
+        this._data = (jsonObj["_data"] != null) ? jsonObj["_data"] : jsonObj["gaggle-data"];
     }
 }

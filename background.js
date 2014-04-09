@@ -57,8 +57,9 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                             var pagedata = {};
                             var jsonobj = JSON.parse(broadcastData[i]);
                             pagedata.data = jsonobj["data"];
+                            pagedata.source = "Broadcast";
                             var jsondata = JSON.stringify(pagedata);
-                            //alert("GaggleMicroformatParser JSON data: " + jsondata);
+                            //alert("GaggleMicroformatParser JSON data: " + jsondata + " From: " + pagedata.source);
                             pagedata.jsondata = jsondata;
                             broadcastGaggleData.push(pagedata); //.setConvertToJavaOnGetData());
                         }

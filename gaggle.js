@@ -48,7 +48,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, response) {
 
                 /* Directly respond to the sender (popup),
                  * through the specified callback */
-                console.log("Sending page data: " + pageGaggleData.length);
+                //alert("Sending page data: " + pageGaggleData.length);
                 if (response != null)
                     response(pageGaggleData);
             }
