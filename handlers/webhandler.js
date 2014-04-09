@@ -10,7 +10,7 @@ var webhandlers = {
            handlers[2] = new KEGG();
            handlers[3] = new gaggleXml();
            handlers[4] = new GaggleMicroformatHandler();
-           handlers[5] = new FE();
+           //handlers[5] = new FE();
        }
        catch (e) {
            alert(e);

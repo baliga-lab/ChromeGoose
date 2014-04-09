@@ -6,6 +6,8 @@
     "storage", "tabs", "http://*/*", "https://*/*"
   ],
 
+  //"content_security_policy": "script-src 'self' https://localhost:8000 https://networks.systemsbiology.net; object-src 'self'",
+
   "background": {
           "persistent": true,
           "scripts": ["jquery-1.8.2.min.js", "util.js", "message.js", "websocket.js", "background.js"]

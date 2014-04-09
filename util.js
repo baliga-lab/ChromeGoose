@@ -236,6 +236,39 @@ getFileFromUrl: function (url, callback) {
     }
 },
 
+httpGet: function(theUrl)
+{
+    //alert("Http Get " + theUrl);
+    var xmlHttp = null;
+    try {
+        xmlHttp = new XMLHttpRequest();
+        xmlHttp.open( "GET", theUrl, false );
+        xmlHttp.send( null );
+        return xmlHttp.responseText;
+    }
+    catch (e) {
+        alert(e);
+    }
+},
+
+doGet: function(url, data, datatype, successCallback) {
+    //alert("Get: " + url);
+    try {
+        $.get(url, data,
+            //dataType: datatype,
+            function(result, textStatus, jqXHR){
+                //alert("ajax completed " + result["0"]);
+                if (successCallback != null)
+                   successCallback(result);
+            },
+            datatype
+        );
+    }
+    catch (e) {
+        alert(e);
+    }
+},
+
 doPost: function(url, data, contentType, dataType, callback) {
     $.ajax({
       type: "POST",

@@ -67,24 +67,43 @@ function init()
     }
 
     // Load script workflow component
-    /*cg_util.doGet(GAGGLE_SERVER + "/getworkflowcomponents" , null, "json", function(data) {
+    cg_util.doGet(GAGGLE_SERVER + "/workflow/getworkflowcomponents" , null, "json", function(data) {
+        //alert(data);
         if (data != null) {
             var index = 0;
-            var jsonobj = JSON.parse(data);
+            var jsonobj = data; //JSON.parse(data);
             do {
                 var pair = jsonobj[index.toString()];
-                alert(pair);
+                if (pair == null)
+                    break;
+                //alert(pair);
                 var isscript = pair["isscript"];
                 if (isscript == "True") {
                     var scripturl = pair["serviceurl"];
+                    //alert(scripturl.toLowerCase().indexOf(".r"));
+                    if (scripturl != null) {
+                        var script = cg_util.httpGet(scripturl);
+                        if (script != null) {
+                            //alert(script);
+                            if (scripturl.toLowerCase().indexOf(".r") >= 0) {
+                                // this is a R script
+                                var rscriptwrapper = new RScriptWrapper(pair["shortname"], script);
+                                webHandlers.push(rscriptwrapper);
+                                //alert(rscriptwrapper.getName());
+                                $("#selTarget").append($("<option></option>").attr("value", i.toString()).text(rscriptwrapper.getName()));
+                            }
+                        }
+                    }
 
+                    //alert("Downloaded script:  " + script);
                 }
+                index++;
             }
             while (true);
         }
 
 
-    }); */
+    });
 
     // Verify if Boss is started
     //cg_util.bossStarted(function (bossConnected) {
