@@ -65,7 +65,25 @@ function init()
             $("#selTarget").append($("<option></option>").attr("value", i.toString()).text(webHandlers[i].getName()));
     }
 
+    // Load script workflow component
+    /*cg_util.doGet(GAGGLE_SERVER + "/getworkflowcomponents" , null, "json", function(data) {
+        if (data != null) {
+            var index = 0;
+            var jsonobj = JSON.parse(data);
+            do {
+                var pair = jsonobj[index.toString()];
+                alert(pair);
+                var isscript = pair["isscript"];
+                if (isscript == "True") {
+                    var scripturl = pair["serviceurl"];
 
+                }
+            }
+            while (true);
+        }
+
+
+    }); */
 
     // Verify if Boss is started
     //cg_util.bossStarted(function (bossConnected) {
@@ -122,7 +140,16 @@ function setDOMInfo(pageData) {
 
             //alert(pagedata.data.getName); //.data.getName());
             //if (gaggledata != null)
-            $("#selGaggleData").append($("<option></option>").attr("value", i.toString()).text(pagedata["_name"]));
+            var text = (pagedata["_name"] != null) ? pagedata["_name"] : pagedata["name"];
+            if (text == null)
+                text = (pagedata["_type"] != null) ? pagedata["_type"] : pagedata["type"];
+            //alert(text);
+            if (text != null) {
+                var gaggledata = (pagedata["_data"] != null) ? pagedata["_data"] : pagedata["gaggle-data"];
+                if (gaggledata != null && gaggledata.length > 0)
+                    text += " (" + gaggledata.length + ")";
+                $("#selGaggleData").append($("<option></option>").attr("value", i.toString()).text(text));
+            }
         }
     }
 }
@@ -176,7 +203,7 @@ function broadcastFetchedData(jsonobj)
         var type = data["_type"];
         //alert(type);
         var gaggledata = null;
-        if (type == "NameList") {
+        if (type.toLowerCase() == "namelist") {
             gaggledata = new Namelist("", 0, "", null);
             gaggledata.parseJSON(data);
             if (handler.handleNameList != null) {
@@ -215,7 +242,7 @@ function broadcastFetchedData(jsonobj)
                 }
             }
         }
-        else if (type == "Cluster") {
+        else if (type.toLowerCase() == "cluster") {
             gaggledata = new Cluster("", "", null, 0, 0, null, null);
             gaggledata.parseJSON(data);
             if (gaggledata.getData() != null) {
@@ -293,8 +320,12 @@ document.addEventListener('DOMContentLoaded', function () {
   cg_util.getActiveTab(function (tab) {
     if (tab != null) {
        // get gaggle data of the currently active tab
-       var msg = new Message(MSG_FROM_POPUP, chrome.tabs, tab.id, MSG_SUBJECT_PAGEDATA, null, setDOMInfo);
-       msg.send();
+        var msg = new Message(MSG_FROM_POPUP, chrome.tabs, tab.id, MSG_SUBJECT_PAGEDATA, null, setDOMInfo);
+        msg.send();
+
+        var msg1 = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_BROADCASTDATA,
+                                           null, setDOMInfo);
+        msg1.send();
 
        //chrome.tabs.sendMessage(
        //      tab.id,

@@ -1,5 +1,6 @@
 var dataToBeProcessed = null;
 var geeseJSONString = null;  //  JSON result of calling GetGeese from the Boss
+var broadcastData = new Array();
 
 chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
     /* First, validate the message's structure */
@@ -41,13 +42,39 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                         //alert("Send data to websocket " + msg.data);
                         websocketconnection.send(msg.data);
                     }
-
-                    sendResponse(geeseJSONString);
+                    if (sendResponse != null)
+                        sendResponse(geeseJSONString);
                 }
-                else if (msg.subject == MSG_SUBJECT_CONNECTBOSS) {
-                    // Connect to Boss through websocket
-
+                else if (msg.subject == MSG_SUBJECT_BROADCASTDATA) {
+                    // Get the data broadcast from other geese
+                    //alert("Popup gets broadcast data " + sendResponse);
+                    if (sendResponse != null)  {
+                        //alert("Get broadcast data " + broadcastData);
+                        var broadcastGaggleData = new Array();
+                        for (var i = 0; i < broadcastData.length; i++) {
+                            // gaggleMicroFormat.scan returns js objects for networks and matrices, which
+                            // have to be converted to Java objects before being broadcast to the Boss.
+                            var pagedata = {};
+                            var jsonobj = JSON.parse(broadcastData[i]);
+                            pagedata.data = jsonobj["data"];
+                            var jsondata = JSON.stringify(pagedata);
+                            //alert("GaggleMicroformatParser JSON data: " + jsondata);
+                            pagedata.jsondata = jsondata;
+                            broadcastGaggleData.push(pagedata); //.setConvertToJavaOnGetData());
+                        }
+                        sendResponse(broadcastGaggleData);
+                    }
                 }
+            }
+        }
+        else if (msg.from && (msg.from == MSG_FROM_WEBSOCKET)) {
+            if (msg.subject) {
+               if (msg.subject == MSG_SUBJECT_WEBSOCKETRECEIVEDDATA)  {
+                  var gaggledata = msg.data;
+                  //alert(gaggledata);
+                  if (gaggledata != null)
+                      broadcastData.push(gaggledata);
+               }
             }
         }
     }

@@ -25,19 +25,26 @@ function parseData(result) {
             var data = result.data;
             //alert(data);
             var jsondata = JSON.parse(data);
-            //alert(jsondata);
+            //alert("JSON data: " + jsondata);
             if (jsondata['ID'] != null) {
                 websocketid = jsondata['ID'];
                 //alert("websocket id: " + websocketid);
             }
 
-            var data = jsondata['Data'];
+            var gaggledata = jsondata['Data'];
+            //alert("Data: " + gaggledata);
             if (jsondata['Action'] != null) {
                 var action = jsondata["Action"];
                 if (action == "GetGeese") {
                     //alert("Geese: " + data);
                     // Save the result JSON string to geeseJSONString to be retrieved by browser popup
                     geeseJSONString = result.data;
+                }
+                else if (action == "Broadcast") {
+                    // Other goose broadcasts data to me
+                    var msg = new Message(MSG_FROM_WEBSOCKET, chrome.runtime, null, MSG_SUBJECT_WEBSOCKETRECEIVEDDATA,
+                                                   { data: gaggledata }, null);
+                    msg.send();
                 }
             }
         }
@@ -51,12 +58,14 @@ function onWebsocketClose(event) {
     console.log('Web Socket CLOSED');
     //alert("Websocket closed with code: " + event.code + " reason: " + event.reason);
     websocketconnection = null;
+    geeseJSONString = null;
 };
 
 function onWebsocketError(event)
 {
     //alert("Web socket error: " + event.code + " reason: " + event.reason);
     websocketconnection = null;
+    geeseJSONString = null;
 }
 
 function createWebSocket(serverurl, onOpenCallback, onMessageCallback)

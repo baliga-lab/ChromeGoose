@@ -1,5 +1,6 @@
 var MSG_FROM_POPUP = "popup";
 var MSG_FROM_CONTENT = "content";
+var MSG_FROM_WEBSOCKET = "websocket";
 
 var MSG_SUBJECT_PAGEDATA = "PageData";
 var MSG_SUBJECT_HANDLER = "Handler";
@@ -7,6 +8,8 @@ var MSG_SUBJECT_STOREDATA = "StoreData";
 var MSG_SUBJECT_RETRIEVEDATA = "RetrieveData";
 var MSG_SUBJECT_GETDATABYINDEX = "GetDataByIndex";
 var MSG_SUBJECT_WEBSOCKETSEND = "SendToWebSocket";
+var MSG_SUBJECT_WEBSOCKETRECEIVEDDATA = "WebSocketReceivedData";
+var MSG_SUBJECT_BROADCASTDATA = "GetBroadcastData";
 
 function Message(from, to, targetid, subject, data, callback)
 {
