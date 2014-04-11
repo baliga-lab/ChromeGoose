@@ -1,7 +1,7 @@
 function RScriptWrapper(name, script)
 {
     try {
-        alert(name);
+        //alert(name);
         this._script = script;
         this._functions = new Array();
         this.parseScript(script);
@@ -16,8 +16,74 @@ RScriptWrapper.prototype = new handler_base();
 
 RScriptWrapper.prototype.constructor = RScriptWrapper;
 
-RScriptWrapper.prototype.submit = function() {
+RScriptWrapper.prototype.processUI = function() {
+    //alert("RScriptWrapper showing UI...");
+    $("#divScript").empty();
 
+    if (this._functions != null) {
+        //alert(this._functions);
+
+        // First we store the reference to the scriptwrapper obj
+        currentScriptToRun = this;
+
+        var rFunctions = this._functions;
+        for (var i = 0; i < rFunctions.length; i++) {
+            var funcObj = rFunctions[i];
+            var div = document.createElement("div");
+            $(div).appendTo("#divScript");
+            div.className = "scriptcomponent";
+            var accordiondiv = document.createElement("div");
+            accordiondiv.className = "parameteraccordion";
+            var parameterhtml = "<p>" + funcObj.functionName + "</p><div><ul>";
+            //alert(funcObj.parameters.length);
+            for (var j = 0; j < funcObj.parameters.length; j++) {
+                //alert(funcObj.parameters[j].paramName);
+                parameterhtml += "<li><label>" + funcObj.parameters[j].paramName + "</label>&nbsp;&nbsp;<input type='text' /><br /><input type='file' /></li>";
+            }
+            parameterhtml += "</ul><br/><input id='btnRunScript' type='button' value='Run' />&nbsp;&nbsp;<input id='btnCloseScript' type='button' value='Close' /></div>";
+            accordiondiv.innerHTML = parameterhtml;
+            $(div).prepend(accordiondiv);
+        }
+
+        $('.scriptcomponent').draggable({
+            containment: "parent",
+            helper: "original"
+        });
+
+        $('.parameteraccordion').accordion({ active: false,
+            collapsible: true,
+            heightStyle: "content"
+        });
+
+        //alert("Show script functions");
+        //$(div).attr("style", "position: absolute");
+
+        // We need to manually wireup the event because Chrome extension security mechanism
+        // forbids inline javascript
+        document.getElementById("btnCloseScript").onclick = closeScript;
+        document.getElementById("btnRunScript").onclick = runScript;
+
+        $("#divScript").attr("style", "display: block");
+
+        /*$('#divScript').dialog( {height:500, width: 600,
+                buttons: {
+                    "Submit": function() {
+
+                    },
+
+                    "Close": function() {
+                        $('#divScript').dialog('close');
+                    }
+
+                }
+              }); */
+
+
+    }
+}
+
+RScriptWrapper.prototype.handleNameList = function(namelist) {
+    this.processUI();
 }
 
 RScriptWrapper.prototype.parseScript = function(script) {

@@ -4,6 +4,7 @@
 var webHandlers = [];
 var currentPageData = [];
 var bossConnected = false;
+var currentScriptToRun = null;
 
 function getGeese(callback) {
     //var url = HTTPBOSS_ADDRESS + "?command=getGeese";
@@ -18,6 +19,8 @@ function init()
 {
     //alert("Browser action init...");
     currentPageData = new Array();
+    currentScriptToRun = null;
+    $("#divScript").empty();
 
     $("#selGaggleMenu").change(gaggleMenuItemSelected);
 
@@ -216,82 +219,89 @@ function broadcastFetchedData(jsonobj, handler)
 {
     //alert(jsonobj);
     try {
-        var jsonObj = JSON.parse(jsonobj);
-        var handlerindexstr = jsonObj["handlerindex"];
-        if (handler == null)
-            handler = webHandlers[parseInt(handlerindexstr)];
-        var data = jsonObj["data"];
-        var type = (data["_type"] != null) ? data["_type"] : data["type"];
-        //alert(type);
-        var gaggledata = null;
-        if (type.toLowerCase() == "namelist") {
-            gaggledata = new Namelist("", 0, "", null);
-            //alert(handler.getName() + " " + data);
-            gaggledata.parseJSON(data);
-            if (handler.handleNameList != null) {
-                // First pass the data to the Event page
-                console.log("Sending data to event page");
-                var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_STOREDATA,
-                                       { handler: handler.getName(), source: gaggledata }, handlerResponse);
-                msg.send();
+        if (jsonobj != null) {
+            var jsonObj = JSON.parse(jsonobj);
+            var handlerindexstr = jsonObj["handlerindex"];
+            if (handler == null)
+                handler = webHandlers[parseInt(handlerindexstr)];
+            var data = jsonObj["data"];
+            var type = (data["_type"] != null) ? data["_type"] : data["type"];
+            //alert(type);
+            var gaggledata = null;
+            if (type.toLowerCase() == "namelist") {
+                gaggledata = new Namelist("", 0, "", null);
+                //alert(handler.getName() + " " + data);
+                gaggledata.parseJSON(data);
+                if (handler.handleNameList != null) {
+                    // First pass the data to the Event page
+                    console.log("Sending data to event page");
+                    var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_STOREDATA,
+                                           { handler: handler.getName(), source: gaggledata }, handlerResponse);
+                    msg.send();
 
-                // Now we call the handler to handle data
-                handler.handleNameList(gaggledata.getData());
+                    // Now we call the handler to handle data
+                    handler.handleNameList(gaggledata.getData());
+                }
+            }
+            else if (type == "DataMatrix") {
+                gaggledata = new DataMatrix("", "", null, 0, 0, null, null, null);
+                gaggledata.parseJSON(data);
+                if (gaggledata.getData() != null) {
+                    if (handler.handleDataMatrix != null)
+                    {
+                        var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_STOREDATA,
+                                             { handler: handler.getName(), source: gaggledata }, handlerResponse);
+                        msg.send();
+                        handler.handleDataMatrix(gaggledata);
+                    }
+                    else {
+                        var namelist = gaggledata.getDataAsNameList();
+                        var newdata = new Namelist(gaggledata.getName(), gaggledata.getSize(),
+                                                   gaggledata.getSpecies(),
+                                                   namelist);
+                        //alert(namelist);
+
+                        var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_STOREDATA,
+                                             { handler: handler.getName(), source: newdata }, handlerResponse);
+                        msg.send();
+                        handler.handleNameList(namelist);
+                    }
+                }
+            }
+            else if (type.toLowerCase() == "cluster") {
+                gaggledata = new Cluster("", "", null, 0, 0, null, null);
+                gaggledata.parseJSON(data);
+                if (gaggledata.getData() != null) {
+                    if (handler.handleCluster != null)
+                    {
+                        var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_STOREDATA,
+                                             { handler: handler.getName(), source: gaggledata }, handlerResponse);
+                        msg.send();
+                        handler.handleCluster(gaggledata);
+                    }
+                    else {
+                        var namelist = gaggledata.getDataAsNameList();
+                        var newdata = new Namelist(gaggledata.getName(), gaggledata.getSize(),
+                                                   gaggledata.getSpecies(),
+                                                   namelist);
+                        //alert(namelist);
+
+                        var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_STOREDATA,
+                                             { handler: handler.getName(), source: newdata }, handlerResponse);
+                        msg.send();
+                        handler.handleNameList(namelist);
+                    }
+                }
             }
         }
-        else if (type == "DataMatrix") {
-            gaggledata = new DataMatrix("", "", null, 0, 0, null, null, null);
-            gaggledata.parseJSON(data);
-            if (gaggledata.getData() != null) {
-                if (handler.handleDataMatrix != null)
-                {
-                    var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_STOREDATA,
-                                         { handler: handler.getName(), source: gaggledata }, handlerResponse);
-                    msg.send();
-                    handler.handleDataMatrix(gaggledata);
-                }
-                else {
-                    var namelist = gaggledata.getDataAsNameList();
-                    var newdata = new Namelist(gaggledata.getName(), gaggledata.getSize(),
-                                               gaggledata.getSpecies(),
-                                               namelist);
-                    //alert(namelist);
-
-                    var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_STOREDATA,
-                                         { handler: handler.getName(), source: newdata }, handlerResponse);
-                    msg.send();
-                    handler.handleNameList(namelist);
-                }
-            }
-        }
-        else if (type.toLowerCase() == "cluster") {
-            gaggledata = new Cluster("", "", null, 0, 0, null, null);
-            gaggledata.parseJSON(data);
-            if (gaggledata.getData() != null) {
-                if (handler.handleCluster != null)
-                {
-                    var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_STOREDATA,
-                                         { handler: handler.getName(), source: gaggledata }, handlerResponse);
-                    msg.send();
-                    handler.handleCluster(gaggledata);
-                }
-                else {
-                    var namelist = gaggledata.getDataAsNameList();
-                    var newdata = new Namelist(gaggledata.getName(), gaggledata.getSize(),
-                                               gaggledata.getSpecies(),
-                                               namelist);
-                    //alert(namelist);
-
-                    var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_STOREDATA,
-                                         { handler: handler.getName(), source: newdata }, handlerResponse);
-                    msg.send();
-                    handler.handleNameList(namelist);
-                }
-            }
+        else {
+            // The handler might be a script wrapper, we need to show the UI.
+            if (handler.processUI != null)
+                handler.processUI();
         }
     }
     catch(e) {
-        alert("Failed to dispatch data " + e);
+        alert("broadcastFetchedData: Failed to broadcast data " + e);
     }
 }
 
@@ -301,7 +311,7 @@ function broadcastData()
     var target = $("#selTarget").val();
     var selecteddataindex = $("#selGaggleData").val();
     //alert(target + " " + selecteddataindex);
-    if (target != "-1" && selecteddataindex != "-1") {
+    if (target != "-1") { // && selecteddataindex != "-1") {
         var handler = webHandlers[parseInt(target)];
         //alert(handler.getName());
 
@@ -310,8 +320,12 @@ function broadcastData()
         if (handler != null) {// && data != null) {
             //alert("Fetching async data ");
             try {
-                var pagedata = currentPageData[parseInt(selecteddataindex)];
-                var source = (pagedata["source"] == null) ? pagedata.source : pagedata["source"];
+                var pagedata = null;
+                var source = null;
+                if (selecteddataindex >= 0) {
+                    pagedata = currentPageData[parseInt(selecteddataindex)];
+                    source = (pagedata["source"] == null) ? pagedata.source : pagedata["source"];
+                }
                 //alert(pagedata.jsondata + "\n\n" + source);
                 if (source == "Page") {
                     cg_util.getActiveTab(function (tab) {
@@ -323,10 +337,14 @@ function broadcastData()
                         }
                     });
                 }
-                else if (source == "Broadcast") {
+                else if (source == "Broadcast" || source == null) {
                     //alert("Send broadcast data to " + handler.getName());
-                    broadcastFetchedData(pagedata.jsondata, handler);
+                    if (pagedata != null)
+                        broadcastFetchedData(pagedata.jsondata, handler);
+                    else
+                        broadcastFetchedData(null, handler);
                 }
+
             }
             catch(e) {
                 alert(e);
@@ -371,3 +389,19 @@ document.addEventListener('DOMContentLoaded', function () {
   $("#btnBroadcast").click(broadcastData);
 
 });
+
+function runScript(event)
+{
+    //alert(event.srcElement);
+    if (currentScriptToRun != null) {
+        //alert(currentScriptToRun.getName());
+        var source = event.srcElement;
+        var parent = $(source).parent();
+    }
+    closeScript();
+}
+
+function closeScript()
+{
+    $("#divScript").attr("style", "display: none");
+}
