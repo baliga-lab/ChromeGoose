@@ -1,9 +1,10 @@
-function RScriptWrapper(name, script)
+function RScriptWrapper(name, script, datasrcelementid)
 {
     try {
         //alert(name);
         this._script = script;
         this._functions = new Array();
+        this._datasourceid = datasrcelementid;
         this.parseScript(script);
         handler_base.call(this, name, true, null, null);
     }
@@ -27,6 +28,13 @@ RScriptWrapper.prototype.processUI = function() {
         currentScriptToRun = this;
 
         var rFunctions = this._functions;
+        var datainputhtml = null;
+        if (this._datasourceid != null) {
+            datainputhtml = $("#" + this._datasourceid)[0].outerHTML;
+        }
+        if (datainputhtml == null || datainputhtml.length == 0)
+            datainputhtml = "<input type='text' />";
+        //alert(datainputhtml);
         for (var i = 0; i < rFunctions.length; i++) {
             var funcObj = rFunctions[i];
             var div = document.createElement("div");
@@ -38,7 +46,7 @@ RScriptWrapper.prototype.processUI = function() {
             //alert(funcObj.parameters.length);
             for (var j = 0; j < funcObj.parameters.length; j++) {
                 //alert(funcObj.parameters[j].paramName);
-                parameterhtml += "<li><label>" + funcObj.parameters[j].paramName + "</label>&nbsp;&nbsp;<input type='text' /><br /><input type='file' /></li>";
+                parameterhtml += "<li><label>" + funcObj.parameters[j].paramName + "</label>&nbsp;&nbsp;" + datainputhtml + "<br /><input type='file' /></li>";
             }
             parameterhtml += "</ul><br/><input id='btnRunScript' type='button' value='Run' />&nbsp;&nbsp;<input id='btnCloseScript' type='button' value='Close' /></div>";
             accordiondiv.innerHTML = parameterhtml;
@@ -50,8 +58,9 @@ RScriptWrapper.prototype.processUI = function() {
             helper: "original"
         });
 
-        $('.parameteraccordion').accordion({ active: false,
-            collapsible: true,
+        $('.parameteraccordion').accordion(
+        { //active: true,
+            //collapsible: true,
             heightStyle: "content"
         });
 

@@ -69,43 +69,12 @@ function init()
             $("#selTarget").append($("<option></option>").attr("value", i.toString()).text(webHandlers[i].getName()));
     }
 
-    // Load script workflow component
-    cg_util.doGet(GAGGLE_SERVER + "/workflow/getworkflowcomponents" , null, "json", function(data) {
-        //alert(data);
-        if (data != null) {
-            var index = 0;
-            var jsonobj = data; //JSON.parse(data);
-            do {
-                var pair = jsonobj[index.toString()];
-                if (pair == null)
-                    break;
-                //alert(pair);
-                var isscript = pair["isscript"];
-                if (isscript == "True") {
-                    var scripturl = pair["serviceurl"];
-                    //alert(scripturl.toLowerCase().indexOf(".r"));
-                    if (scripturl != null) {
-                        var script = cg_util.httpGet(scripturl);
-                        if (script != null) {
-                            //alert(script);
-                            if (scripturl.toLowerCase().indexOf(".r") >= 0) {
-                                // this is a R script
-                                var rscriptwrapper = new RScriptWrapper(pair["shortname"], script);
-                                webHandlers.push(rscriptwrapper);
-                                //alert(rscriptwrapper.getName());
-                                $("#selTarget").append($("<option></option>").attr("value", i.toString()).text(rscriptwrapper.getName()));
-                            }
-                        }
-                    }
-
-                    //alert("Downloaded script:  " + script);
-                }
-                index++;
-            }
-            while (true);
-        }
+    // Load R packages from OpenCPU
 
 
+    webhandlers.loadWorkflowComponents(function(rscriptwrapper) {
+        if (rscriptwrapper != null)
+            $("#selTarget").append($("<option></option>").attr("value", i.toString()).text(rscriptwrapper.getName()));
     });
 
     // Verify if Boss is started
@@ -140,7 +109,6 @@ function setDOMInfo(pageData) {
             var pagedataobj = JSON.parse(pageData[i].jsondata);
             var pagedata = pagedataobj["data"];
 
-
             //alert(pagedata["_name"]);
 
             //var pagedatavalue = pagedataobj["value"];
@@ -172,6 +140,9 @@ function setDOMInfo(pageData) {
                 if (gaggledata != null && gaggledata.length > 0)
                     text += " (" + gaggledata.length + ")";
                 $("#selGaggleData").append($("<option></option>").attr("value", i.toString()).text(text));
+
+                // Change the text of the "no data" option
+                $("#selGaggleData option[value=-1]").text("--- Select a data item ----");
             }
         }
     }
@@ -394,9 +365,21 @@ function runScript(event)
 {
     //alert(event.srcElement);
     if (currentScriptToRun != null) {
-        //alert(currentScriptToRun.getName());
+        console.log("Script to run: " + currentScriptToRun.getName());
         var source = event.srcElement;
-        var parent = $(source).parent();
+        var parentdiv = $(source).parent();
+        var inputul = ($(parentdiv).children())[0];
+        if (inputul != null) {
+            var parameters = new Array();
+            $(inputul).children().each(function() {
+                var sel = ($(this).children())[1];
+                console.log("Function data select value: " + $(sel).val());
+                var fileinput = ($(this).children())[3];
+                if ($(sel).val() != "-1") {
+
+                }
+            });
+        }
     }
     closeScript();
 }
