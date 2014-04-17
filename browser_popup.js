@@ -70,9 +70,12 @@ function init()
     }
 
     // Load R packages from OpenCPU
+    webhandlers.loadOpenCPU("selGaggleData", function(rscriptwrapper) {
+        if (rscriptwrapper != null)
+            $("#selTarget").append($("<option></option>").attr("value", i.toString()).text(rscriptwrapper.getName()));
+    });
 
-
-    webhandlers.loadWorkflowComponents(function(rscriptwrapper) {
+    webhandlers.loadWorkflowComponents("selGaggleData", function(rscriptwrapper) {
         if (rscriptwrapper != null)
             $("#selTarget").append($("<option></option>").attr("value", i.toString()).text(rscriptwrapper.getName()));
     });
@@ -188,7 +191,7 @@ function handlerResponse()
 
 function broadcastFetchedData(jsonobj, handler)
 {
-    //alert(jsonobj);
+    console.log("broadcastFetchedData " + jsonobj);
     try {
         if (jsonobj != null) {
             var jsonObj = JSON.parse(jsonobj);
@@ -268,11 +271,12 @@ function broadcastFetchedData(jsonobj, handler)
         else {
             // The handler might be a script wrapper, we need to show the UI.
             if (handler.processUI != null)
+                console.log("Processing script wrapper...");
                 handler.processUI();
         }
     }
     catch(e) {
-        alert("broadcastFetchedData: Failed to broadcast data " + e);
+        console.log("broadcastFetchedData: Failed to broadcast data " + e);
     }
 }
 
@@ -282,13 +286,13 @@ function broadcastData()
     var target = $("#selTarget").val();
     var selecteddataindex = $("#selGaggleData").val();
     //alert(target + " " + selecteddataindex);
-    if (target != "-1") { // && selecteddataindex != "-1") {
+    if (target != "-1") {
         var handler = webHandlers[parseInt(target)];
-        //alert(handler.getName());
+        console.log("Handler name: " + handler.getName());
 
         //var data = currentPageData[parseInt(selecteddataindex)];  //  data is not json stringified
 
-        if (handler != null) {// && data != null) {
+        if (handler != null) {
             //alert("Fetching async data ");
             try {
                 var pagedata = null;
@@ -297,11 +301,10 @@ function broadcastData()
                     pagedata = currentPageData[parseInt(selecteddataindex)];
                     source = (pagedata["source"] == null) ? pagedata.source : pagedata["source"];
                 }
-                //alert(pagedata.jsondata + "\n\n" + source);
+                console.log("Data from source: " + source);
                 if (source == "Page") {
                     cg_util.getActiveTab(function (tab) {
                         if (tab != null) {
-                            //var msg = new Message(MSG_FROM_POPUP, chrome.tabs, tab.id, MSG_SUBJECT_PAGEDATA, null, setDOMInfo);
                             var msg = new Message(MSG_FROM_POPUP, chrome.tabs, tab.id, MSG_SUBJECT_GETDATABYINDEX,
                                                    {handlerindex: target, dataindex: selecteddataindex }, broadcastFetchedData);
                             msg.send();
@@ -309,7 +312,7 @@ function broadcastData()
                     });
                 }
                 else if (source == "Broadcast" || source == null) {
-                    //alert("Send broadcast data to " + handler.getName());
+                    console.log("Send broadcast data to " + handler.getName());
                     if (pagedata != null)
                         broadcastFetchedData(pagedata.jsondata, handler);
                     else
@@ -318,7 +321,7 @@ function broadcastData()
 
             }
             catch(e) {
-                alert(e);
+                console.log("broadcastData " + e);
             }
         }
 
