@@ -31,7 +31,7 @@ RScriptWrapper.prototype.processUI = function() {
         var rFunctions = this._functions;
         console.log("processUI: # of functions: " + rFunctions.length);
         var datainputhtml = null;
-        if (this._datasourceid != null) {
+        if (this._datasourceelement != null) {
             datainputhtml =  $(this._datasourceelement)[0].outerHTML; 
             console.log("RScriptWrapper.processUI datainput html: " + datainputhtml);
         }
@@ -49,17 +49,17 @@ RScriptWrapper.prototype.processUI = function() {
             console.log(funcObj.parameters.length);
             for (var j = 0; j < funcObj.parameters.length; j++) {
                 console.log("Parameter name: " + funcObj.parameters[j].paramName);
-                parameterhtml += "<li><label>" + funcObj.parameters[j].paramName + "</label>&nbsp;&nbsp;" + datainputhtml + "<br /><input type='file' /></li>";
+                parameterhtml += "<li><label>" + funcObj.parameters[j].paramName + "</label>&nbsp;&nbsp;" + datainputhtml + "</li>";
             }
             parameterhtml += "</ul><br/><input class='btnRunScript' type='button' value='Run' />&nbsp;&nbsp;<input class='btnCloseScript' type='button' value='Close' /></div>";
             accordiondiv.innerHTML = parameterhtml;
             $(div).prepend(accordiondiv);
         }
 
-        $('.scriptcomponent').draggable({
+        /*$('.scriptcomponent').draggable({
             containment: "parent",
             helper: "original"
-        });
+        }); */
 
         $('.parameteraccordion').accordion(
         { //active: true,
@@ -69,6 +69,10 @@ RScriptWrapper.prototype.processUI = function() {
 
         // We need to manually wireup the event because Chrome extension security mechanism
         // forbids inline javascript
+        $(".selGaggleData").change(gaggleDataItemSelected);
+        $(".btnCancelTextInput").click(cancelTextInput);
+        $(".btnCancelFileInput").click(cancelFileInput);
+
         $(".btnCloseScript").each(function() {
             $(this).click(closeScript);
         });

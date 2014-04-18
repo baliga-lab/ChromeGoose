@@ -24,7 +24,7 @@ function init()
 
     $("#selGaggleMenu").change(gaggleMenuItemSelected);
 
-    $("#selGaggleData").change(gaggleDataItemSelected);
+    $(".selGaggleData").change(gaggleDataItemSelected);
     $(".btnCancelTextInput").click(cancelTextInput);
     $(".btnCancelFileInput").click(cancelFileInput);
 
@@ -74,7 +74,7 @@ function init()
     }
 
     // Load R packages from OpenCPU
-    var selGaggleDataParent = $("#selGaggleData").parent();
+    var selGaggleDataParent = $(".selGaggleData").parent();
     //alert($(selGaggleDataParent)[0].outerHTML);
     webhandlers.loadOpenCPU(selGaggleDataParent, function(rscriptwrapper) {
         if (rscriptwrapper != null)
@@ -148,10 +148,10 @@ function setDOMInfo(pageData) {
                 var gaggledata = (pagedata["_data"] != null) ? pagedata["_data"] : pagedata["gaggle-data"];
                 if (gaggledata != null && gaggledata.length > 0)
                     text += " (" + gaggledata.length + ")";
-                $("#selGaggleData").append($("<option></option>").attr("value", (i).toString()).text(text));
+                $(".selGaggleData").append($("<option></option>").attr("value", (i).toString()).text(text));
 
                 // Change the text of the "no data" option
-                $("#selGaggleData option[value=-1]").text("--- Select a data item ----");
+                $(".selGaggleData option[value=-1]").text("--- Select a data item ----");
             }
         }
     }
@@ -202,9 +202,10 @@ function gaggleDataItemSelected(event)
 {
     console.log("Gaggle data item selected "); // + $("#selGaggleMenu").val());
 
-    var source = event.srcElement;
+    var source = event.target;
     console.log("gaggleDataItemSelected: event source: " + source);
-    var selected = $("#selGaggleData").val();
+    var selected = $(source).val();
+    console.log("Selected data value: " + selected);
     if (selected == "OtherText") {
         showDataInput(source, ".divTextInput");
     }
@@ -216,15 +217,19 @@ function gaggleDataItemSelected(event)
 function cancelTextInput(event) {
     console.log("Cancel data text input"); // + $("#selGaggleMenu").val());
 
-    var source = event.srcElement;
+    var source = event.target;
     $(source).parent().hide();
+    var select = $(source).parent().find(".selGaggleData");
+    $(select).val("-1");
 }
 
 function cancelFileInput(event) {
     console.log("Cancel data text input"); // + $("#selGaggleMenu").val());
 
-    var source = event.srcElement;
+    var source = event.target;
     $(source).parent().hide();
+    var select = $(source).parent().find(".selGaggleData");
+    $(select).val("-1");
 }
 
 function handlerResponse()
@@ -327,7 +332,7 @@ function broadcastData()
 {
     //alert("Broadcasting ...");
     var target = $("#selTarget").val();
-    var selecteddataindex = $("#selGaggleData").val();
+    var selecteddataindex = $(".selGaggleData").val();
     //alert(target + " " + selecteddataindex);
     if (target != "-1") {
         var handler = webHandlers[parseInt(target)];
@@ -412,7 +417,7 @@ function runScript(event)
     //alert(event.srcElement);
     if (currentScriptToRun != null) {
         console.log("Script to run: " + currentScriptToRun.getName());
-        var source = event.srcElement;
+        var source = event.target;
         var parentdiv = $(source).parent();
         var inputul = ($(parentdiv).children())[0];
         if (inputul != null) {
