@@ -10,7 +10,7 @@
 
   "background": {
           "persistent": true,
-          "scripts": ["jquery-1.8.2.min.js", "util.js", "message.js", "websocket.js", "background.js"]
+          "scripts": ["jquery-1.11.0.min.js", "util.js", "message.js", "websocket.js", "background.js"]
       },
 
   "content_scripts": [

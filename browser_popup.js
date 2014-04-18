@@ -341,7 +341,7 @@ function broadcastData()
         //var data = currentPageData[parseInt(selecteddataindex)];  //  data is not json stringified
 
         if (handler != null) {
-            //alert("Fetching async data ");
+            console.log("broadcastData: Fetching async data ");
             try {
                 var pagedata = null;
                 var source = null;
@@ -395,16 +395,9 @@ document.addEventListener('DOMContentLoaded', function () {
   cg_util.getActiveTab(function (tab) {
     if (tab != null) {
        // get gaggle data of the currently active tab
-       //alert("Get page data...");
-        var msg = new Message(MSG_FROM_POPUP, chrome.tabs, tab.id, MSG_SUBJECT_PAGEDATA, null, setDOMInfo);
-        msg.send();
-
-       //chrome.tabs.sendMessage(
-       //      tab.id,
-       //      { from: "popup", subject: "PageData" },
-             /* ...also specifying a callback to be called
-              *    from the receiving end (content script) */
-       //      setDOMInfo);
+       console.log("Get page data...");
+       var msg = new Message(MSG_FROM_POPUP, chrome.tabs, tab.id, MSG_SUBJECT_PAGEDATA, null, setDOMInfo);
+       msg.send();
     }
   });
 
@@ -417,22 +410,50 @@ function runScript(event)
     //alert(event.srcElement);
     if (currentScriptToRun != null) {
         console.log("Script to run: " + currentScriptToRun.getName());
-        var source = event.target;
+        var parameters = {};
+        var source = event.target; // The Run button
         var parentdiv = $(source).parent();
-        var inputul = ($(parentdiv).children())[0];
-        if (inputul != null) {
-            var parameters = new Array();
-            $(inputul).children().each(function() {
-                var sel = ($(this).children())[1];
-                console.log("Function data select value: " + $(sel).val());
-                var fileinput = ($(this).children())[3];
-                if ($(sel).val() != "-1") {
-
+        $(parentdiv).find(".selGaggleData").each(function () {
+            console.log("selGaggleData: " + $(this).val());
+            var selected = $(this).val();
+            if (selected != "-1") {
+                var paramlabel = $(this).parent().parent().find("label");
+                console.log("Parameter Name: " + $(paramlabel).html());
+                if (selected == "OtherText") {
+                    var textinput = $(this).parent().find(".inputTextData");
+                    console.log("Parameter value: " + $(textinput).val());
+                    if ($(textinput).val() != null) {
+                        parameters[$(paramlabel).html()] = $(textinput).val();
+                    }
                 }
+            }
+        });
+
+        if (parameters != null) {
+            var resultdiv = ($(parentdiv).find(".divResult"))[0];
+            console.log("Result div: " + resultdiv);
+            var parafunc = $(parentdiv).parent().find("p");
+            var packageindex = $("#selTarget").val();
+            var packagename = $("#selTarget option[value=" + packageindex + "]").text();
+            console.log("Package name: " + packagename + ", Function name: " + $(parafunc).text());
+            ocpu.seturl(OPENCPU_SERVER + "/library/" + packagename + "/R");
+            console.log("Parameter JSON string: " + JSON.stringify(parameters));
+            ocpu.call($(parafunc).text(), parameters, function(session){
+                console.log("Session ID: " + session.getKey() + " session URl: " + session.getLoc());
+                session.getObject(function(data) {
+                    console.log("Function return: " + JSON.stringify(data));
+                    var result = data["message"];
+                    console.log("Result text: " + result + " result div: " + resultdiv);
+                    if (result != null) {
+                        // Open a tab and show the result
+                        $(resultdiv).show();
+                        $(resultdiv).html(result);
+                    }
+                });
             });
         }
     }
-    closeScript();
+    //closeScript();
 }
 
 function closeScript()

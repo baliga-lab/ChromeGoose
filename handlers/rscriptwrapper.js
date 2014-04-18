@@ -51,7 +51,7 @@ RScriptWrapper.prototype.processUI = function() {
                 console.log("Parameter name: " + funcObj.parameters[j].paramName);
                 parameterhtml += "<li><label>" + funcObj.parameters[j].paramName + "</label>&nbsp;&nbsp;" + datainputhtml + "</li>";
             }
-            parameterhtml += "</ul><br/><input class='btnRunScript' type='button' value='Run' />&nbsp;&nbsp;<input class='btnCloseScript' type='button' value='Close' /></div>";
+            parameterhtml += "</ul><br/><div class='divResult' style='display: none'></div><br /><input class='btnRunScript' type='button' value='Run' />&nbsp;&nbsp;<input class='btnCloseScript' type='button' value='Close' /></div>";
             accordiondiv.innerHTML = parameterhtml;
             $(div).prepend(accordiondiv);
         }
