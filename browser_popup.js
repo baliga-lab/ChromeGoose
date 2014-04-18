@@ -24,6 +24,10 @@ function init()
 
     $("#selGaggleMenu").change(gaggleMenuItemSelected);
 
+    $("#selGaggleData").change(gaggleDataItemSelected);
+    $(".btnCancelTextInput").click(cancelTextInput);
+    $(".btnCancelFileInput").click(cancelFileInput);
+
     getGeese(function (response) {
         //alert("Listening geese: " + response);
         if (response == null)
@@ -142,7 +146,7 @@ function setDOMInfo(pageData) {
                 var gaggledata = (pagedata["_data"] != null) ? pagedata["_data"] : pagedata["gaggle-data"];
                 if (gaggledata != null && gaggledata.length > 0)
                     text += " (" + gaggledata.length + ")";
-                $("#selGaggleData").append($("<option></option>").attr("value", i.toString()).text(text));
+                $("#selGaggleData").append($("<option></option>").attr("value", (i).toString()).text(text));
 
                 // Change the text of the "no data" option
                 $("#selGaggleData option[value=-1]").text("--- Select a data item ----");
@@ -150,7 +154,6 @@ function setDOMInfo(pageData) {
         }
     }
 }
-
 
 function gaggleMenuItemSelected(event) {
     console.log("Gaggle menu item selected "); // + $("#selGaggleMenu").val());
@@ -182,7 +185,45 @@ function gaggleMenuItemSelected(event) {
     }
 }
 
+function showDataInput(source, inputclass)
+{
+    var parentdiv = $(source).parent();
+    console.log("Parent div: " + parentdiv);
+    var textdiv = ($(parentdiv).find(inputclass))[0];
+    console.log(textdiv);
+    if (textdiv != null) {
+        $(textdiv).show();
+    }
+}
 
+function gaggleDataItemSelected(event)
+{
+    console.log("Gaggle data item selected "); // + $("#selGaggleMenu").val());
+
+    var source = event.srcElement;
+    console.log("gaggleDataItemSelected: event source: " + source);
+    var selected = $("#selGaggleData").val();
+    if (selected == "OtherText") {
+        showDataInput(source, ".divTextInput");
+    }
+    else if (selected == "OtherFile") {
+        showDataInput(source, ".divFileInput");
+    }
+}
+
+function cancelTextInput(event) {
+    console.log("Cancel data text input"); // + $("#selGaggleMenu").val());
+
+    var source = event.srcElement;
+    $(source).parent().hide();
+}
+
+function cancelFileInput(event) {
+    console.log("Cancel data text input"); // + $("#selGaggleMenu").val());
+
+    var source = event.srcElement;
+    $(source).parent().hide();
+}
 
 function handlerResponse()
 {

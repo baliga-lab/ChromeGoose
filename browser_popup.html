@@ -45,10 +45,20 @@
       <option value="1">Gaggle Website</option>
       <option value="1000">Send message to websocket</option>
     </select><br />
-    <label>Gaggle Data:</label>
-    <select id="selGaggleData">
-        <option value="-1">-- no data --</option>
-    </select>
+    <div>
+        <label>Gaggle Data:</label>
+        <select id="selGaggleData">
+            <option value="-1">-- no data --</option>
+            <option value="OtherText">Other data (Text)</option>
+            <option value="OtherFile">Other data (File)</option>
+        </select>
+        <div class="divTextInput" style="display:none;">
+            <input type="text" /><input class="btnCancelTextInput" type="button" value="Cancel" />
+        </div>
+        <div class="divFileInput" style="display:none;">
+            <input type="file" /><input class="btnCancelFileInput" type="button" value="Cancel" />
+        </div>
+    </div>
     <select id="selTarget">
         <!--<option value="-1">-- Select a target to broadcast data --</option> -->
     </select>
