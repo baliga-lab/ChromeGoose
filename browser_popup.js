@@ -74,7 +74,9 @@ function init()
     }
 
     // Load R packages from OpenCPU
-    webhandlers.loadOpenCPU("selGaggleData", function(rscriptwrapper) {
+    var selGaggleDataParent = $("#selGaggleData").parent();
+    //alert($(selGaggleDataParent)[0].outerHTML);
+    webhandlers.loadOpenCPU(selGaggleDataParent, function(rscriptwrapper) {
         if (rscriptwrapper != null)
             $("#selTarget").append($("<option></option>").attr("value", i.toString()).text(rscriptwrapper.getName()));
     });

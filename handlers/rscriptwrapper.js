@@ -1,14 +1,14 @@
 // A RScriptWrapper wraps a R script/package, which contains one or many
 // R functions. We parse the script to extract the functions and their parameters
 
-function RScriptWrapper(name, script, datasrcelementid)
+function RScriptWrapper(name, script, datasrcelement)
 {
     try {
         handler_base.call(this, name, true, null, null);
         this._script = script;
         this._functions = new Array();
         // datasourceid is the id of the DOM select element that contains the parsed gaggle data
-        this._datasourceid = datasrcelementid;
+        this._datasourceelement = datasrcelement;
         this.parseScript(script);
     }
     catch (e) {
@@ -32,7 +32,8 @@ RScriptWrapper.prototype.processUI = function() {
         console.log("processUI: # of functions: " + rFunctions.length);
         var datainputhtml = null;
         if (this._datasourceid != null) {
-            datainputhtml = $("#" + this._datasourceid)[0].outerHTML;
+            datainputhtml =  $(this._datasourceelement)[0].outerHTML; 
+            console.log("RScriptWrapper.processUI datainput html: " + datainputhtml);
         }
         if (datainputhtml == null || datainputhtml.length == 0)
             datainputhtml = "<input type='text' />";

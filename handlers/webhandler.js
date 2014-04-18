@@ -21,7 +21,7 @@ var webhandlers = {
 
 
     // dataelementid is the id of the DOM select element that contains the parsed gaggle data
-    loadOpenCPU: function(dataelementid, callback) {
+    loadOpenCPU: function(dataelement, callback) {
         console.log("Loading packages from OpenCPU...");
         var libraries = cg_util.httpGet(OPENCPU_SERVER + "/library/");
         console.log("Returned libraries: " + libraries);
@@ -32,7 +32,7 @@ var webhandlers = {
                 console.log("R package name: " + libname);
                 if (libname.toLowerCase().indexOf("gaggle") == 0) {
                     var robjects = cg_util.httpGet(OPENCPU_SERVER + "/library/" + libname + "/R");
-                    var rscriptwrapper = new RScriptWrapper(libname, null, dataelementid);
+                    var rscriptwrapper = new RScriptWrapper(libname, null, dataelement);
                     webHandlers.push(rscriptwrapper);
                     console.log("R Objects: " + robjects);
                     if (robjects != null) {
