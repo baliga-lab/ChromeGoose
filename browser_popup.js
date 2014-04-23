@@ -426,6 +426,14 @@ function runScript(event)
                         parameters[$(paramlabel).html()] = $(textinput).val();
                     }
                 }
+                else if (selected == "OtherFile") {
+                    var fileinput = $(this).parent().find(".inputFileData");
+                    var file = $(fileinput)[0].files[0];
+                    console.log("File parameter: " + file);
+                    if (file != null) {
+                        parameters[$(paramlabel).html()] = file;
+                    }
+                }
             }
         });
 
@@ -438,8 +446,13 @@ function runScript(event)
             console.log("Package name: " + packagename + ", Function name: " + $(parafunc).text());
             ocpu.seturl(OPENCPU_SERVER + "/library/" + packagename + "/R");
             console.log("Parameter JSON string: " + JSON.stringify(parameters));
-            ocpu.call($(parafunc).text(), parameters, function(session){
+            var req = ocpu.call($(parafunc).text(), parameters, function(session){
                 console.log("Session ID: " + session.getKey() + " session URl: " + session.getLoc());
+                var openurl = OPENCPU_SERVER + "/library/" + packagename + "/www/" + $(parafunc).text()
+                    + "_output.html?host=" + OPENCPU_SERVER + "&sessionID=" + session.getKey();
+                console.log("Open output html page: " + openurl);
+                cg_util.openNewTab(openurl);
+
                 session.getObject(function(data) {
                     console.log("Function return: " + JSON.stringify(data));
                     var result = data["message"];
@@ -450,6 +463,10 @@ function runScript(event)
                         $(resultdiv).html(result);
                     }
                 });
+            });
+
+            req.fail(function(){
+                console.log("Server error: " + req.responseText);
             });
         }
     }
