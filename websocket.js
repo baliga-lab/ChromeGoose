@@ -32,11 +32,12 @@ function parseData(result) {
             }
 
             var gaggledata = jsondata['Data'];
-            //alert("Data: " + gaggledata);
+            console.log("Received data: " + gaggledata + " with action: " + jsondata['Action']);
             if (jsondata['Action'] != null) {
                 var action = jsondata["Action"];
                 if (action == "GetGeese") {
                     //alert("Geese: " + data);
+                    // Boss returns the getGeese result
                     // Save the result JSON string to geeseJSONString to be retrieved by browser popup
                     geeseJSONString = result.data;
                 }
@@ -72,6 +73,7 @@ function createWebSocket(serverurl, onOpenCallback, onMessageCallback)
 {
     if (websocketconnection == null) {
         try {
+            console.log("Websocket server url: " + serverurl);
             websocketconnection = new WebSocket(serverurl); //, ['chat', 'super-awesome-chat']); // (BossWebSocketUrl, ['soap', 'xmpp'], connectionOpened, parseData);
             websocketconnection.onopen = onOpenCallback;
             websocketconnection.onclose = onWebsocketClose;

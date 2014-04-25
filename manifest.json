@@ -6,6 +6,9 @@
     "storage", "tabs", "http://*/*", "https://*/*"
   ],
 
+  "web_accessible_resources": ["jquery-1.11.0.min.js", "jquery-ui-1.10.4.js", "opencpu-0.4.js",
+                                "handlers/handler.js", "handlers/rscriptwrapper.js"],
+
   //"content_security_policy": "script-src 'self' https://localhost:8000 https://networks.systemsbiology.net; object-src 'self'",
 
   "background": {
@@ -16,13 +19,14 @@
   "content_scripts": [
       {
         "matches": ["http://*/*", "https://*/*"],
-        "js": ["jquery-1.11.0.min.js", "message.js", "util.js", "ufmt.js", "handlers/handler.js",
+        "js": ["jquery-1.11.0.min.js","jquery-ui-1.10.4.js", "message.js", "util.js", "ufmt.js", "handlers/handler.js",
                 "handlers/gaggleMicroformat.js",
                 "handlers/david.js", "handlers/kegg.js", "handlers/gaggleXml.js",
                 "handlers/gaggleMicroformatHandler.js",
                 "handlers/functional-enrichment.js",
                 "handlers/webhandler.js",
                 "data/gaggle_data.js", "data/namelist.js", "data/datamatrix.js", "data/cluster.js", "gaggle.js"],
+        "css" : ["jquery-ui-1.10.4.css"],
         "run_at": "document_idle"
       }
     ],

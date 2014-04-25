@@ -20,7 +20,7 @@ function init()
     //alert("Browser action init...");
     currentPageData = new Array();
     currentScriptToRun = null;
-    $("#divScript").empty();
+    //$("#divScript").empty();
 
     $("#selGaggleMenu").change(gaggleMenuItemSelected);
 
@@ -37,7 +37,7 @@ function init()
                var jsonobj = JSON.parse(response);
                var geesestring = jsonobj["Data"];
                var socketid = jsonobj["ID"];
-               //alert(socketid);
+               console.log("web socket ID: " + socketid);
                bossConnected = (socketid != null && socketid.length > 0) ? true : false;
                if (geesestring != null) {
                    var splitted = geesestring.split(";;;");
@@ -404,76 +404,3 @@ document.addEventListener('DOMContentLoaded', function () {
   $("#btnBroadcast").click(broadcastData);
 
 });
-
-function runScript(event)
-{
-    //alert(event.srcElement);
-    if (currentScriptToRun != null) {
-        console.log("Script to run: " + currentScriptToRun.getName());
-        var parameters = {};
-        var source = event.target; // The Run button
-        var parentdiv = $(source).parent();
-        $(parentdiv).find(".selGaggleData").each(function () {
-            console.log("selGaggleData: " + $(this).val());
-            var selected = $(this).val();
-            if (selected != "-1") {
-                var paramlabel = $(this).parent().parent().find("label");
-                console.log("Parameter Name: " + $(paramlabel).html());
-                if (selected == "OtherText") {
-                    var textinput = $(this).parent().find(".inputTextData");
-                    console.log("Parameter value: " + $(textinput).val());
-                    if ($(textinput).val() != null) {
-                        parameters[$(paramlabel).html()] = $(textinput).val();
-                    }
-                }
-                else if (selected == "OtherFile") {
-                    var fileinput = $(this).parent().find(".inputFileData");
-                    var file = $(fileinput)[0].files[0];
-                    console.log("File parameter: " + file);
-                    if (file != null) {
-                        parameters[$(paramlabel).html()] = file;
-                    }
-                }
-            }
-        });
-
-        if (parameters != null) {
-            var resultdiv = ($(parentdiv).find(".divResult"))[0];
-            console.log("Result div: " + resultdiv);
-            var parafunc = $(parentdiv).parent().find("p");
-            var packageindex = $("#selTarget").val();
-            var packagename = $("#selTarget option[value=" + packageindex + "]").text();
-            console.log("Package name: " + packagename + ", Function name: " + $(parafunc).text());
-            ocpu.seturl(OPENCPU_SERVER + "/library/" + packagename + "/R");
-            console.log("Parameter JSON string: " + JSON.stringify(parameters));
-            var req = ocpu.call($(parafunc).text(), parameters, function(session){
-                console.log("Session ID: " + session.getKey() + " session URl: " + session.getLoc());
-                var openurl = OPENCPU_SERVER + "/library/" + packagename + "/www/" + $(parafunc).text()
-                    + "_output.html?host=" + OPENCPU_SERVER + "&sessionID=" + session.getKey();
-                console.log("Open output html page: " + openurl);
-                cg_util.openNewTab(openurl);
-
-                session.getObject(function(data) {
-                    console.log("Function return: " + JSON.stringify(data));
-                    var result = data["message"];
-                    console.log("Result text: " + result + " result div: " + resultdiv);
-                    if (result != null) {
-                        // Open a tab and show the result
-                        $(resultdiv).show();
-                        $(resultdiv).html(result);
-                    }
-                });
-            });
-
-            req.fail(function(){
-                console.log("Server error: " + req.responseText);
-            });
-        }
-    }
-    //closeScript();
-}
-
-function closeScript()
-{
-    $("#divScript").attr("style", "display: none");
-}

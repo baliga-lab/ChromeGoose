@@ -113,6 +113,32 @@ openNewTab: function(url) {
     chrome.tabs.create({ url: newURL });
 },
 
+injectJavascript: function(scripturl, callback) {
+    if (scripturl == null)
+        return;
+
+    console.log("Injecting " + scripturl + " to page...");
+    var s = document.createElement('script');
+    s.src = chrome.extension.getURL(scripturl);
+    s.onload = function() {
+        if (callback != null) {
+            console.log("Call callback function...");
+            callback();
+        }
+    };
+    (document.head||document.documentElement).appendChild(s);
+},
+
+injectCode: function(code, callback) {
+    console.log("Injecting code: " + code);
+    if (code != null) {
+        var script = document.createElement('script');
+        script.textContent = code;
+        (document.head||document.documentElement).appendChild(script);
+        if (callback != null)
+            callback();
+    }
+},
 
 /**
  * strip off leading and trailing whitespace from a string

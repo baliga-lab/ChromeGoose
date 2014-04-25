@@ -10,10 +10,12 @@ var MSG_SUBJECT_GETDATABYINDEX = "GetDataByIndex";
 var MSG_SUBJECT_WEBSOCKETSEND = "SendToWebSocket";
 var MSG_SUBJECT_WEBSOCKETRECEIVEDDATA = "WebSocketReceivedData";
 var MSG_SUBJECT_BROADCASTDATA = "GetBroadcastData";
+var MSG_SUBJECT_INSERTRSCRIPTDATAHTML = "InsertRScriptDataHTML";
+var MSG_SUBJECT_RSCRIPTEVENT = "RScriptEvent";
 
 function Message(from, to, targetid, subject, data, callback)
 {
-    //alert("Message from " + from + " Subject: " + subject + " targetid: " + targetid);
+    console.log("Message from " + from + " Subject: " + subject + " targetid: " + targetid + " data: " + data);
     this._from = from;
     this._to = to;
     this._targetid = targetid;
@@ -23,7 +25,7 @@ function Message(from, to, targetid, subject, data, callback)
 }
 
 Message.prototype.send = function() {
-    //alert(this._callback);
+    console.log("Sending message...");
     if (this._to != null) {
         if (this._targetid != null) {
             try {

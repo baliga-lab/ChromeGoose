@@ -4,22 +4,35 @@ var broadcastData = new Array();
 
 chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
     /* First, validate the message's structure */
-    console.log("Event page event received: " + msg.from + " " + msg.subject + " " + MSG_FROM_CONTENT);
+    //alert("Event page event received: " + msg.from + " " + msg.subject);
     try {
         if (msg.from && (msg.from == MSG_FROM_CONTENT)) {
-             if (msg.subject && (msg.subject == MSG_SUBJECT_RETRIEVEDATA)) {
-                console.log("Received retrieval request from content script " + dataToBeProcessed);
-                var handlerdata = JSON.parse(msg.data);
-                var handler = handlerdata["handler"];
-                var datatosend = null;
-                if (dataToBeProcessed != null) {
-                    var jsondata = JSON.parse(dataToBeProcessed);
-                    var datahandler = jsondata["handler"];
-                    if (datahandler == handler)
-                       datatosend = dataToBeProcessed;
+             if (msg.subject) {
+                if (msg.subject == MSG_SUBJECT_RETRIEVEDATA) {
+                    console.log("Received retrieval request from content script " + dataToBeProcessed);
+                    var handlerdata = JSON.parse(msg.data);
+                    var handler = handlerdata["handler"];
+                    var datatosend = null;
+                    if (dataToBeProcessed != null) {
+                        var jsondata = JSON.parse(dataToBeProcessed);
+                        var datahandler = jsondata["handler"];
+                        if (datahandler == handler)
+                           datatosend = dataToBeProcessed;
+                    }
+                    if (sendResponse != null)
+                        sendResponse(datatosend);
                 }
-                if (sendResponse != null)
-                    sendResponse(datatosend);
+                else if (msg.subject == MSG_SUBJECT_RSCRIPTEVENT) {
+                    console.log("Received RScriptEvent from content script: " + msg.data);
+                    var data = JSON.parse(msg.data);
+                    if (data != null) {
+                        var url = data['outputurl'];
+                        console.log("Open url for RScript: " + url);
+                        cg_util.openNewTab(url);
+                    }
+                    if (sendResponse != null)
+                        sendResponse();
+                }
              }
 
         }
