@@ -63,20 +63,18 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                     //alert("Popup gets broadcast data " + sendResponse);
                     if (sendResponse != null)  {
                         //alert("Get broadcast data " + broadcastData);
-                        var broadcastGaggleData = new Array();
-                        for (var i = 0; i < broadcastData.length; i++) {
-                            // gaggleMicroFormat.scan returns js objects for networks and matrices, which
-                            // have to be converted to Java objects before being broadcast to the Boss.
-                            var pagedata = {};
-                            var jsonobj = JSON.parse(broadcastData[i]);
-                            pagedata.data = jsonobj["data"];
-                            pagedata.source = "Broadcast";
-                            var jsondata = JSON.stringify(pagedata);
+                        //var broadcastGaggleData = new Array();
+                        //for (var i = 0; i < broadcastData.length; i++) {
+                            //var pagedata = {};
+                            //var jsonobj = JSON.parse(broadcastData[i]);
+                            //pagedata.data = jsonobj["data"];
+                            //pagedata.source = "Broadcast";
+                            //var jsondata = JSON.stringify(pagedata);
                             //alert("GaggleMicroformatParser JSON data: " + jsondata + " From: " + pagedata.source);
-                            pagedata.jsondata = jsondata;
-                            broadcastGaggleData.push(pagedata); //.setConvertToJavaOnGetData());
-                        }
-                        sendResponse(broadcastGaggleData);
+                            //pagedata.jsondata = jsondata;
+                            //broadcastGaggleData.push(pagedata); //.setConvertToJavaOnGetData());
+                        //}
+                        sendResponse(broadcastData);
                     }
                 }
             }
@@ -86,8 +84,17 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                if (msg.subject == MSG_SUBJECT_WEBSOCKETRECEIVEDDATA)  {
                   var gaggledata = msg.data;
                   //alert(gaggledata);
-                  if (gaggledata != null)
-                      broadcastData.push(gaggledata);
+                  if (gaggledata != null) {
+                      var broadcastdata = {};
+                      var jsonobj = JSON.parse(gaggledata);
+                      broadcastdata.data = jsonobj["data"];
+                      broadcastdata.source = "Broadcast";
+                      broadcastdata.guid = cg_util.generateUUID();
+                      var jsondata = JSON.stringify(pagedata);
+                      //alert("GaggleMicroformatParser JSON data: " + jsondata + " From: " + pagedata.source);
+                      broadcastdata.jsondata = jsondata;
+                      broadcastData.push(broadcastdata);
+                  }
                }
             }
         }

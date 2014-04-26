@@ -140,6 +140,35 @@ injectCode: function(code, callback) {
     }
 },
 
+
+generateUUID: function() {
+    var d = new Date().getTime();
+    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = (d + Math.random()*16)%16 | 0;
+        d = Math.floor(d/16);
+        return (c=='x' ? r : (r&0x7|0x8)).toString(16);
+    });
+    return uuid;
+},
+
+findDataByGuid: function(dataarray, guid) {
+    console.log("Searching data by GUID " + guid);
+    if (dataarray == null || guid == null)
+        return null;
+
+    for (var i = 0; i < dataarray.length; i++) {
+        var data = dataarray[i];
+        if (data != null && data.jsondata != null) {
+            var pagedataobj = JSON.parse(data.jsondata);
+            var dataguid = pagedataobj["guid"];
+            if (guid == dataguid) {
+                return data;
+            }
+        }
+    }
+    return null;
+},
+
 /**
  * strip off leading and trailing whitespace from a string
  */

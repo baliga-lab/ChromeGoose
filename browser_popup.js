@@ -117,6 +117,8 @@ function setDOMInfo(pageData) {
             currentPageData.push(pageData[i]);
             var pagedataobj = JSON.parse(pageData[i].jsondata);
             var pagedata = pagedataobj["data"];
+            var guid = pagedataobj["guid"];
+            console.log("Page data GUID: " + guid);
 
             //alert(pagedata["_name"]);
 
@@ -148,7 +150,7 @@ function setDOMInfo(pageData) {
                 var gaggledata = (pagedata["_data"] != null) ? pagedata["_data"] : pagedata["gaggle-data"];
                 if (gaggledata != null && gaggledata.length > 0)
                     text += " (" + gaggledata.length + ")";
-                $(".selGaggleData").append($("<option></option>").attr("value", (i).toString()).text(text));
+                $(".selGaggleData").append($("<option></option>").attr("value", guid).text(text));  //(i).toString()
 
                 // Change the text of the "no data" option
                 $(".selGaggleData option[value=-1]").text("--- Select a data item ----");
@@ -333,7 +335,7 @@ function broadcastData()
     //alert("Broadcasting ...");
     var target = $("#selTarget").val();
     var selecteddataindex = $(".selGaggleData").val();
-    //alert(target + " " + selecteddataindex);
+    console.log("BroadcastData: " + target + " " + selecteddataindex);
     if (target != "-1") {
         var handler = webHandlers[parseInt(target)];
         console.log("Handler name: " + handler.getName());
@@ -345,10 +347,13 @@ function broadcastData()
             try {
                 var pagedata = null;
                 var source = null;
-                if (selecteddataindex >= 0) {
-                    pagedata = currentPageData[parseInt(selecteddataindex)];
+                //if (selecteddataindex >= 0) {
+                //    pagedata = currentPageData[parseInt(selecteddataindex)];
+                //    source = (pagedata["source"] == null) ? pagedata.source : pagedata["source"];
+                //}
+                pagedata = cg_util.findDataByGuid(currentPageData, selecteddataindex);
+                if (pagedata != null)
                     source = (pagedata["source"] == null) ? pagedata.source : pagedata["source"];
-                }
                 console.log("Data from source: " + source);
                 if (source == "Page") {
                     cg_util.getActiveTab(function (tab) {
@@ -388,10 +393,12 @@ function broadcastData()
 document.addEventListener('DOMContentLoaded', function () {
   init();
 
+  // Get data broadcast to me from other geese
   var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_BROADCASTDATA,
                                                  null, setDOMInfo);
   msg.send();
 
+  // Get data from the gaggled page
   cg_util.getActiveTab(function (tab) {
     if (tab != null) {
        // get gaggle data of the currently active tab

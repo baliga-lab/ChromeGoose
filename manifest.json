@@ -19,7 +19,7 @@
   "content_scripts": [
       {
         "matches": ["http://*/*", "https://*/*"],
-        "js": ["jquery-1.11.0.min.js","jquery-ui-1.10.4.js", "message.js", "util.js", "ufmt.js", "handlers/handler.js",
+        "js": ["jquery-1.11.0.min.js","jquery-ui-1.10.4.js", "opencpu-0.4.js", "message.js", "util.js", "ufmt.js", "handlers/handler.js",
                 "handlers/gaggleMicroformat.js",
                 "handlers/david.js", "handlers/kegg.js", "handlers/gaggleXml.js",
                 "handlers/gaggleMicroformatHandler.js",

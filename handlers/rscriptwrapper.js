@@ -61,6 +61,17 @@ RScriptWrapper.prototype.processUI = function() {
                 if (tab != null) {
                     console.log("RScriptWrapper injecting html for " + myname);
                     try {
+                        // First tell the background page to send the broadcast data to the content page
+                        /*var msg1 = new Message(MSG_FROM_POPUP, chrome.tabs, tab.id, MSG_SUBJECT_INSERTBROADCASTDATA,
+                                         {html: resulthtml, tabid: tab.id.toString(), packagename: myname,
+                                          opencpuurl: OPENCPU_SERVER },
+                                         function(response) {
+                                              console.log("Post injecting processing...");
+
+                                         });
+                        msg1.send(); */
+
+                        // Send message to the content page to inject the code and pop up the dialogbox
                         var msg = new Message(MSG_FROM_POPUP, chrome.tabs, tab.id, MSG_SUBJECT_INSERTRSCRIPTDATAHTML,
                                           {html: resulthtml, tabid: tab.id.toString(), packagename: myname,
                                            opencpuurl: OPENCPU_SERVER },
@@ -266,49 +277,31 @@ function runScript(event)
                 else if (selected == "OtherFile") {
                     var fileinput = $(this).parent().find(".inputFileData");
                     var file = $(fileinput)[0].files[0];
+
                     console.log("File parameter: " + file);
                     if (file != null) {
                         parameters[$(paramlabel).html()] = file;
                     }
                 }
+                else {
+                    // User selected a data item (either from the gaggled web page or received from broadcast)
+                    parameters[$(paramlabel).html()] = selected;
+                }
             }
         });
 
         if (parameters != null) {
+            // send parameters to the content page, which will run the scripts
+            var packagename = currentScriptToRun.getName();
             var resultdiv = ($(parentdiv).find(".divResult"))[0];
             console.log("Result div: " + resultdiv);
             var parafunc = $(parentdiv).prev();
-            var packageindex = $("#selTarget").val();
-            var packagename = currentScriptToRun.getName();
-            console.log("Package name: " + packagename + ", Function name: " + $(parafunc).text());
-            ocpu.seturl(opencpuserver + "/library/" + packagename + "/R");
-            console.log("Parameter JSON string: " + JSON.stringify(parameters));
-            var req = ocpu.call($(parafunc).text(), parameters, function(session){
-                console.log("Session ID: " + session.getKey() + " session URl: " + session.getLoc());
-                var openurl = opencpuserver + "/library/" + packagename + "/www/" + $(parafunc).text()
-                    + "_output.html?host=" + opencpuserver + "&sessionID=" + session.getKey();
-                console.log("Open output html page: " + openurl);
-
-                // Pass an event including the open url to the extension
-                var event = new CustomEvent('RScriptWrapperEvent', {detail: {outputurl : openurl}, bubbles: true, cancelable: false});
-                document.dispatchEvent(event);
-
-
-                session.getObject(function(data) {
-                    console.log("Function return: " + JSON.stringify(data));
-                    var result = data["message"];
-                    console.log("Result text: " + result + " result div: " + resultdiv);
-                    if (result != null) {
-                        // Open a tab and show the result
-                        $(resultdiv).show();
-                        $(resultdiv).html(result);
-                    }
-                });
-            });
-
-            req.fail(function(){
-                console.log("Server error: " + req.responseText);
-            });
+            var funcname = $(parafunc).text();
+            console.log("Package name: " + packagename + " function name: " + funcname);
+            var event = new CustomEvent('RScriptWrapperEvent', {detail: {packageName: packagename,
+                                            functionName: funcname,  scriptParameters : parameters},
+                                            bubbles: true, cancelable: false});
+            document.dispatchEvent(event);
         }
     }
     //closeScript();

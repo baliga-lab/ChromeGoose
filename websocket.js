@@ -42,7 +42,7 @@ function parseData(result) {
                     geeseJSONString = result.data;
                 }
                 else if (action == "Broadcast") {
-                    // Other goose broadcasts data to me
+                    // Other goose broadcasts data to me, pass the data to the background page
                     var msg = new Message(MSG_FROM_WEBSOCKET, chrome.runtime, null, MSG_SUBJECT_WEBSOCKETRECEIVEDDATA,
                                                    { data: gaggledata }, null);
                     msg.send();

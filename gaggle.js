@@ -1,5 +1,6 @@
 var pageGaggleData = [];
 var webHandlers = null;
+var receivedData = null;
 
 function init()
 {
@@ -19,8 +20,66 @@ function init()
                 alert("Failed to send message to background page: " + e);
             }
         }
+        else {
+            receivedData = e.detail;
+            //alert("Received parameters from page: " + receivedParameters);
+            // Now we get broadcast data from the background page
+            // Get data broadcast to me from other geese
+            var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_BROADCASTDATA,
+                                  null, execRScript);
+            msg.send();
+        }
     });
 }
+
+function execRScript(broadcastData) {
+    var parameters = receivedData["scriptParameters"];
+    for (var k in parameters) {
+        if (parameters.hasOwnProperty(k)) {
+           var p = parameters[k];
+           var data = cg_util.findDataByGuid(broadcastData, p);
+           if (data == null)
+               data = cg_util.findDataByGuid(pageGaggleData ,p);
+           if (data != null)
+               parameters[k] = data;
+        }
+
+    }
+    var funcname = receivedData["functionName"];
+    var packagename = receivedData["packageName"];
+    console.log("Package name: " + packagename + ", Function name: " + funcname);
+    ocpu.seturl(OPENCPU_SERVER + "/library/" + packagename + "/R");
+    console.log("Parameter JSON string: " + JSON.stringify(parameters));
+    var req = ocpu.call(funcname, parameters, function(session){
+        console.log("Session ID: " + session.getKey() + " session URl: " + session.getLoc());
+        var openurl = OPENCPU_SERVER + "/library/" + packagename + "/www/" + funcname
+            + "_output.html?host=" + OPENCPU_SERVER + "&sessionID=" + session.getKey();
+        console.log("Open output html page: " + openurl);
+
+        // Pass an event including the open url to the extension
+        var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_RSCRIPTEVENT,
+                              {outputurl: openurl}, function() {
+                              });
+        msg.send();
+
+
+        /*session.getObject(function(data) {
+            console.log("Function return: " + JSON.stringify(data));
+            var result = data["message"];
+            console.log("Result text: " + result + " result div: " + resultdiv);
+            if (result != null) {
+                // Open a tab and show the result
+                $(resultdiv).show();
+                $(resultdiv).html(result);
+            }
+        }); */
+    });
+
+    req.fail(function(){
+        console.log("Server error: " + req.responseText);
+    });
+}
+
 
 function getPageData()
 {
@@ -75,15 +134,18 @@ chrome.runtime.onMessage.addListener(function(msg, sender, response) {
                     var jsonobj = JSON.parse(msg.data);
                     var handlerindexstr = jsonobj['handlerindex'];
                     var dataindex = jsonobj['dataindex'];
-                    //alert(handlerindexstr + " " + dataindex);
-                    var originaldata = pageGaggleData[parseInt(dataindex)].data;
-                    //alert(originaldata);
-                    //alert(originaldata.getData);
+                    console.log(handlerindexstr + " " + dataindex);
+                    var originaldata = cg_util.findDataByGuid(pageGaggleData, dataindex); //pageGaggleData[parseInt(dataindex)].data;
+                    console.log(originaldata);
+                    //console.log(originaldata.getData);
 
                     // Call the lazy reader
-                    var fetcheddata = originaldata.getData();
-                    //alert(fetcheddata);
-                    originaldata.setData(fetcheddata);
+                    if (originaldata != null && originaldata.data != null) {
+                        originaldata = originaldata.data;
+                        var fetcheddata = originaldata.getData();
+                        //alert(fetcheddata);
+                        originaldata.setData(fetcheddata);
+                    }
                     var responseobj = { handlerindex: handlerindexstr, data: originaldata };
                     if (response != null)
                         try {
