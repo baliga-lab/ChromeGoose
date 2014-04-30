@@ -12,6 +12,10 @@ var MSG_SUBJECT_WEBSOCKETRECEIVEDDATA = "WebSocketReceivedData";
 var MSG_SUBJECT_BROADCASTDATA = "GetBroadcastData";
 var MSG_SUBJECT_INSERTRSCRIPTDATAHTML = "InsertRScriptDataHTML";
 var MSG_SUBJECT_RSCRIPTEVENT = "RScriptEvent";
+var MSG_SUBJECT_PIPE2GETALLTABS = "PIPE2GetAllTabs";
+var MSG_SUBJECT_INSERTPIPE2SEARCHHANDLE = "InsertPIPE2SearchHandle";
+var MSG_SUBJECT_PIPE2DATA = "PIPE2DATA";
+var MSG_SUBJECT_PIPE2SEARCHRESULT = "PIPE2SearchResult";
 
 function Message(from, to, targetid, subject, data, callback)
 {
@@ -37,7 +41,7 @@ Message.prototype.send = function() {
                      this._callback);
             }
             catch (e) {
-                alert(e);
+                console.log("Failed to send message to tab: " + e);
             }
         }
         else {
@@ -50,7 +54,7 @@ Message.prototype.send = function() {
                      this._callback);
                 }
                 catch (e) {
-                    alert(e);
+                    console.log("Failed to send message to runtime: " + e);
                 }
         }
     }

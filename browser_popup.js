@@ -90,17 +90,6 @@ function init()
     //cg_util.bossStarted(function (bossConnected) {
 
     //});
-
-    /*try {
-        alert(websocketconnection);
-        if (websocketconnection == null) {
-            alert("Browser action opens websocket");
-            createWebSocket(BossWebSocketUrl, webSocketOpenCallback, parseData);
-        }
-    }
-    catch(e) {
-        alert(e);
-    } */
 }
 
 function setDOMInfo(pageData) {
@@ -178,7 +167,7 @@ function gaggleMenuItemSelected(event) {
     }
     else if (selected == "1") {
         // Open the Gaggle Website
-        cg_util.openNewTab(GAGGLE_HOME);
+        cg_util.openNewTab(GAGGLE_HOME, null);
     }
     else if (selected == "1000") {
         // DEBUG send data through the websocket
@@ -250,7 +239,7 @@ function broadcastFetchedData(jsonobj, handler)
                 handler = webHandlers[parseInt(handlerindexstr)];
             var data = jsonObj["data"];
             var type = (data["_type"] != null) ? data["_type"] : data["type"];
-            //alert(type);
+            console.log("Data type: " + type);
             var gaggledata = null;
             if (type.toLowerCase() == "namelist") {
                 gaggledata = new Namelist("", 0, "", null);
@@ -264,7 +253,7 @@ function broadcastFetchedData(jsonobj, handler)
                     msg.send();
 
                     // Now we call the handler to handle data
-                    handler.handleNameList(gaggledata.getData());
+                    handler.handleNameList(gaggledata); //.getData());
                 }
             }
             else if (type == "DataMatrix") {

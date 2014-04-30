@@ -96,7 +96,6 @@ checkHandlerData: function (handler, processDataFunc) {
     }
 },
 
-
 getActiveTab: function(callback) {
     chrome.tabs.query({
           active: true,
@@ -108,9 +107,12 @@ getActiveTab: function(callback) {
       });
 },
 
-openNewTab: function(url) {
+openNewTab: function(url, callback) {
     var newURL = url;
-    chrome.tabs.create({ url: newURL });
+    chrome.tabs.create({ url: newURL }, function(tab) {
+        if (callback != null)
+            callback(tab);
+    });
 },
 
 injectJavascript: function(scripturl, callback) {

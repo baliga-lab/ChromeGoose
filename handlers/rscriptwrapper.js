@@ -12,7 +12,7 @@ function RScriptWrapper(name, script, datasrcelement)
         this.parseScript(script);
     }
     catch (e) {
-        alert(e);
+        console.log("Failed to initialize RScriptWrapper: " + e);
     }
 }
 

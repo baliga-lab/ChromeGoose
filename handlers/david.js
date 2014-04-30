@@ -37,7 +37,7 @@ David.prototype.scanPage = function ()
         }
     } */
 
-}
+};
 
 David.prototype.processData = function (jsondata) {
     if (jsondata != null) {
@@ -70,7 +70,7 @@ David.prototype.processData = function (jsondata) {
             }
         }
     }
-}
+};
 
 /**
  * check the given doc to see if we can scrape it
@@ -82,7 +82,7 @@ David.prototype.recognize = function(doc) {
 	}
 	else
 		return false;
-}
+};
 
 
 /**
@@ -92,7 +92,7 @@ David.prototype.getPageData = function(doc) {
 }
 
 /**
- * takes a species and a Java Array of names
+ * takes a species and a Java Array of names,
  */
 David.prototype.handleNameList = function(namelist) {
 
@@ -111,6 +111,7 @@ David.prototype.handleNameList = function(namelist) {
 
 	if (element)
 	{
+	    // Page already exists, we retrieve data from the background page, and call processData
 		console.log("Retrieving data from event page...");
         var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_RETRIEVEDATA,
                               null, this.processData);
@@ -118,9 +119,10 @@ David.prototype.handleNameList = function(namelist) {
 	}
 	else {
 		// open url in a new tab
-		chrome.tabs.create({ url: davidurl });
+		// And then scanPage will be called, which retrieves data from the background page, and calls processData
+		chrome.tabs.create({ url: davidurl }, null);
 	}
-}
+};
 
 
 

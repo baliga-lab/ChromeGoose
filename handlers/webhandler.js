@@ -2,18 +2,18 @@ var webhandlers = {
 
     loadHandlers: function()
     {
-       //alert("Loading handlers...");
+       console.log("Loading handlers...");
        try {
            var handlers = new Array();
            handlers[0] = new gaggleMicroformatPlaceHolder();
-           handlers[1] = new David();
-           handlers[2] = new KEGG();
-           handlers[3] = new gaggleXml();
-           handlers[4] = new GaggleMicroformatHandler();
-           //handlers[5] = new FE();
+           handlers[1] = new gaggleXml();
+           handlers[2] = new GaggleMicroformatHandler();
+           handlers[3] = new David();
+           handlers[4] = new KEGG();
+           handlers[5] = new Pipe2Goose();
        }
        catch (e) {
-           alert(e);
+           console.log("Failed to load handler: " + e);
        }
 
        return handlers;

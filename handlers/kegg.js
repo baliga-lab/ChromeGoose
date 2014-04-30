@@ -20,8 +20,16 @@ KEGG.prototype.constructor = KEGG;
     });
 } */
 
-KEGG.handleNameList = function(species, names) {
+KEGG.handleNameList = function(namelist) {
 	// construct a query string out of the name list
+	console.log("KEGG handle namelist: " + namelist);
+	if (namelist == null)
+	    return;
+
+	var species = namelist.getSpecies();
+	var names = namelist.getData();
+	console.log("Species: " + species + " Names: " + names);
+
 	var queryString = "";
 	if (names.length > 0) {
 		queryString += names[0];
