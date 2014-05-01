@@ -32,13 +32,13 @@ Pipe2Goose.prototype.recognize = function(doc) {
 	//if (pageScope && pageScope.pipe2GaggleDataForFiregoose)
 	//	return true;
 
-}
+};
 
 
 Pipe2Goose.prototype.show = function() {
 	//var newTab = getBrowser().addTab(FG_pipe2Goose.url);
 	//getBrowser().selectedTab = newTab;
-}
+};
 
 Pipe2Goose.prototype.scanPage = function ()
 {
@@ -64,14 +64,16 @@ Pipe2Goose.prototype.processData = function (jsondata) {
                     this.species = namelist.getSpecies();
                     this.names = namelist.getData();
 
+                    // Hook up the PIPE2SearchResultEvent. If PIPE2 goose is found by pipe2SearchWithTimer(see next),
+                    // send data to the page
                     document.addEventListener("PIPE2SearchResultEvent", function(e) {
                                                 var found = e.detail.pipe2found;
-                                                var tabid = e.detail.tabid;
-                                                console.log("PIPE2 Search result: " + tabid + " " + found);
+                                                //var tabid = e.detail.tabid;
+                                                console.log("PIPE2 Search result: " + found);
 
                                                 if (found) {
                                                    // Now we pass the data to the injected code
-                                                   var event = new CustomEvent('GaggleDataFromExtension',
+                                                   var event = new CustomEvent('PIPE2DataEvent',
                                                                                {detail:
                                                                                    {dataspecies: species,
                                                                                    datanames: names},
@@ -81,23 +83,18 @@ Pipe2Goose.prototype.processData = function (jsondata) {
                                                 }
                     });
 
-                    // Now we inject the code to the page
-                    cg_util.injectCode("var mytabid=0;", function () {
-                        cg_util.injectJavascript("message.js", function() {
-                            cg_util.injectJavascript("util.js", function() {
-                                cg_util.injectJavascript("handlers/pipe2SearchHandle.js", function () {
-                                    cg_util.injectCode("pipe2SearchWithTimer();", null);
-                                });
-                            });
-                        });
+                    // Now we inject the code to the page. The code hooks up the PIPE2DataEvent.
+                    // When received data, it calls goose.handleNamelist
+                    cg_util.injectJavascript("handlers/pipe2SearchHandle.js", function() {
+                        pipe2SearchWithTimer();
                     });
-
 
                 }
                 catch (e) {
                     console.log("PIPE2 failed to process data " + e);
                 }
             }
+            jsondata = null;
         }
     }
 };
@@ -126,7 +123,7 @@ Pipe2Goose.prototype.getPageData = function(doc) {
 			return null;
 		}
 	}
-}
+};
 
 /*function Pipe2_HandleNameList(species, names)
 {
@@ -213,42 +210,119 @@ Pipe2Goose.prototype.handleNameList = function(namelist) {
         return;
     var names = namelist.getData();
     var species = namelist.getSpecies();
-    var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_PIPE2DATA,
-                          {pipe2species: species, pipe2names: names, pipe2url: this._pageUrl},
-                          function(){
-                                // Send message to background page to search all the tabs for PIPE2 pages
-                                console.log("Send message to get all tabs");
-                                var msg1 = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_PIPE2GETALLTABS,
-                                                        null,
-                                                        function() {
-                                                            chrome.tabs.getAllInWindow(null,
-                                                            function(tabs){
-                                                               console.log("Received tabs " + tabs);
-                                                               // Inject the javascript code that handles namelist
-                                                               for (var i = 0; i < tabs.length; i++) {
-                                                                   var tab = tabs[i];
-                                                                   console.log("Insert script to " + tab.id);
-                                                                   var msg2 = new Message(MSG_FROM_POPUP, chrome.tabs,
-                                                                                          tab.id,
-                                                                                          MSG_SUBJECT_INSERTPIPE2SEARCHHANDLE,
-                                                                                         {targetScript: "handlers/pipe2SearchHandle.js", tabid: tab.id},
-                                                                                         null);
-                                                                   msg2.send();
-                                                               }
-                                                            });
-                                                        });
-                                msg1.send();
+    //var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_PIPE2DATA,
+    //                      {pipe2species: species, pipe2names: names, pipe2url: this._pageUrl},
+    //                      function(){
+    // Send message to background page to search all the tabs for PIPE2 pages
+    console.log("Send message to get all tabs");
+
+    chrome.tabs.getAllInWindow(null,
+    function(tabs){
+           console.log("Received tabs " + tabs);
+           // Inform the background.js of the number of tabs, and to prepare for the PIPE2 processing
+           var msg1 = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_PIPE2GETALLTABS,
+                                   {numtabs: tabs.length},
+                                   function() {
+
+                                   });
+           msg1.send();
+
+           for (var i = 0; i < tabs.length; i++) {
+               var tab = tabs[i];
+               console.log("Sending message to " + tab.id);
+               var msg2 = new Message(MSG_FROM_POPUP, chrome.tabs,
+                                     tab.id,
+                                     MSG_SUBJECT_INSERTPIPE2SEARCHHANDLE,
+                                     {targetScript: "handlers/pipe2SearchHandle.js", tabid: tab.id},
+                                     function () {
+                                     });
+               msg2.send();
+           }
+
+           for (var j = 0; j < tabs.length; j++) {
+               // Now we inject the code to the page
+               var tab = tabs[j];
+               console.log("Injecting code to " + tab.id);
+               cg_util.injectCodeToTab(tab.id, ("var mytabid = " + tab.id + ";pipe2Search();"), null);
+           }
+    });
+
+
+//                          });
+//    msg.send();
 
 
 
+};
+
+var pipe2goose = new Pipe2Goose();
 
 
-                          });
-    msg.send();
+// Goose search logics
+// They are called from within the popup page
+function pipe2Search()
+{
+    //console.log("PIPE2 Goose obj: " + goose);
+    var found = false;
+    try {
+        console.log("Checking " + document.location.href);
+        var iframepipe2 = document.getElementById("PIPE2");
+        if (cg_util.startsWith(document.location.href, "http://pipe2.systemsbiology.net") &&
+            iframepipe2 != null) {
+            //goose != null) {
+            //register
+            found = true;
+            console.log("Register GaggleDataFromExtension");
+            //document.addEventListener("GaggleDataFromExtension", pipe2EventHandler, false);
+        }
+    }
+    catch (e) {
+        console.log("Exception checking goose: " + e);
+    }
 
+    console.log("Send message to content page: " + found);
+    var event = new CustomEvent('PIPE2SearchResultEvent', {detail: {
+                                tabid: mytabid,
+                                pipe2found: found},
+                                bubbles: true, cancelable: false});
+    document.dispatchEvent(event);
+}
 
+function pipe2SearchWithTimer()
+{
+    var poller = new Object();
+    poller.timerCount = 0;
+    poller.poll = function() {
+        this.timerCount++;
+        console.log("polling for presence of PIPE goose: " + this.timerCount + "\n");
+        var iframepipe2 = document.getElementById("PIPE2");
+        if (cg_util.startsWith(document.location.href, "http://pipe2.systemsbiology.net") && iframepipe2 != null) {
+            //&& goose) {
+            try {
+                console.log("Register GaggleDataFromExtension");
+                //document.addEventListener("GaggleDataFromExtension", pipe2EventHandler, false);
 
+                var event = new CustomEvent('PIPE2SearchResultEvent', {detail: {//tabid: mytabid,
+                                            pipe2found: true},
+                                            bubbles: true, cancelable: false});
+                document.dispatchEvent(event);
+                clearInterval(this.timerId);
+            } catch(e) {
+                console.log("Error in page's PIPE2SearchWithTimer: " + e);
+            }
+        }
+        else if (this.timerCount >= 10) {
+             clearInterval(this.timerId);
+             var event = new CustomEvent('PIPE2SearchResultEvent', {detail: {//tabid: mytabid,
+                                        pipe2found: false},
+                                        bubbles: true, cancelable: false});
+            document.dispatchEvent(event);
+        }
+    }
+
+    // set a timer which calls the poller every second
+    console.log("Starting poller timer...");
+    poller.timerId = setInterval(function() { poller.poll(); }, 1000);
 }
 
 
-var pipe2goose = new Pipe2Goose();

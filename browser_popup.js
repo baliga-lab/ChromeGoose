@@ -249,7 +249,7 @@ function broadcastFetchedData(jsonobj, handler)
                     // First pass the data to the Event page
                     console.log("Sending data to event page");
                     var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_STOREDATA,
-                                           { handler: handler.getName(), source: gaggledata }, handlerResponse);
+                                           { handler: handler.getName(), handler_pageurl: handler.getPageUrl(), source: gaggledata }, handlerResponse);
                     msg.send();
 
                     // Now we call the handler to handle data

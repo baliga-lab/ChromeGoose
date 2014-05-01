@@ -115,6 +115,24 @@ openNewTab: function(url, callback) {
     });
 },
 
+injectJavascriptToTab: function(tabid, scripturl, callback) {
+    console.log("Injecting javascript " + scripturl + " to tab " + tabid);
+    chrome.tabs.executeScript(tabid, {file: scripturl}, function(result){
+        if (callback != null) {
+            callback(result);
+        }
+    });
+},
+
+injectCodeToTab: function(tabid, jcode, callback) {
+    console.log("Injecting javascript code " + jcode + " to tab " + tabid);
+    chrome.tabs.executeScript(tabid, {code: jcode}, function(result) {
+        if (callback != null) {
+            callback(result);
+        }
+    });
+},
+
 injectJavascript: function(scripturl, callback) {
     if (scripturl == null)
         return;

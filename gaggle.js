@@ -202,13 +202,14 @@ chrome.runtime.onMessage.addListener(function(msg, sender, response) {
                 }
             }
             else if (msg.subject == MSG_SUBJECT_INSERTPIPE2SEARCHHANDLE) {
-                console.log("Inject PIPE2 Search script " + msg.data);
+                console.log("gaggle.js hookup PIPE2 Search event " + msg.data);
                 var data = JSON.parse(msg.data);
                 if (data != null) {
                     var script = data['targetScript'];
                     var tabid = data['tabid'];
                     if (script != null) {
                         // First hook up the search result event
+                        console.log("Hooking up PIPE2SearchResultEvent");
                         document.addEventListener("PIPE2SearchResultEvent", function(e) {
                             var found = e.detail.pipe2found;
                             var tabid = e.detail.tabid;
@@ -217,12 +218,15 @@ chrome.runtime.onMessage.addListener(function(msg, sender, response) {
 
                             // Inform the background page, which will decide whether to create a new tab
                             var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_PIPE2SEARCHRESULT,
-                                                 { srctabid: tabid, pipe2found: found },
-                                                 function(species, names, tab) {
-                                                    if (names != null) {
+                                                 { mytabid: tabid, pipe2found: found },
+                                                 function(datatobeprocessed, tab) {
+                                                    if (datatobeprocessed != null) {
                                                         // Now we pass the data to the injected code
-                                                        console.log("Sending data to page...");
-                                                        var event = new CustomEvent('GaggleDataFromExtension',
+                                                        console.log("PIPE2SearchResultEvent handler sending data to page...");
+                                                        var species = datatobeprocessed.getSpecies();
+                                                        var names = datatobeprocessed.getData();
+                                                        console.log("Species: " + species + " Names: " + names);
+                                                        var event = new CustomEvent('PIPE2DataEvent',
                                                                                     {detail:
                                                                                         {dataspecies: species,
                                                                                         namelist: names},
@@ -230,37 +234,13 @@ chrome.runtime.onMessage.addListener(function(msg, sender, response) {
                                                                                         cancelable: false});
                                                         document.dispatchEvent(event);
                                                     }
-                                                    else if (tab != null) {
-                                                        // Inject code to the newly opened tab with PIPE2 url
-                                                        cg_util.injectCode("var mytabid=" + tab.id + ";", function () {
-                                                            console.log("Injecting " + targetscript + " to newly opened PIPE2 tab...");
-                                                            cg_util.injectJavascript(targetscript, function () {
-                                                                cg_util.injectCode("pipe2SearchWithTimeOut();", null);
-                                                                if (response != null) {
-                                                                    response(null);
-                                                                }
-                                                            });
-                                                        });
-                                                    }
                                                  });
                             msg.send();
                         });
-
-                        // Now we inject the code to the page
-                        cg_util.injectCode("var mytabid=" + tabid + ";", function () {
-                            cg_util.injectJavascript("message.js", function() {
-                                cg_util.injectJavascript("util.js", function() {
-                                    cg_util.injectJavascript(script, function () {
-                                        cg_util.injectCode("pipe2Search();", null);
-                                        if (response != null) {
-                                            response(null);
-                                        }
-                                    });
-                                });
-                            });
-                        });
                     }
                 }
+                if (response != null)
+                    response();
             }
         }
 

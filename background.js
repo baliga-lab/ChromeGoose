@@ -1,12 +1,9 @@
-var dataToBeProcessed = null;
+var dataToBeProcessed = null; // Data to be processed by a web handler
 var geeseJSONString = null;  //  JSON result of calling GetGeese from the Boss
-var broadcastData = new Array();
-var pipe2AllTabs = null;
+var broadcastData = new Array();  // Data received from other geese
+var pipe2NumTabs = 0;
 var pipe2NotFound = 0;
-var pipe2Species = null;
-var pipe2Names = null;
-var pipe2URL = null;
-
+var pipe2TabResponses = new Array();
 chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
     /* First, validate the message's structure */
     //alert("Event page event received: " + msg.from + " " + msg.subject);
@@ -45,36 +42,46 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                     var data = JSON.parse(msg.data);
                     if (data != null) {
                         var found = data['pipe2found'];
-                        var tabid = data['srctabid'];
-                        //alert("tab id: " + tabid + " found: " + found);
+                        var tabid = data['mytabid'];
+                        //alert("Tab id: " + tabid + " found: " + found);
                         if (!found) {
-                            alert("PIPE Goose not found...");
-                            pipe2NotFound++;
-                            if (pipe2NotFound >= pipe2AllTabs.length) {
-                                // No PIPE2 page is found, we need to start a new tab and pass the data
-                                alert("No PIPE2 page found, start new tab");
-                                cg_util.openNewTab(pipe2URL, function(tab) {
-                                    // Inject PIPE2 code
-                                    if (sendResponse != null) {
-                                        sendResponse(null, null, tab);
+                            if (pipe2TabResponses[tabid] == null) {
+                                pipe2NotFound++;
+                                pipe2TabResponses[tabid] = found;
+
+                                //alert("PIPE Goose not found " + pipe2NotFound + " " + pipe2NumTabs);
+                                if (pipe2NotFound == pipe2NumTabs) {
+                                    // No PIPE2 page is found, we need to start a new tab and pass the data
+                                    //alert("No PIPE2 page found , start new tab");
+                                    if (dataToBeProcessed != null) {
+                                        var datasaved = JSON.parse(dataToBeProcessed);
+                                        var pipe2URL = datasaved['handler_pageurl'];
+                                        //alert("Open PIPE2 Url: " + pipe2URL);
+                                        cg_util.openNewTab(pipe2URL, function(tab) {
+
+                                        });
                                     }
-                                });
+                                }
                             }
-                            else if (sendResponse != null)
+
+                            if (sendResponse != null)
                             {
-                                console.log("Pass PIPE2 species " + pipe2Species + " PIPE2 Names: " + pipe2Names);
-                                sendResponse(null, null, null);
+                                //console.log("Pass PIPE2 species " + pipe2Species + " PIPE2 Names: " + pipe2Names);
+                                sendResponse(null, null);
                             }
                         }
                         else {
                             // Now we send the data to the page
                             if (sendResponse != null) {
-                                console.log("Pass PIPE2 species " + pipe2Species + " PIPE2 Names: " + pipe2Names);
-                                sendResponse(pipe2Species, pipe2Names, null);
+                                //console.log("Pass PIPE2 species " + pipe2Species + " PIPE2 Names: " + pipe2Names);
+                                chrome.tabs.update(tabid, {active: true}, null);
+                                var data = parseJSONdataToGaggle(dataToBeProcessed);
+                                sendResponse(data, null);
                             }
                         }
-
                     }
+                    if (sendResponse != null)
+                        sendResponse(null, null);
                 }
              }
 
@@ -107,28 +114,14 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                         sendResponse(broadcastData);
                     }
                 }
-                else if (msg.subject == MSG_SUBJECT_PIPE2DATA) {
-                    //alert("PIPE2 Data received: " + msg.data);
-                    var data = JSON.parse(msg.data);
-                    if (data != null) {
-                        var species = data['pipe2species'];
-                        var names = data['pipe2names'];
-                        var url = data['pipe2url'];
-                        pipe2Species = species;
-                        pipe2Names = names;
-                        pipe2URL = url;
-                        //alert("PIPE2 species: " + pipe2Species + " PIPE2 names: " + pipe2Names + " PIPE2 URL: " + pipe2URL);
-                        if (sendResponse != null)
-                            sendResponse();
-                    }
-                }
                 else if (msg.subject == MSG_SUBJECT_PIPE2GETALLTABS) {
                     //alert("Received Get all tabs message " + pipe2AllTabs);
                     pipe2NotFound = 0;
-                    chrome.tabs.getAllInWindow(null, function(tabs){
-                        pipe2AllTabs = tabs;
-                    });
-
+                    pipe2TabResponses = new Array();
+                    var data = JSON.parse(msg.data);
+                    if (data != null) {
+                        pipe2NumTabs = parseInt(data['numtabs']);
+                    }
                     if (sendResponse != null) {
                         sendResponse();
                     }

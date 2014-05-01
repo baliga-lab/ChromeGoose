@@ -66,3 +66,23 @@ GaggleData.prototype.setData = function(data) {
     this._data = data;
 }
 
+function parseJSONdataToGaggle(jsondata)
+{
+    var jsonobj = JSON.parse(jsondata);
+    if (jsonobj != null) {
+        var sourceobj = jsonobj["source"];
+        var type = sourceobj["_type"];
+        console.log("Data type: " + type);
+        if (type == "NameList") {
+            try {
+                namelist = new Namelist("", 0, "", null);
+                namelist.parseJSON(sourceobj);
+                return namelist;
+            }
+            catch(e) {
+                console.log("Failed to convert namelist " + e);
+            }
+        }
+    }
+    return null;
+}
