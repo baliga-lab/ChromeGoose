@@ -19,7 +19,7 @@
 //FG_pipe2Goose.url = "http://pipe2.systemsbiology.net";
 
 function Pipe2Goose() {
-    handler_base.call(this, "PIPE2", true, "http://pipe2.systemsbiology.net");
+    handler_base.call(this, "PIPE2", true, "handers/pipe2Goose.js", "http://pipe2.systemsbiology.net");
 }
 
 Pipe2Goose.prototype = new handler_base();

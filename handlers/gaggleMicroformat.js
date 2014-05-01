@@ -14,7 +14,7 @@
  */
 
 function gaggleMicroformatPlaceHolder() {
-    handler_base.call(this, "gaggleMicroformatPlaceHolder", false, null,
+    handler_base.call(this, "gaggleMicroformatPlaceHolder", false, "handlers/gaggleMicroformat.js", null,
                        (WEBHANDLER_BASEURL + "gaggleMicroformat.js"));
 }
 

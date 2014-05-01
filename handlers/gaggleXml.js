@@ -14,7 +14,7 @@
  */
 function gaggleXml()
 {
-    handler_base.call(this, "gaggleXml", false, null);
+    handler_base.call(this, "gaggleXml", false, "handlers/gaggleXml.js", null, WEBHANDLER_BASEURL + "gaggleXml-server.js");
 }
 
 gaggleXml.prototype = new handler_base();

@@ -17,7 +17,7 @@
  * constructor.
  */
 function GaggleMicroformatHandler() {
-    handler_base.call(this, "GaggleMicroformatHandler", false, null, WEBHANDLER_BASEURL + "gaggleMicroformatHandler-server.js");
+    handler_base.call(this, "GaggleMicroformatHandler", false, "handlers/gaggleMicroformatHandler.js", null, WEBHANDLER_BASEURL + "gaggleMicroformatHandler-server.js");
 }
 
 GaggleMicroformatHandler.prototype = new handler_base();

@@ -126,6 +126,23 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                         sendResponse();
                     }
                 }
+                else if (msg.subject == MSG_SUBJECT_OPENTABANDEXECUTE) {
+                    var data = JSON.parse(msg.data);
+                    if (data != null) {
+                        var newurl = data['handler_url'];
+                        var extensionurl = data['handler_extension_url'];
+                        var code = data['runcode'];
+                        if (newurl != null) {
+                            cg_util.openNewTab(newurl, function(tab) {
+                                cg_util.injectJavascriptToTab(tab.id, extensionurl, function() {
+                                    if (code != null) {
+                                        cg_util.injectCodeToTab(tab.id, code, null);
+                                    }
+                                });
+                            });
+                        }
+                    }
+                }
             }
         }
         else if (msg.from && (msg.from == MSG_FROM_WEBSOCKET)) {

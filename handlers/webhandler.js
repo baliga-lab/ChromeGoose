@@ -10,7 +10,9 @@ var webhandlers = {
            handlers[2] = new GaggleMicroformatHandler();
            handlers[3] = new David();
            handlers[4] = new KEGG();
-           handlers[5] = new Pipe2Goose();
+           handlers[5] = new Entrez("Gene");
+           handlers[6] = new Entrez("Protein");
+           handlers[7] = new Pipe2Goose();
        }
        catch (e) {
            console.log("Failed to load handler: " + e);
@@ -19,6 +21,24 @@ var webhandlers = {
        return handlers;
     },
 
+    loadContentPageHandlers: function() {
+       console.log("Loading content page handlers...");
+       try {
+           var handlers = new Array();
+           handlers[0] = new gaggleMicroformatPlaceHolder();
+           handlers[1] = new gaggleXml();
+           handlers[2] = new GaggleMicroformatHandler();
+           //handlers[3] = new David();
+           //handlers[4] = new KEGG();
+           //handlers[5] = new Entrez("Gene");
+           //handlers[6] = new Entrez("Protein");
+           //handlers[7] = new Pipe2Goose();
+       }
+       catch (e) {
+           console.log("Failed to load handler: " + e);
+       }
+       return handlers;
+    },
 
     // dataelementid is the id of the DOM select element that contains the parsed gaggle data
     loadOpenCPU: function(dataelement, callback) {

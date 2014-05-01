@@ -9,7 +9,7 @@
 
 function David()
 {
-    handler_base.call(this, "DAVID", true, "http://david.abcc.ncifcrf.gov/");
+    handler_base.call(this, "DAVID", true, "handlers/david.js", "http://david.abcc.ncifcrf.gov/");
 }
 
 David.prototype = new handler_base();
@@ -120,7 +120,8 @@ David.prototype.handleNameList = function(namelist) {
 	else {
 		// open url in a new tab
 		// And then scanPage will be called, which retrieves data from the background page, and calls processData
-		chrome.tabs.create({ url: davidurl }, null);
+		console.log("Injecting " + this._extensionUrl);
+		this.openTabAndExecute(davidurl, this._extensionUrl, "david.scanPage();", null);
 	}
 };
 

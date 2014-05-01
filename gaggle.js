@@ -5,7 +5,7 @@ var receivedData = null;
 function init()
 {
     // Load web handler content script
-    webHandlers = webhandlers.loadHandlers();
+    webHandlers = webhandlers.loadContentPageHandlers();
 
     document.addEventListener("RScriptWrapperEvent", function(e) {
         var outputurl = e.detail.outputurl;

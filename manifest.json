@@ -7,7 +7,11 @@
   ],
 
   "web_accessible_resources": ["jquery-1.11.0.min.js", "jquery-ui-1.10.4.js", "opencpu-0.4.js", "message.js", "util.js",
-                                "handlers/handler.js", "handlers/pipe2SearchHandle.js", "handlers/rscriptwrapper.js"],
+                                "handlers/handler.js",
+                                "handlers/david.js",
+                                "handlers/kegg.js",
+                                "handlers/pipe2SearchHandle.js",
+                                "handlers/rscriptwrapper.js"],
 
   //"content_security_policy": "script-src 'self' https://localhost:8000 https://networks.systemsbiology.net; object-src 'self'",
 
@@ -19,10 +23,12 @@
   "content_scripts": [
       {
         "matches": ["http://*/*", "https://*/*"],
-        "js": ["jquery-1.11.0.min.js","jquery-ui-1.10.4.js", "opencpu-0.4.js", "message.js", "util.js", "ufmt.js", "handlers/handler.js",
+        "js": ["jquery-1.11.0.min.js","jquery-ui-1.10.4.js", "opencpu-0.4.js", "message.js", "util.js", "ufmt.js",
+                "handlers/handler.js",
                 "handlers/gaggleMicroformat.js",
-                "handlers/david.js", "handlers/kegg.js", "handlers/gaggleXml.js",
+                "handlers/gaggleXml.js",
                 "handlers/gaggleMicroformatHandler.js",
+                "handlers/entrez.js",
                 "handlers/pipe2Goose.js",
                 "handlers/webhandler.js",
                 "data/gaggle_data.js", "data/namelist.js", "data/datamatrix.js", "data/cluster.js", "gaggle.js"],

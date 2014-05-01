@@ -16,6 +16,7 @@ var MSG_SUBJECT_PIPE2GETALLTABS = "PIPE2GetAllTabs";
 var MSG_SUBJECT_INSERTPIPE2SEARCHHANDLE = "InsertPIPE2SearchHandle";
 var MSG_SUBJECT_PIPE2DATA = "PIPE2DATA";
 var MSG_SUBJECT_PIPE2SEARCHRESULT = "PIPE2SearchResult";
+var MSG_SUBJECT_OPENTABANDEXECUTE = "OpenAndExecuteCode";
 
 function Message(from, to, targetid, subject, data, callback)
 {
