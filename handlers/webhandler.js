@@ -12,8 +12,9 @@ var webhandlers = {
            handlers[4] = new KEGG();
            handlers[5] = new Entrez("Gene");
            handlers[6] = new Entrez("Protein");
-           handlers[7] = new Pipe2Goose();
-           handlers[8] = new GeneEnrichment();
+           handlers[7] = new Egrin2Handler();
+           handlers[8] = new Pipe2Goose();
+           handlers[9] = new GeneEnrichment();
        }
        catch (e) {
            console.log("Failed to load handler: " + e);

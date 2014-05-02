@@ -29,7 +29,6 @@
                 "handlers/gaggleMicroformat.js",
                 "handlers/gaggleXml.js",
                 "handlers/gaggleMicroformatHandler.js",
-                "handlers/entrez.js",
                 "handlers/pipe2Goose.js",
                 "handlers/webhandler.js",
                 "data/gaggle_data.js", "data/namelist.js", "data/datamatrix.js", "data/cluster.js", "gaggle.js"],
