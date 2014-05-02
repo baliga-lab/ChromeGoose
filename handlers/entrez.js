@@ -84,7 +84,7 @@ Entrez.prototype.handleNameList = function(namelist) {
 	}
 
 	// open the URL in a new tab
-	console.log("EnTrez open url: " + url);
+	console.log("Entrez open url: " + url);
     chrome.tabs.create({ url: url });
 	return newTab;
 }

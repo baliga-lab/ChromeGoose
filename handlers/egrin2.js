@@ -6,7 +6,7 @@
 function Egrin2Handler()
 {
     console.log("Initializing Egrin2...");
-    handler_base.call(this, "EGRIN2", true, "handlers/egrin2.js", "http://egrin.systemsbiology.net/");
+    handler_base.call(this, "EGRIN2", true, "handlers/egrin2.js", "http://egrin2.systemsbiology.net/");
 }
 
 Egrin2Handler.prototype = new handler_base();
