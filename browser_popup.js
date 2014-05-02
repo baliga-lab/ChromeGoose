@@ -109,28 +109,6 @@ function setDOMInfo(pageData) {
             var guid = pagedataobj["guid"];
             console.log("Page data GUID: " + guid);
 
-            //alert(pagedata["_name"]);
-
-            //var pagedatavalue = pagedataobj["value"];
-
-            //var type = pagedata["_type"];
-            //alert(type);
-
-            /*var gaggledata = null;
-            if (type == "NameList") {
-                try {
-                    gaggledata = new Namelist("", 0, "", null);
-                    gaggledata.parseJSON(pagedata);
-                    currentPageData.push(gaggledata);
-                }
-                catch (e) {
-                    //alert("Failed to parse gaggle data " + e);
-                }
-            } */
-
-
-            //alert(pagedata.data.getName); //.data.getName());
-            //if (gaggledata != null)
             var text = (pagedata["_name"] != null) ? pagedata["_name"] : pagedata["name"];
             if (text == null)
                 text = (pagedata["_type"] != null) ? pagedata["_type"] : pagedata["type"];
@@ -311,7 +289,7 @@ function broadcastFetchedData(jsonobj, handler)
             // The handler might be a script wrapper, we need to show the UI.
             if (handler.processUI != null)
                 console.log("Processing script wrapper...");
-                handler.processUI();
+                handler.processUI(currentPageData);
         }
     }
     catch(e) {

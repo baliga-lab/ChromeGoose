@@ -165,11 +165,13 @@ chrome.runtime.onMessage.addListener(function(msg, sender, response) {
                     var tabid = jsonobj["tabid"];
                     var rpackagename = jsonobj["packagename"];
                     var opencpuurl = jsonobj["opencpuurl"];
+                    var injectscripturl = jsonobj['injectscripturl'];
+                    var injectcode = jsonobj['injectcode'];
 
                     //alert("HTML to be inserted: " + html);
                     if (html != null) {
                         // Insert jquery ui css
-                        console.log("Tab ID: " + tabid);
+                        console.log("Tab ID: " + tabid + " script url " + injectscripturl + ' code: ' + injectcode);
                         try {
                             var div = document.createElement("div");
                             div.setAttribute("id", "divChromeGooseInject");
@@ -180,8 +182,9 @@ chrome.runtime.onMessage.addListener(function(msg, sender, response) {
                                 cg_util.injectJavascript("jquery-ui-1.10.4.js", function() {
                                     cg_util.injectJavascript("opencpu-0.4.js", function() {
                                         cg_util.injectJavascript("handlers/handler.js", function() {
-                                            cg_util.injectJavascript("handlers/rscriptwrapper.js", function() {
-                                                cg_util.injectCode("var rscriptwrapper;var currentScriptToRun;var opencpuserver;processRScriptInputDataUI('" + rpackagename + "', '" + opencpuurl + "');",
+                                            cg_util.injectJavascript(injectscripturl, function() {
+                                                cg_util.injectCode(injectcode,
+                                                //("var rscriptwrapper;var currentScriptToRun;var opencpuserver;processRScriptInputDataUI('" + rpackagename + "', '" + opencpuurl + "');",
                                                     function() {
                                                         if (response != null) {
                                                             response(null);

@@ -62,7 +62,7 @@ Entrez.prototype.handleNameList = function(namelist) {
 
 		if (isNaN(parseInt(names[0]))) {
 		    var delimiter = "+OR+";
-			var queryString = FG_util.join(names, delimiter);
+			var queryString = cg_util.join(names, delimiter);
 		}
 		else {
 			if (names.length >0) {

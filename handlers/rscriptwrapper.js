@@ -4,7 +4,26 @@
 function RScriptWrapper(name, script, datasrcelement)
 {
     try {
-        handler_base.call(this, name, true, null, null);
+        handler_base.call(this, name, true, 'handlers/rscriptwrapper.js', null, null);
+
+        var robjects = cg_util.httpGet(OPENCPU_SERVER + "/library/" + name + "/R");
+        console.log("R Objects: " + robjects);
+        if (robjects != null) {
+            var robjsplit = robjects.split("\n");
+            for (var j = 0; j < robjsplit.length; j++) {
+                var robj = robjsplit[j];
+                console.log("Parsing R obj " + robj);
+                var rscript = cg_util.httpGet(OPENCPU_SERVER + "/library/" + this._name + "/R/" + robj);
+                //console.log("R script: " + rscript);
+                if (rscript.indexOf("function") == 0) {
+                    // This is a R function script
+                    //var rscriptwrapper = new RScriptWrapper(robj, rscript, dataelementid);
+                    this.setScript(robj, rscript);
+                    //console.log("Script wrapper getName: " + rscriptwrapper.getName());
+                }
+            }
+        }
+
         this._script = script;
         this._functions = new Array();
         // datasourceid is the id of the DOM select element that contains the parsed gaggle data
@@ -20,7 +39,7 @@ RScriptWrapper.prototype = new handler_base();
 
 RScriptWrapper.prototype.constructor = RScriptWrapper;
 
-RScriptWrapper.prototype.processUI = function() {
+RScriptWrapper.prototype.processUI = function(pageData) {
     //$("#divScript").empty();
 
     console.log("Functions: " + this._functions);
@@ -74,6 +93,8 @@ RScriptWrapper.prototype.processUI = function() {
                         // Send message to the content page to inject the code and pop up the dialogbox
                         var msg = new Message(MSG_FROM_POPUP, chrome.tabs, tab.id, MSG_SUBJECT_INSERTRSCRIPTDATAHTML,
                                           {html: resulthtml, tabid: tab.id.toString(), packagename: myname,
+                                           injectscripturl: 'handlers/rscriptwrapper.js',
+                                           injectcode: "var rscriptwrapper;var currentScriptToRun;var opencpuserver;processRScriptInputDataUI('" + myname + "', '" + OPENCPU_SERVER + "');",
                                            opencpuurl: OPENCPU_SERVER },
                                           function(response) {
                                                console.log("Post injecting processing...");

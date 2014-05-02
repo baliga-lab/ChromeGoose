@@ -13,6 +13,7 @@ var webhandlers = {
            handlers[5] = new Entrez("Gene");
            handlers[6] = new Entrez("Protein");
            handlers[7] = new Pipe2Goose();
+           handlers[8] = new GeneEnrichment();
        }
        catch (e) {
            console.log("Failed to load handler: " + e);
@@ -28,6 +29,8 @@ var webhandlers = {
            handlers[0] = new gaggleMicroformatPlaceHolder();
            handlers[1] = new gaggleXml();
            handlers[2] = new GaggleMicroformatHandler();
+           handlers[3] = new Pipe2Goose();
+
            //handlers[3] = new David();
            //handlers[4] = new KEGG();
            //handlers[5] = new Entrez("Gene");
@@ -51,25 +54,8 @@ var webhandlers = {
                 var libname = splitted[i];
                 console.log("R package name: " + libname);
                 if (libname.toLowerCase().indexOf("gaggle") == 0) {
-                    var robjects = cg_util.httpGet(OPENCPU_SERVER + "/library/" + libname + "/R");
                     var rscriptwrapper = new RScriptWrapper(libname, null, dataelement);
                     webHandlers.push(rscriptwrapper);
-                    console.log("R Objects: " + robjects);
-                    if (robjects != null) {
-                        var robjsplit = robjects.split("\n");
-                        for (var j = 0; j < robjsplit.length; j++) {
-                            var robj = robjsplit[j];
-                            console.log("Parsing R obj " + robj);
-                            var rscript = cg_util.httpGet(OPENCPU_SERVER + "/library/" + libname + "/R/" + robj);
-                            //console.log("R script: " + rscript);
-                            if (rscript.indexOf("function") == 0) {
-                                // This is a R function script
-                                //var rscriptwrapper = new RScriptWrapper(robj, rscript, dataelementid);
-                                rscriptwrapper.setScript(robj, rscript);
-                                //console.log("Script wrapper getName: " + rscriptwrapper.getName());
-                            }
-                        }
-                    }
 
                     if (callback != null)
                         callback(rscriptwrapper);
