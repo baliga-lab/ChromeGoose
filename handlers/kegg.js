@@ -28,7 +28,7 @@ KEGG.prototype.handleNameList = function(namelist) {
 
 	var species = namelist.getSpecies();
 	var names = namelist.getData();
-	alert("Species: " + species + " Names: " + names);
+	console.log("Species: " + species + " Names: " + names);
 
 	var queryString = "";
 	if (names.length > 0) {
@@ -69,7 +69,8 @@ KEGG.prototype.toKeggSpeciesCode = function(s) {
 
 	s = s.replace(" str. ", " ");
 	s = s.replace(" substr. ", " ");
-	console.log("converting species: " + s + "\n");
+	s = s.toLowerCase();
+	//alert("converting species: " + s + " " + this.speciesCodes);
 
 	// fudge for species synonyms
 	if (s in this.speciesSynonyms) {
@@ -80,7 +81,8 @@ KEGG.prototype.toKeggSpeciesCode = function(s) {
 	// NOTE: that we're using "starts with" to be liberal
 	for (var code in this.speciesCodes) {
 		if (cg_util.startsWith(this.speciesCodes[code], s)) {
-			return code;
+		    console.log("Species code: " + code);
+			return cg_util.trim(code);
 		}
 	}
 
@@ -148,7 +150,7 @@ KEGG.prototype.toStandardSpeciesName = function(code) {
 }
 
 
-FG_kegg.speciesCodes = {
+KEGG.prototype.speciesCodes = {
 "hsa": "homo sapiens",
 "ptr": "pan troglodytes",
 "mcc": "macaca mulatta",
@@ -556,6 +558,7 @@ FG_kegg.speciesCodes = {
 "baa": "bacillus anthracis a2012",
 "bat": "bacillus anthracis sterne",
 "bce": "bacillus cereus atcc 14579",
+"bce ": "bacillus cereus atcc14579",
 "bca": "bacillus cereus atcc 10987",
 "bcz": "bacillus cereus zk",
 "bcy": "bacillus cereus subsp. cytotoxis nvh 391-98",
