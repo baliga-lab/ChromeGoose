@@ -5,30 +5,32 @@ function RScriptWrapper(name, script, datasrcelement)
 {
     try {
         handler_base.call(this, name, true, 'handlers/rscriptwrapper.js', null, null);
+        var packagemetadata = cg_util.httpGet(OPENCPU_SERVER + "/library/" + this._name + "/www/" + this._name + ".txt");
+        console.log("Package meta data: " + packagemetadata);
 
-        var robjects = cg_util.httpGet(OPENCPU_SERVER + "/library/" + name + "/R");
-        console.log("R Objects: " + robjects);
-        if (robjects != null) {
-            var robjsplit = robjects.split("\n");
-            for (var j = 0; j < robjsplit.length; j++) {
-                var robj = robjsplit[j];
-                console.log("Parsing R obj " + robj);
-                var rscript = cg_util.httpGet(OPENCPU_SERVER + "/library/" + this._name + "/R/" + robj);
-                //console.log("R script: " + rscript);
-                if (rscript.indexOf("function") == 0) {
-                    // This is a R function script
-                    //var rscriptwrapper = new RScriptWrapper(robj, rscript, dataelementid);
-                    this.setScript(robj, rscript);
-                    //console.log("Script wrapper getName: " + rscriptwrapper.getName());
+        this._packageMetaData = (packagemetadata == null) ? null : JSON.parse(packagemetadata);
+        if (packagemetadata == null) {
+            var robjects = cg_util.httpGet(OPENCPU_SERVER + "/library/" + name + "/R");
+            console.log("R Objects: " + robjects);
+            if (robjects != null) {
+                var robjsplit = robjects.split("\n");
+                for (var j = 0; j < robjsplit.length; j++) {
+                    var robj = robjsplit[j];
+                    console.log("Parsing R obj " + robj);
+                    var rscript = cg_util.httpGet(OPENCPU_SERVER + "/library/" + this._name + "/R/" + robj);
+                    //console.log("R script: " + rscript);
+                    if (rscript.indexOf("function") == 0) {
+                        // This is a R function script
+                        this.setScript(robj, rscript);
+                    }
                 }
             }
-        }
 
-        this._script = script;
-        this._functions = new Array();
+            this._script = script;
+            this._functions = new Array();
+        }
         // datasourceid is the id of the DOM select element that contains the parsed gaggle data
         this._datasourceelement = datasrcelement;
-        this.parseScript(script);
     }
     catch (e) {
         console.log("Failed to initialize RScriptWrapper: " + e);
@@ -41,74 +43,162 @@ RScriptWrapper.prototype.constructor = RScriptWrapper;
 
 RScriptWrapper.prototype.processUI = function(pageData) {
     //$("#divScript").empty();
+    console.log("Generating input html for package " + this._name + " " + this._packageMetaData);
+    var resulthtml = "<div id='divDataDialog' style='display: none'><div id='divAccordionFunctions'>";
+    if (this._packageMetaData != null) {
+        var pagedatahtml = "<select class='selGaggleData'>";
 
-    console.log("Functions: " + this._functions);
-    if (this._functions != null) {
-        // First we store the reference to the scriptwrapper obj
-        currentScriptToRun = this;
-        var myname = this._name;
+        // Generate the html for gaggled data on the current page
+        var firstdata = true;
+        for (var i = 0; i < pageData.length; i++) {
+            if (pageData[i].jsondata == undefined)
+                continue;
 
-        var rFunctions = this._functions;
-        console.log("processUI: # of functions: " + rFunctions.length);
-        var datainputhtml = null;
-        if (this._datasourceelement != null) {
-            datainputhtml =  $(this._datasourceelement)[0].outerHTML; 
-            console.log("RScriptWrapper.processUI datainput html: " + datainputhtml);
-        }
-        if (datainputhtml == null || datainputhtml.length == 0)
-            datainputhtml = "<input type='text' />";
-        console.log("datainput html: " + datainputhtml);
-        var resulthtml = "<div id='divDataDialog' style='display: none'><div id='divAccordionFunctions'>";
-        for (var i = 0; i < rFunctions.length; i++) {
-            var funcObj = rFunctions[i];
-            var parameterhtml = "<h3>" + funcObj.functionName + "</h3><div><ul>";
-            console.log(funcObj.parameters.length);
-            for (var j = 0; j < funcObj.parameters.length; j++) {
-                console.log("Parameter name: " + funcObj.parameters[j].paramName);
-                parameterhtml += "<li><label>" + funcObj.parameters[j].paramName + "</label>&nbsp;&nbsp;" + datainputhtml + "</li>";
+            var pagedataobj = JSON.parse(pageData[i].jsondata);
+            var pagedata = pagedataobj["data"];
+            var guid = pagedataobj["guid"];
+            console.log("Page data GUID: " + guid);
+
+            var text = (pagedata["_name"] != null) ? pagedata["_name"] : pagedata["name"];
+            if (text == null)
+                text = (pagedata["_type"] != null) ? pagedata["_type"] : pagedata["type"];
+            console.log("option text: " + text);
+            if (text != null) {
+                if (firstdata) {
+                    pagedatahtml += "<option value='-1'>----- Select a data item -----</option>";
+                    firstdata = false;
+                }
+                var gaggledata = (pagedata["_data"] != null) ? pagedata["_data"] : pagedata["gaggle-data"];
+                if (gaggledata != null && gaggledata.length > 0)
+                    text += " (" + gaggledata.length + ")";
+                pagedatahtml += "<option value='" + guid + "'>" + text + "</option>";
             }
-            parameterhtml += "</ul><br/><div class='divResult' style='display: none'></div><br /><input class='btnRunScript' type='button' value='Run' />";
+        }
+        console.log("Page data input html: " + pagedatahtml);
+
+        // Now we parse package meta data to
+        var parameterhtml = "";
+        var packagename = (this._packageMetaData)["PackageName"];
+        var funcsobj = (this._packageMetaData)["Functions"];
+        if (funcsobj != null) {
+            var findex = 0;
+            do {
+               var funcobj = funcsobj[findex.toString()];
+               if (funcobj != null) {
+                    findex++;
+                    var funcname = funcobj["Name"];
+                    var funcdesc = funcobj["Description"];
+                    console.log("function name: " + funcname + " Description: " + funcdesc);
+                    parameterhtml += ("<h3>" + funcname + "</h3><div>"
+                                        + "<label>" + funcdesc + "</label><br/><ul>");
+
+                    var parametersobj = funcobj["Parameters"];
+                    if (parametersobj != null) {
+                        var pindex = 0;
+                        do {
+                            var parameterobj = parametersobj[pindex.toString()];
+                            if (parameterobj != null) {
+                                pindex++;
+                                var paramname = parameterobj["Name"];
+                                var paramdesc = parameterobj["Description"];
+                                var paramtype = parameterobj["Type"];
+                                var paramtoshow = parameterobj["Show"];
+                                console.log("Parameter name: " + paramname + " Parameter desc: " + paramdesc + " Parameter Show: " + paramtoshow);
+                                if (paramtoshow == "True") {
+                                    parameterhtml += "<li><label>" + paramdesc + "</label><input type='hidden' value='" + paramname + "' />&nbsp;&nbsp;" + pagedatahtml;
+                                    // Now generate html
+                                    var inputhtml = "";
+                                    if (paramtype == "file") {
+                                        parameterhtml += "<option value='-2'>------- Select an action -------</option>";
+                                        parameterhtml += "<option value='OtherFile'>Upload a File</option></select>";
+                                        inputhtml = "<div class='divFileInput' style='display:none;'><input class='inputFileData' type='file' /><input class='btnCancelFileInput' type='button' value='Cancel' /></div>";
+
+                                    }
+                                    else if (paramtype == "text") {
+                                        parameterhtml += "<option value='-2'>------- Select an action -------</option>";
+                                        parameterhtml += "<option value='OtherText'>Input Text</option></select>";
+                                        inputhtml = "<div class='divTextInput' style='display:none;'><input class='inputTextData' type='text' /><input class='btnCancelTextInput' type='button' value='Cancel' /></div>";
+                                    }
+                                    else {
+                                        parameterhtml += "<option value='-3'>------- Invalid Parameter Type -------</option>";
+                                    }
+                                    parameterhtml += inputhtml + "</li>";
+                                }
+                            }
+                            else
+                                break;
+                        }
+                        while (true);
+                        parameterhtml += "</ul><br /><input class='btnRunScript' type='button' value='Run' />";
+                    }
+               }
+               else
+                    break;
+            }
+            while (true);
             resulthtml += parameterhtml + "</div>";
         }
-        resulthtml += "</div></div>";
-        console.log("RScriptwrapper html: " + resulthtml);
+    }
+    else {
+        // No metadata is provided by the package, so we generate html based on the parsed r script
+        console.log("Functions: " + this._functions);
+        if (this._functions != null) {
+            // First we store the reference to the scriptwrapper obj
+            currentScriptToRun = this;
+            var myname = this._name;
 
-        // Now we inject the resulthtml to current page
+            var rFunctions = this._functions;
+            console.log("processUI: # of functions: " + rFunctions.length);
+            var datainputhtml = null;
+            if (this._datasourceelement != null) {
+                datainputhtml =  $(this._datasourceelement)[0].outerHTML;
+                console.log("RScriptWrapper.processUI datainput html: " + datainputhtml);
+            }
+            if (datainputhtml == null || datainputhtml.length == 0)
+                datainputhtml = "<input type='text' />";
+            console.log("datainput html: " + datainputhtml);
+            var resulthtml = "<div id='divDataDialog' style='display: none'><div id='divAccordionFunctions'>";
+            for (var i = 0; i < rFunctions.length; i++) {
+                var funcObj = rFunctions[i];
+                var parameterhtml = "<h3>" + funcObj.functionName + "</h3><div><ul>";
+                console.log(funcObj.parameters.length);
+                for (var j = 0; j < funcObj.parameters.length; j++) {
+                    console.log("Parameter name: " + funcObj.parameters[j].paramName);
+                    parameterhtml += "<li><label>" + funcObj.parameters[j].paramName + "</label>&nbsp;&nbsp;" + datainputhtml + "</li>";
+                }
+                parameterhtml += "</ul><br/></div><br /><input class='btnRunScript' type='button' value='Run' />";
+                resulthtml += parameterhtml + "</div>";
+            }
+            resulthtml += "</div></div>";
+        }
+    }
+    console.log("RScriptwrapper html: " + resulthtml);
 
-        cg_util.getActiveTab(
-            function (tab) {
-                if (tab != null) {
-                    console.log("RScriptWrapper injecting html for " + myname);
-                    try {
-                        // First tell the background page to send the broadcast data to the content page
-                        /*var msg1 = new Message(MSG_FROM_POPUP, chrome.tabs, tab.id, MSG_SUBJECT_INSERTBROADCASTDATA,
-                                         {html: resulthtml, tabid: tab.id.toString(), packagename: myname,
-                                          opencpuurl: OPENCPU_SERVER },
-                                         function(response) {
-                                              console.log("Post injecting processing...");
+    // Now we inject the resulthtml to current page
+    var myname = this._name;
+    cg_util.getActiveTab(
+        function (tab) {
+            if (tab != null) {
+                console.log("RScriptWrapper injecting html for " + myname);
+                try {
+                    // Send message to the content page to inject the code and pop up the dialogbox
+                    var msg = new Message(MSG_FROM_POPUP, chrome.tabs, tab.id, MSG_SUBJECT_INSERTRSCRIPTDATAHTML,
+                                      {html: resulthtml, tabid: tab.id.toString(), packagename: myname,
+                                       injectscripturl: 'handlers/rscriptwrapper.js',
+                                       injectcode: "var rscriptwrapper;var currentScriptToRun;var opencpuserver;processRScriptInputDataUI('" + myname + "', '" + OPENCPU_SERVER + "');",
+                                       opencpuurl: OPENCPU_SERVER },
+                                      function(response) {
+                                           console.log("Post injecting processing...");
 
-                                         });
-                        msg1.send(); */
-
-                        // Send message to the content page to inject the code and pop up the dialogbox
-                        var msg = new Message(MSG_FROM_POPUP, chrome.tabs, tab.id, MSG_SUBJECT_INSERTRSCRIPTDATAHTML,
-                                          {html: resulthtml, tabid: tab.id.toString(), packagename: myname,
-                                           injectscripturl: 'handlers/rscriptwrapper.js',
-                                           injectcode: "var rscriptwrapper;var currentScriptToRun;var opencpuserver;processRScriptInputDataUI('" + myname + "', '" + OPENCPU_SERVER + "');",
-                                           opencpuurl: OPENCPU_SERVER },
-                                          function(response) {
-                                               console.log("Post injecting processing...");
-
-                                          });
-                        msg.send();
-                    }
-                    catch(e) {
-                        console.log("Failed to pass html to the content page " + e);
-                    }
+                                      });
+                    msg.send();
+                }
+                catch(e) {
+                    console.log("Failed to pass html to the content page " + e);
                 }
             }
-        );
-    }
+        }
+    );
 }
 
 RScriptWrapper.prototype.handleNameList = function(namelist) {
@@ -286,13 +376,15 @@ function runScript(event)
             console.log("selGaggleData: " + $(this).val());
             var selected = $(this).val();
             if (selected != "-1") {
-                var paramlabel = $(this).parent().parent().find("label");
-                console.log("Parameter Name: " + $(paramlabel).html());
+                var paramlabel = $(this).parent().find("label");
+                var paramnameinput = $(paramlabel).next();
+                var paramname = $(paramnameinput).val();
+                console.log("Parameter Name: " + paramname);
                 if (selected == "OtherText") {
                     var textinput = $(this).parent().find(".inputTextData");
                     console.log("Parameter value: " + $(textinput).val());
                     if ($(textinput).val() != null) {
-                        parameters[$(paramlabel).html()] = $(textinput).val();
+                        parameters[paramname] = $(textinput).val();
                     }
                 }
                 else if (selected == "OtherFile") {
@@ -301,12 +393,12 @@ function runScript(event)
 
                     console.log("File parameter: " + file);
                     if (file != null) {
-                        parameters[$(paramlabel).html()] = file;
+                        parameters[paramname] = file;
                     }
                 }
                 else {
                     // User selected a data item (either from the gaggled web page or received from broadcast)
-                    parameters[$(paramlabel).html()] = selected;
+                    parameters[paramname] = selected;
                 }
             }
         });
@@ -314,8 +406,8 @@ function runScript(event)
         if (parameters != null) {
             // send parameters to the content page, which will run the scripts
             var packagename = currentScriptToRun.getName();
-            var resultdiv = ($(parentdiv).find(".divResult"))[0];
-            console.log("Result div: " + resultdiv);
+            //var resultdiv = ($(parentdiv).find(".divResult"))[0];
+            //console.log("Result div: " + resultdiv);
             var parafunc = $(parentdiv).prev();
             var funcname = $(parafunc).text();
             console.log("Package name: " + packagename + " function name: " + funcname);
