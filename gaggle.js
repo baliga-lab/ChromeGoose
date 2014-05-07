@@ -50,10 +50,13 @@ function execRScript(broadcastData) {
     console.log("Package name: " + packagename + ", Function name: " + funcname);
     ocpu.seturl(OPENCPU_SERVER + "/library/" + packagename + "/R");
     console.log("Parameter JSON string: " + JSON.stringify(parameters));
+    var species = receivedData["species"];
+    console.log("Package species: " + species);
+
     var req = ocpu.call(funcname, parameters, function(session){
         console.log("Session ID: " + session.getKey() + " session URl: " + session.getLoc());
         var openurl = OPENCPU_SERVER + "/library/" + packagename + "/www/" + funcname
-            + "_output.html?host=" + OPENCPU_SERVER + "&sessionID=" + session.getKey();
+            + "_output.html?host=" + OPENCPU_SERVER + "&sessionID=" + session.getKey() + "&species=" + species;
         console.log("Open output html page: " + openurl);
 
         // Pass an event including the open url to the extension

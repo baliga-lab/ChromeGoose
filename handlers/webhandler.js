@@ -32,6 +32,7 @@ var webhandlers = {
            handlers[1] = new gaggleXml();
            handlers[2] = new GaggleMicroformatHandler();
            handlers[3] = new Pipe2Goose();
+           handlers[4] = new OpenCPUHandler();
 
            //handlers[3] = new David();
            //handlers[4] = new KEGG();

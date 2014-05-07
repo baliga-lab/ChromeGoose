@@ -30,6 +30,7 @@
                 "handlers/gaggleXml.js",
                 "handlers/gaggleMicroformatHandler.js",
                 "handlers/pipe2Goose.js",
+                "handlers/opencpuhandler.js",
                 "handlers/webhandler.js",
                 "data/gaggle_data.js", "data/namelist.js", "data/datamatrix.js", "data/cluster.js", "gaggle.js"],
         "css" : ["jquery-ui-1.10.4.css"],

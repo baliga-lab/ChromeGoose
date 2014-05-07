@@ -370,6 +370,7 @@ function runScript(event)
     if (currentScriptToRun != null) {
         console.log("Script to run: " + currentScriptToRun.getName());
         var parameters = {};
+        var species = "";
         var source = event.target; // The Run button
         var parentdiv = $(source).parent();
         $(parentdiv).find(".selGaggleData").each(function () {
@@ -377,14 +378,21 @@ function runScript(event)
             var selected = $(this).val();
             if (selected != "-1") {
                 var paramlabel = $(this).parent().find("label");
+                var paramdesc = $(paramlabel).html();
                 var paramnameinput = $(paramlabel).next();
                 var paramname = $(paramnameinput).val();
+
                 console.log("Parameter Name: " + paramname);
                 if (selected == "OtherText") {
                     var textinput = $(this).parent().find(".inputTextData");
                     console.log("Parameter value: " + $(textinput).val());
                     if ($(textinput).val() != null) {
                         parameters[paramname] = $(textinput).val();
+                        if (paramdesc.toLowerCase().indexOf("organism") >= 0 || paramdesc.toLowerCase().indexOf("species") >= 0)
+                        {
+                            species = $(textinput).val();
+                            console.log("Species: " + species);
+                        }
                     }
                 }
                 else if (selected == "OtherFile") {
@@ -412,7 +420,7 @@ function runScript(event)
             var funcname = $(parafunc).text();
             console.log("Package name: " + packagename + " function name: " + funcname);
             var event = new CustomEvent('RScriptWrapperEvent', {detail: {packageName: packagename,
-                                            functionName: funcname,  scriptParameters : parameters},
+                                            functionName: funcname,  scriptParameters : parameters, species: species},
                                             bubbles: true, cancelable: false});
             document.dispatchEvent(event);
         }
