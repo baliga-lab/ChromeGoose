@@ -25,6 +25,11 @@ handler_base.prototype.getPageUrl = function() {
 }
 
 handler_base.prototype.scanPage = function() {
+    // First check if there is any data to be processed for the page
+    console.log(this._name + " checking targeted data... " + this);
+    cg_util.checkHandlerData(this, this.processData);
+
+    //Now scan the page for gaggled data
     if (this._parserUrl != null && this._parserUrl.length > 0) {
         console.log(this._name + " scanning page...");
 

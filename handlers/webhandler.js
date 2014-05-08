@@ -15,7 +15,8 @@ var webhandlers = {
            handlers[7] = new Egrin2Handler();
            handlers[8] = new PeptideAtlas();
            handlers[9] = new Pipe2Goose();
-           handlers[10] = new GeneEnrichment();
+           handlers[10] = new EMBLString();
+           handlers[11] = new GeneEnrichment();
        }
        catch (e) {
            console.log("Failed to load handler: " + e);
@@ -33,6 +34,7 @@ var webhandlers = {
            handlers[2] = new GaggleMicroformatHandler();
            handlers[3] = new Pipe2Goose();
            handlers[4] = new OpenCPUHandler();
+           handlers[5] = new EMBLString();
 
            //handlers[3] = new David();
            //handlers[4] = new KEGG();

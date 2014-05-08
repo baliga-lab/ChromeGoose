@@ -11,7 +11,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
         if (msg.from && (msg.from == MSG_FROM_CONTENT)) {
              if (msg.subject) {
                 if (msg.subject == MSG_SUBJECT_RETRIEVEDATA) {
-                    console.log("Received retrieval request from content script " + dataToBeProcessed);
+                    //alert("Received retrieval request from content script " + dataToBeProcessed);
                     var handlerdata = JSON.parse(msg.data);
                     var handler = handlerdata["handler"];
                     var datatosend = null;
@@ -90,7 +90,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
             if (msg.subject) {
                 if (msg.subject == MSG_SUBJECT_STOREDATA)  {
                     // data is json stringified
-                    console.log("Received data storage request from popup " + msg.data);
+                    //alert("Received data storage request from popup " + msg.data);
                     dataToBeProcessed = msg.data;
                     if (sendResponse != null)
                         sendResponse("Done!");
