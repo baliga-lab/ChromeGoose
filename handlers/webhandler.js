@@ -16,7 +16,7 @@ var webhandlers = {
            handlers[8] = new PeptideAtlas();
            handlers[9] = new Pipe2Goose();
            handlers[10] = new EMBLString();
-           handlers[11] = new GeneEnrichment();
+           handlers[11] = new HaloAnnotations();
        }
        catch (e) {
            console.log("Failed to load handler: " + e);
