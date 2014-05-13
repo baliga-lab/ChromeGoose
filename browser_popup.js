@@ -56,10 +56,10 @@ function init()
         if (bossConnected) {
             $("#imgGaggleConnected").attr("src", "img/connected.png");
             $("#selTarget").prepend($("<option></option>").attr("value", "Boss").text("Boss"));
-            $("#selTarget").prepend($("<option></option>").attr("value", "-1").text("-- Select a Target to Broadcast --"));
+            $("#selTarget").prepend($("<option></option>").attr("value", "-1").text("-- Select a Target Webservice --"));
         }
         else {
-            $("#selTarget").prepend($("<option></option>").attr("value", "-1").text("-- Select a Target to Broadcast --"));
+            $("#selTarget").prepend($("<option></option>").attr("value", "-1").text("-- Select a Target Webservice --"));
         }
     });
 
