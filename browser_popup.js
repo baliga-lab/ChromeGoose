@@ -217,7 +217,7 @@ function broadcastFetchedData(jsonobj, handler)
                 handler = webHandlers[parseInt(handlerindexstr)];
             var data = jsonObj["data"];
             var type = (data["_type"] != null) ? data["_type"] : data["type"];
-            console.log("Data type: " + type);
+            console.log("Data type: " + type + " Handler: " + handler.getName());
             var gaggledata = null;
             if (type.toLowerCase() == "namelist") {
                 gaggledata = new Namelist("", 0, "", null);
@@ -234,16 +234,20 @@ function broadcastFetchedData(jsonobj, handler)
                     handler.handleNameList(gaggledata); //.getData());
                 }
             }
-            else if (type == "DataMatrix") {
+            else if (type.toLowerCase() == "datamatrix") {
+                console.log("Handling data matrix...");
                 gaggledata = new DataMatrix("", "", null, 0, 0, null, null, null);
                 gaggledata.parseJSON(data);
+                console.log("getData: " + gaggledata.getData);
                 if (gaggledata.getData() != null) {
-                    if (handler.handleDataMatrix != null)
+                    console.log("Handler handleMatrix: " + handler.handleMatrix);
+                    if (handler.handleMatrix != null)
                     {
+                        console.log("Passing data matrix to " + handler.getName());
                         var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_STOREDATA,
                                              { handler: handler.getName(), source: gaggledata }, handlerResponse);
                         msg.send();
-                        handler.handleDataMatrix(gaggledata);
+                        handler.handleMatrix(gaggledata);
                     }
                     else {
                         var namelist = gaggledata.getDataAsNameList();

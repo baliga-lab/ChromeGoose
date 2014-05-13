@@ -46,7 +46,9 @@ RScriptWrapper.prototype.processUI = function(pageData) {
     console.log("Generating input html for package " + this._name + " " + this._packageMetaData);
     var resulthtml = "<div id='divDataDialog' style='display: none'><div id='divAccordionFunctions'>";
     if (this._packageMetaData != null) {
-        var pagedatahtml = "<select class='selGaggleData'>";
+        var pagedatahtml = "<select class='selGaggleData' style='display: none'></select>";
+
+        /*var pagedatahtml = "<select class='selGaggleData'>";
 
         // Generate the html for gaggled data on the current page
         var firstdata = true;
@@ -75,6 +77,7 @@ RScriptWrapper.prototype.processUI = function(pageData) {
             }
         }
         console.log("Page data input html: " + pagedatahtml);
+        */
 
         // Now we parse package meta data to
         var parameterhtml = "";
@@ -109,18 +112,20 @@ RScriptWrapper.prototype.processUI = function(pageData) {
                                     // Now generate html
                                     var inputhtml = "";
                                     if (paramtype == "file") {
-                                        parameterhtml += "<option value='-2'>------- Select an action -------</option>";
-                                        parameterhtml += "<option value='OtherFile'>Upload a File</option></select>";
-                                        inputhtml = "<div class='divFileInput' style='display:none;'><input class='inputFileData' type='file' /><input class='btnCancelFileInput' type='button' value='Cancel' /></div>";
+                                        //parameterhtml += "<option value='-2'>------- Select an action -------</option>";
+                                        //parameterhtml += "<option value='OtherFile'>Upload a File</option></select>";
+                                        //inputhtml = "<div class='divFileInput' style='display:none;'><input class='inputFileData' type='file' /><input class='btnCancelFileInput' type='button' value='Cancel' /></div>";
+                                        inputhtml = "<input class='inputFileData' type='file' />";
 
                                     }
                                     else if (paramtype == "text") {
-                                        parameterhtml += "<option value='-2'>------- Select an action -------</option>";
-                                        parameterhtml += "<option value='OtherText'>Input Text</option></select>";
-                                        inputhtml = "<div class='divTextInput' style='display:none;'><input class='inputTextData' type='text' /><input class='btnCancelTextInput' type='button' value='Cancel' /></div>";
+                                        //parameterhtml += "<option value='-2'>------- Select an action -------</option>";
+                                        //parameterhtml += "<option value='OtherText'>Input Text</option></select>";
+                                        //inputhtml = "<div class='divTextInput' style='display:none;'><input class='inputTextData' type='text' /><input class='btnCancelTextInput' type='button' value='Cancel' /></div>";
+                                        inputhtml = "<input class='inputTextData' type='text' />";
                                     }
                                     else {
-                                        parameterhtml += "<option value='-3'>------- Invalid Parameter Type -------</option>";
+                                        //parameterhtml += "<option value='-3'>------- Invalid Parameter Type -------</option>";
                                     }
                                     parameterhtml += inputhtml + "</li>";
                                 }
@@ -381,23 +386,29 @@ function runScript(event)
                 var paramdesc = $(paramlabel).html();
                 var paramnameinput = $(paramlabel).next();
                 var paramname = $(paramnameinput).val();
+                var paramvalueinput = $(paramnameinput).next().next();
 
-                console.log("Parameter Name: " + paramname);
-                if (selected == "OtherText") {
+                console.log("Parameter Name: " + paramname + " Param value input type: " + $(paramvalueinput).prop('type'));
+                //if (selected == "OtherText") {
+                if ($(paramvalueinput).prop("type").toLowerCase() == "text") {
                     var textinput = $(this).parent().find(".inputTextData");
-                    console.log("Parameter value: " + $(textinput).val());
-                    if ($(textinput).val() != null) {
-                        parameters[paramname] = $(textinput).val();
+                    var paramvalue = $(paramvalueinput).val();
+                    console.log("Parameter value: " + paramvalue);  //$(textinput).val());
+                    //if ($(textinput).val() != null) {
+                    if (paramvalue != null) {
+                        parameters[paramname] = paramvalue;
                         if (paramdesc.toLowerCase().indexOf("organism") >= 0 || paramdesc.toLowerCase().indexOf("species") >= 0)
                         {
-                            species = $(textinput).val();
+                            species = paramvalue;
                             console.log("Species: " + species);
                         }
                     }
                 }
-                else if (selected == "OtherFile") {
-                    var fileinput = $(this).parent().find(".inputFileData");
-                    var file = $(fileinput)[0].files[0];
+                //else if (selected == "OtherFile") {
+                else if ($(paramvalueinput).prop("type").toLowerCase() == "file") {
+                    //var fileinput = $(this).parent().find(".inputFileData");
+                    //var file = $(fileinput)[0].files[0];
+                    var file = $(paramvalueinput)[0].files[0];
 
                     console.log("File parameter: " + file);
                     if (file != null) {
@@ -406,7 +417,7 @@ function runScript(event)
                 }
                 else {
                     // User selected a data item (either from the gaggled web page or received from broadcast)
-                    parameters[paramname] = selected;
+                    parameters[paramname] = ""; //selected;
                 }
             }
         });

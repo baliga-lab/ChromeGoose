@@ -17,6 +17,7 @@ var webhandlers = {
            handlers[9] = new Pipe2Goose();
            handlers[10] = new EMBLString();
            handlers[11] = new HaloAnnotations();
+           handlers[12] = new StampHandler();
        }
        catch (e) {
            console.log("Failed to load handler: " + e);
