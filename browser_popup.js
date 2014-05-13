@@ -23,6 +23,8 @@ function init()
     //$("#divScript").empty();
 
     $("#selGaggleMenu").change(gaggleMenuItemSelected);
+    $("#btnStartBoss").click(startBoss);
+    $("#btnGaggleWebsite").click(openGaggleWebsite);
 
     $(".selGaggleData").change(gaggleDataItemSelected);
     $(".btnCancelTextInput").click(cancelTextInput);
@@ -124,6 +126,25 @@ function setDOMInfo(pageData) {
             }
         }
     }
+}
+
+function startBoss()
+{
+    cg_util.bossStarted(function (started) {
+        console.log("Check boss response: " + started);
+        if (!started) {
+            cg_util.startBoss();
+            $("#imgGaggleConnected").attr("src", "img/connected.png");
+        }
+        else {
+            $("#imgGaggleConnected").attr("src", "img/connected.png");
+        }
+    });
+}
+
+function openGaggleWebsite()
+{
+    cg_util.openNewTab(GAGGLE_HOME, null);
 }
 
 function gaggleMenuItemSelected(event) {

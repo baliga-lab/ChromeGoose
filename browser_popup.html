@@ -13,6 +13,7 @@
     </style>
 
     <link type="text/css" rel="stylesheet" href="jquery-ui-1.10.4.css" />
+    <link href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
 
     <script type="text/javascript" src="jquery-1.11.0.min.js"></script>
     <script type="text/javascript" src="jquery-ui-1.10.4.js"></script>
@@ -43,21 +44,57 @@
     <script src="goose.js"></script>
     <script src="browser_popup.js"></script>
 
+    <script src="bootstrap.min.js"></script>
+
   </head>
   <body>
-    <img id="imgGaggleConnected" src="img/disconnected.png" />
+  <p>
+  <div class="btn-group">
+      <button type="button" class="btn btn-default" data-toggle="tooltip" data-placement="left" title="Not connected"> <span class="label label-danger"><span id="imgGaggleConnected" class="glyphicon glyphicon glyphicon-minus-sign"></span></span></a></button>
+      <button type="button" id="btnStartBoss" class="btn btn-default" data-toggle="tooltip" data-placement="left" title="Start Gaggle Boss" ><span class="glyphicon glyphicon-off"></span></button>
+      <button type="button" id="btnGaggleWebsite" class="btn btn-default" data-toggle="tooltip" data-placement="left" title="Go to Gaggle Website"><span class="glyphicon glyphicon-link"></span></button>
+      <!--<button type="button" class="btn btn-default" data-toggle="tooltip" data-placement="left" title="Send message to websocket"><span class="glyphicon glyphicon-flash"></span></button> -->
+      <button type="button" class="btn btn-default" data-toggle="tooltip" data-placement="left" title="Get help"><span class="glyphicon glyphicon-question-sign"></span></button>
+  </div>
+  </p>
+
+
+    <!--<img id="imgGaggleConnected" src="img/disconnected.png" />
     <select id="selGaggleMenu">
       <option value="-1">-- Select an Action --</option>
       <option value="0">Start the Gaggle Boss</option>
       <option value="1">Gaggle Website</option>
       <option value="1000">Send message to websocket</option>
-    </select><br />
-    <label>Gaggle Data:</label>
+    </select><br /> -->
+
+  <div class="panel panel-success">
+      <div class="panel-heading">
+          <div class="panel-title">Select Data </div>
+      </div>
+      <div class="panel-body">
+          <p class="help-block">Select available data</p>
+          <select class="form-control input-sm selGaggleData">
+              <option value="-1">-- No data --</option>
+
+          </select>
+          <!--<p class="help-block">or Upload a file</p>
+          <input type="file" id="exampleInputFile">
+
+          <div class="divTextInput" style="display:none;">
+            <input class="inputTextData" type="text" /><input class="btnCancelTextInput" type="button" value="Cancel" />
+          </div>
+          <div class="divFileInput" style="display:none;">
+            <input class="inputFileData" type="file" /><input class="btnCancelFileInput" type="button" value="Cancel" />
+          </div> -->
+
+      </div>
+
+  </div>
+
+  <!--  <label>Gaggle Data:</label>
     <div>
         <select class="selGaggleData">
             <option value="-1">-- no data --</option>
-            <!--<option value="OtherText">Other data (Text)</option>
-            <option value="OtherFile">Other data (File)</option> -->
         </select>
         <div class="divTextInput" style="display:none;">
             <input class="inputTextData" type="text" /><input class="btnCancelTextInput" type="button" value="Cancel" />
@@ -65,10 +102,71 @@
         <div class="divFileInput" style="display:none;">
             <input class="inputFileData" type="file" /><input class="btnCancelFileInput" type="button" value="Cancel" />
         </div>
+    </div> -->
+
+    <div class="panel panel-info">
+      <div class="panel-heading">
+          <div class="panel-title">Analyze with Webservices</div>
+      </div>
+      <div class="panel-body">
+          <select id="selTarget">
+              <!--<option value="-1">-- Select a target to broadcast data --</option> -->
+          </select>
+          <input id="btnBroadcast" type="button" value="Run" click="broadcastData"/>
+      </div>
     </div>
-    <select id="selTarget">
-        <!--<option value="-1">-- Select a target to broadcast data --</option> -->
+
+
+    <!--<select id="selTarget">
+
     </select>
-    <input id="btnBroadcast" type="button" value="Run" click="broadcastData"/>
+    <input id="btnBroadcast" type="button" value="Run" click="broadcastData"/> -->
+
+  <div class="panel panel-info">
+      <div class="panel-heading">
+          <div class="panel-title">Analyze with R</div>
+      </div>
+      <div class="panel-body">
+          <p>
+          <div class="dropdown">
+              <button class="btn btn-default btn-group-justified dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown">
+                  <div class="pull-left"><span class="glyphicon glyphicon-sort-by-attributes"> </span> Data Processing</div>
+                  <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+                  <li role="presentation" class="dropdown-header">Normalization</li>
+                  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Quantile Normalization | <span class="glyphicon glyphicon-question-sign"></span></a></li>
+                  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Plot Data | <span class="glyphicon glyphicon-question-sign"></span></a></li>
+                  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Data Statistics | <span class="glyphicon glyphicon-question-sign"></span></a></li>
+                  <li role="presentation" class="divider"></li>
+                  <li role="presentation" class="dropdown-header">Dropdown header</li>
+              </ul>
+          </div>
+          </p>
+
+
+          <p>
+          <div class="dropdown">
+              <button class="btn btn-default btn-group-justified dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown">
+                  <div class="pull-left"><span class="glyphicon glyphicon-tasks"> </span> Enrichment Analysis</div>
+                  <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+                  <li role="presentation" class="dropdown-header">Gene Set</li>
+                  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Gene Set Enrichment | <span class="glyphicon glyphicon-question-sign"></span></a></li>
+                  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Module Enrichment | <span class="glyphicon glyphicon-question-sign"></span></a></li>
+                  <li role="presentation"><a role="menuitem" tabindex="-1" href="#"></a></li>
+                  <li role="presentation" class="divider"></li>
+                  <li role="presentation" class="dropdown-header">Functional</li>
+                  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">KEGG Enrichment | <span class="glyphicon glyphicon-question-sign"></span></a></li>
+                  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">GO Enrichment | <span class="glyphicon glyphicon-question-sign"></span></a></li>
+                  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">COG Enrichment | <span class="glyphicon glyphicon-question-sign"></span></a></li>
+              </ul>
+          </div>
+          </p>
+
+      </div>
+  </div>
+
   </body>
 </html>
