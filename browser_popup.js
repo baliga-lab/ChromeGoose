@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 var webHandlers = [];
+var opencpuHandlers = {};
+
 var currentPageData = [];
 var bossConnected = false;
 var currentScriptToRun = null;
@@ -29,6 +31,8 @@ function init()
     $(".selGaggleData").change(gaggleDataItemSelected);
     $(".btnCancelTextInput").click(cancelTextInput);
     $(".btnCancelFileInput").click(cancelFileInput);
+
+    $("#ahrefGeneSetEnrichment").click(geneSetEnrichmentSelected);
 
     getGeese(function (response) {
         //alert("Listening geese: " + response);
@@ -78,10 +82,11 @@ function init()
     // Load R packages from OpenCPU
     var selGaggleDataParent = $(".selGaggleData").parent();
     //alert($(selGaggleDataParent)[0].outerHTML);
-    webhandlers.loadOpenCPU(selGaggleDataParent, function(rscriptwrapper) {
+    opencpuHandlers = webhandlers.loadOpenCPU(selGaggleDataParent);
+    /*, function(rscriptwrapper) {
         if (rscriptwrapper != null)
             $("#selTarget").append($("<option></option>").attr("value", i.toString()).text(rscriptwrapper.getName()));
-    });
+    }); */
 
     webhandlers.loadWorkflowComponents("selGaggleData", function(rscriptwrapper) {
         if (rscriptwrapper != null)
@@ -380,6 +385,13 @@ function broadcastData()
             }
         }); */
     }
+}
+
+function geneSetEnrichmentSelected()
+{
+    var handler = opencpuHandlers["gagglefunctionalenrichment"];
+    console.log("Gene set enrichment handler " + handler.getName());
+    broadcastFetchedData(null, handler);
 }
 
 document.addEventListener('DOMContentLoaded', function () {
