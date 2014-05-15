@@ -12,6 +12,7 @@
                                 "handlers/kegg.js",
                                 "handlers/pipe2SearchHandle.js",
                                 "handlers/stamp.js",
+                                "handlers/MRMAtlasGoose.js",
                                 "handlers/rscriptwrapper.js"],
 
   //"content_security_policy": "script-src 'self' https://localhost:8000 https://networks.systemsbiology.net; object-src 'self'",

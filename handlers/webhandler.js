@@ -18,6 +18,7 @@ var webhandlers = {
            handlers[10] = new EMBLString();
            handlers[11] = new HaloAnnotations();
            handlers[12] = new StampHandler();
+           handlers[13] = new MRMAtlas();
        }
        catch (e) {
            console.log("Failed to load handler: " + e);
