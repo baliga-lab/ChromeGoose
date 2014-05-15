@@ -127,7 +127,7 @@ function setDOMInfo(pageData) {
                 $(".selGaggleData").append($("<option></option>").attr("value", guid).text(text));  //(i).toString()
 
                 // Change the text of the "no data" option
-                $(".selGaggleData option[value=-1]").text("--- Select a data item ----");
+                //$(".selGaggleData option[value=-2]").text("--- Select a data item ----");
             }
         }
     }
