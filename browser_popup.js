@@ -203,9 +203,11 @@ function gaggleDataItemSelected(event)
     console.log("Selected data value: " + selected);
     if (selected == "OtherText") {
         showDataInput(source, ".divTextInput");
+        $(".divFileInput").hide();
     }
     else if (selected == "OtherFile") {
         showDataInput(source, ".divFileInput");
+        $(".divTextInput").hide();
     }
 }
 
@@ -327,6 +329,33 @@ function broadcastFetchedData(jsonobj, handler)
     }
 }
 
+function generateNamelist(nameliststring)
+{
+    if (nameliststring != null && nameliststring.length > 0)
+    {
+        console.log("Generating namelist from " + nameliststring);
+        var list = new Array();
+        var splitted = nameliststring.split("\n");
+        for (var i = 0; i < splitted.length; i++)
+        {
+            var line = splitted[i];
+            console.log("Line: " + line);
+            var delimitted = line.split(";");
+            if (delimitted.length == 1)
+                delimitted = line.split("\t");
+            if (delimitted.length == 1)
+                delimitted = line.split(",");
+            for (var j = 0; j < delimitted.length; j++) {
+                console.log("Name " + delimitted[j]);
+                list.push(delimitted[j]);
+            }
+        }
+        var namelist = new Namelist("", list.length, "", list);
+        return namelist;
+    }
+    return null;
+}
+
 function broadcastData()
 {
     //alert("Broadcasting ...");
@@ -344,31 +373,59 @@ function broadcastData()
             try {
                 var pagedata = null;
                 var source = null;
-                //if (selecteddataindex >= 0) {
-                //    pagedata = currentPageData[parseInt(selecteddataindex)];
-                //    source = (pagedata["source"] == null) ? pagedata.source : pagedata["source"];
-                //}
-                pagedata = cg_util.findDataByGuid(currentPageData, selecteddataindex);
-                if (pagedata != null)
-                    source = (pagedata["source"] == null) ? pagedata.source : pagedata["source"];
-                console.log("Data from source: " + source);
-                if (source == "Page") {
-                    cg_util.getActiveTab(function (tab) {
-                        if (tab != null) {
-                            var msg = new Message(MSG_FROM_POPUP, chrome.tabs, tab.id, MSG_SUBJECT_GETDATABYINDEX,
-                                                   {handlerindex: target, dataindex: selecteddataindex }, broadcastFetchedData);
-                            msg.send();
+                if (selecteddataindex == "OtherText") {
+                    var namelisttext = $(".inputTextData").val();
+                    console.log("Namelist test from input: " + namelisttext);
+                    var namelist = generateNamelist(namelisttext);
+                    if (namelist != null) {
+                        var dataobj = {};
+                        dataobj.data = namelist;
+                        broadcastFetchedData(JSON.stringify(dataobj), handler);
+                    }
+                }
+                else if (selecteddataindex == "OtherFile") {
+                    var reader = new FileReader();
+                    var file = $(".inputFileData")[0].files[0];
+                    reader.onload = function(e) {
+                        var contents = e.target.result;
+                        console.log( "Got the file.\n"
+                          +"name: " + file.name + "\n"
+                          +"type: " + file.type + "\n"
+                          +"size: " + file.size + " bytes\n"
+                          + "Content: " + contents
+                        );
+                        var namelist = generateNamelist(contents);
+                        if (namelist != null) {
+                            var dataobj = {};
+                            dataobj.data = namelist;
+                            broadcastFetchedData(JSON.stringify(dataobj), handler);
                         }
-                    });
-                }
-                else if (source == "Broadcast" || source == null) {
-                    console.log("Send broadcast data to " + handler.getName());
-                    if (pagedata != null)
-                        broadcastFetchedData(pagedata.jsondata, handler);
-                    else
-                        broadcastFetchedData(null, handler);
-                }
+                    }
 
+                    reader.readAsText(file);
+                }
+                else {
+                    pagedata = cg_util.findDataByGuid(currentPageData, selecteddataindex);
+                    if (pagedata != null)
+                        source = (pagedata["source"] == null) ? pagedata.source : pagedata["source"];
+                    console.log("Data from source: " + source);
+                    if (source == "Page") {
+                        cg_util.getActiveTab(function (tab) {
+                            if (tab != null) {
+                                var msg = new Message(MSG_FROM_POPUP, chrome.tabs, tab.id, MSG_SUBJECT_GETDATABYINDEX,
+                                                       {handlerindex: target, dataindex: selecteddataindex }, broadcastFetchedData);
+                                msg.send();
+                            }
+                        });
+                    }
+                    else if (source == "Broadcast" || source == null) {
+                        console.log("Send broadcast data to " + handler.getName());
+                        if (pagedata != null)
+                            broadcastFetchedData(pagedata.jsondata, handler);
+                        else
+                            broadcastFetchedData(null, handler);
+                    }
+                }
             }
             catch(e) {
                 console.log("broadcastData " + e);
