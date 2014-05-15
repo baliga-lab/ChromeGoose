@@ -19,6 +19,7 @@ var webhandlers = {
            handlers[11] = new HaloAnnotations();
            handlers[12] = new StampHandler();
            handlers[13] = new MRMAtlas();
+           handlers[14] = new MaggieHandler();
        }
        catch (e) {
            console.log("Failed to load handler: " + e);
