@@ -143,6 +143,11 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                         }
                     }
                 }
+                else if (msg.subject == MSG_SUBJECT_GETORGANISMSHTML) {
+                    if (sendResponse != null) {
+                        sendResponse(organismSelectionHtml);
+                    }
+                }
             }
         }
         else if (msg.from && (msg.from == MSG_FROM_WEBSOCKET)) {
@@ -172,6 +177,27 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 
 // Establish a websocket with the Boss
 createWebSocket(BossWebSocketUrl, webSocketOpenCallback, parseData);
+
+var organismSelectionHtml = "";
+function getOrganisms(callback) {
+    cg_util.httpGet(GAGGLE_SERVER + "/workflow/getorganisms", function(jsonorganisms) {
+        // Get organisms from network portal
+        //alert(jsonorganisms);
+        var organismsobj = JSON.parse(jsonorganisms);
+        // Generate the organism selection html
+        organismSelectionHtml = "<select>";
+        for (var i in organismsobj) {
+
+            var organism = organismsobj[i];
+            //alert(organism);
+            organismSelectionHtml += "<option value='" + organism.shortname + "'>" + organism.name + "</option>";
+        }
+        organismSelectionHtml += "</select>";
+        if (callback)
+            callback(organismSelectionHtml);
+    });
+}
+getOrganisms(null);
 
 /* Enable the page-action for the requesting tab */
             //chrome.pageAction.show(sender.tab.id);

@@ -5,12 +5,28 @@ function RScriptWrapper(name, script, datasrcelement)
 {
     try {
         handler_base.call(this, name, true, 'handlers/rscriptwrapper.js', null, null);
-        var packagemetadata = cg_util.httpGet(OPENCPU_SERVER + "/library/" + this._name + "/www/" + this._name + ".txt");
-        console.log("Package meta data: " + packagemetadata);
+        cg_util.httpGet(OPENCPU_SERVER + "/library/" + this._name + "/www/" + this._name + ".txt", this.handleMetaData);
 
-        this._packageMetaData = (packagemetadata == null) ? null : JSON.parse(packagemetadata);
-        if (packagemetadata == null) {
-            var robjects = cg_util.httpGet(OPENCPU_SERVER + "/library/" + name + "/R");
+        this._script = script;
+        this._functions = new Array();
+
+        // datasourceid is the id of the DOM select element that contains the parsed gaggle data
+        this._datasourceelement = datasrcelement;
+    }
+    catch (e) {
+        console.log("Failed to initialize RScriptWrapper: " + e);
+    }
+}
+
+RScriptWrapper.prototype = new handler_base();
+
+RScriptWrapper.prototype.constructor = RScriptWrapper;
+
+RScriptWrapper.prototype.handleMetaData = function(packagemetadata) {
+    console.log("Package meta data: " + packagemetadata);
+    this._packageMetaData = (packagemetadata == null) ? null : JSON.parse(packagemetadata);
+    if (packagemetadata == null) {
+        cg_util.httpGet(OPENCPU_SERVER + "/library/" + name + "/R", function(robjects) {
             console.log("R Objects: " + robjects);
             if (robjects != null) {
                 var robjsplit = robjects.split("\n");
@@ -25,23 +41,11 @@ function RScriptWrapper(name, script, datasrcelement)
                     }
                 }
             }
-
-            this._script = script;
-            this._functions = new Array();
-        }
-        // datasourceid is the id of the DOM select element that contains the parsed gaggle data
-        this._datasourceelement = datasrcelement;
-    }
-    catch (e) {
-        console.log("Failed to initialize RScriptWrapper: " + e);
+        });
     }
 }
 
-RScriptWrapper.prototype = new handler_base();
-
-RScriptWrapper.prototype.constructor = RScriptWrapper;
-
-RScriptWrapper.prototype.processUI = function(pageData) {
+RScriptWrapper.prototype.processUI = function(pageData, organismshtml) {
     //$("#divScript").empty();
     console.log("Generating input html for package " + this._name + " " + this._packageMetaData);
     var resulthtml = "<div id='divDataDialog' style='display: none'><div id='divAccordionFunctions'>";
@@ -124,7 +128,8 @@ RScriptWrapper.prototype.processUI = function(pageData) {
                                         //inputhtml = "<div class='divTextInput' style='display:none;'><input class='inputTextData' type='text' /><input class='btnCancelTextInput' type='button' value='Cancel' /></div>";
                                         inputhtml = "<input class='inputTextData' type='text' />";
                                     }
-                                    else {
+                                    else if (paramtype == "organism") {
+                                        inputhtml += (organismshtml != null && organismshtml.length > 0) ? organismshtml : "<input class='inputTextData' type='text' />";
                                         //parameterhtml += "<option value='-3'>------- Invalid Parameter Type -------</option>";
                                     }
                                     parameterhtml += inputhtml + "</li>";

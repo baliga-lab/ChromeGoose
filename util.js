@@ -313,18 +313,25 @@ getFileFromUrl: function (url, callback) {
     }
 },
 
-httpGet: function(theUrl)
+httpGet: function(theUrl, callback)
 {
     //alert("Http Get " + theUrl);
     var xmlHttp = null;
     try {
         xmlHttp = new XMLHttpRequest();
-        xmlHttp.open( "GET", theUrl, false );
+        xmlHttp.onreadystatechange = function () {
+            if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+                if (callback != null)
+                    callback(xmlHttp.responseText);
+            }
+        };
+
+        xmlHttp.open( "GET", theUrl, true );
         xmlHttp.send( null );
         return xmlHttp.responseText;
     }
     catch (e) {
-        alert(e);
+        console.log("HTTP Get failed: " + e);
     }
 },
 

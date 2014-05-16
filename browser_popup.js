@@ -82,16 +82,14 @@ function init()
     // Load R packages from OpenCPU
     var selGaggleDataParent = $(".selGaggleData").parent();
     //alert($(selGaggleDataParent)[0].outerHTML);
-    opencpuHandlers = webhandlers.loadOpenCPU(selGaggleDataParent);
-    /*, function(rscriptwrapper) {
+    webhandlers.loadOpenCPU(selGaggleDataParent, function(handlers) {
+        opencpuHandlers = handlers;
+    });
+
+    /*webhandlers.loadWorkflowComponents("selGaggleData", function(rscriptwrapper) {
         if (rscriptwrapper != null)
             $("#selTarget").append($("<option></option>").attr("value", i.toString()).text(rscriptwrapper.getName()));
     }); */
-
-    webhandlers.loadWorkflowComponents("selGaggleData", function(rscriptwrapper) {
-        if (rscriptwrapper != null)
-            $("#selTarget").append($("<option></option>").attr("value", i.toString()).text(rscriptwrapper.getName()));
-    });
 
     // Verify if Boss is started
     //cg_util.bossStarted(function (bossConnected) {
@@ -316,12 +314,20 @@ function broadcastFetchedData(jsonobj, handler)
                     }
                 }
             }
+            else if (type.toLowerCase() == "network") {
+
+            }
         }
         else {
             // The handler might be a script wrapper, we need to show the UI.
             if (handler.processUI != null)
                 console.log("Processing script wrapper...");
-                handler.processUI(currentPageData);
+                var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_GETORGANISMSHTML,
+                                     null, function(organismshtml) {
+                                        handler.processUI(currentPageData, organismshtml);
+                                     });
+                msg.send();
+
         }
     }
     catch(e) {

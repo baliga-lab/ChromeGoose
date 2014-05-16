@@ -17,6 +17,7 @@ var MSG_SUBJECT_INSERTPIPE2SEARCHHANDLE = "InsertPIPE2SearchHandle";
 var MSG_SUBJECT_PIPE2DATA = "PIPE2DATA";
 var MSG_SUBJECT_PIPE2SEARCHRESULT = "PIPE2SearchResult";
 var MSG_SUBJECT_OPENTABANDEXECUTE = "OpenAndExecuteCode";
+var MSG_SUBJECT_GETORGANISMSHTML = "GetOrganismsHtml";
 
 function Message(from, to, targetid, subject, data, callback)
 {
