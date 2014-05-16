@@ -30,6 +30,12 @@ function init()
             msg.send();
         }
     });
+
+    var control = document.getElementById("inputDataParsingFinishSignal");
+    if (control == null)
+        getPageData();
+    else
+        parsePage();
 }
 
 function execRScript(broadcastData) {
@@ -83,6 +89,28 @@ function execRScript(broadcastData) {
     });
 }
 
+// The output page of rscriptwrapper has javascript code to generate gaggled data.
+// We need to wait after the code is done to parse the page.
+// We hook up to the load event to wait for javascript to finish running
+// before parsing the page.
+
+function parsePage() {
+    //alert("Parsing page...");
+    var control = $("#inputDataParsingFinishSignal");
+    if (control != null) {
+        var jsInitChecktimer = setInterval (checkForJS_Finish, 500);
+
+        function checkForJS_Finish () {
+            if ($("#inputDataParsingFinishSignal").val() == "True")
+            {
+                clearInterval (jsInitChecktimer);
+                getPageData();
+            }
+        }
+    }
+    else
+        getPageData();
+}
 
 function getPageData()
 {
@@ -254,4 +282,4 @@ chrome.runtime.onMessage.addListener(function(msg, sender, response) {
 });
 
 init();
-getPageData();
+//getPageData();
