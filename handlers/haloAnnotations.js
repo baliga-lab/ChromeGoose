@@ -108,4 +108,4 @@ HaloAnnotations.prototype.handleNameList = function(namelist) {
 }
 
 // register website handler
-var haloAnnotation = new HaloAnnotation();
+var haloAnnotation = new HaloAnnotations();

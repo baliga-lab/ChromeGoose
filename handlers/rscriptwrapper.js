@@ -1,10 +1,13 @@
 // A RScriptWrapper wraps a R script/package, which contains one or many
 // R functions. We parse the script to extract the functions and their parameters
-
+var currentRScriptWrapper = null;
 function RScriptWrapper(name, script, datasrcelement)
 {
     try {
         handler_base.call(this, name, true, 'handlers/rscriptwrapper.js', null, null);
+
+        // Set the current rscriptwrapper to set the metadata in the callback funtion
+        currentRScriptWrapper = this;
         cg_util.httpGet(OPENCPU_SERVER + "/library/" + this._name + "/www/" + this._name + ".txt", this.handleMetaData);
 
         this._script = script;
@@ -22,23 +25,32 @@ RScriptWrapper.prototype = new handler_base();
 
 RScriptWrapper.prototype.constructor = RScriptWrapper;
 
+RScriptWrapper.prototype.setPackageMetaData = function(packageMetaData)
+{
+    this._packageMetaData = packageMetaData;
+}
+
 RScriptWrapper.prototype.handleMetaData = function(packagemetadata) {
     console.log("Package meta data: " + packagemetadata);
-    this._packageMetaData = (packagemetadata == null) ? null : JSON.parse(packagemetadata);
-    if (packagemetadata == null) {
-        cg_util.httpGet(OPENCPU_SERVER + "/library/" + name + "/R", function(robjects) {
+    var packageMetaData = (packagemetadata == null) ? null : JSON.parse(packagemetadata);
+    if (currentRScriptWrapper != null)
+        currentRScriptWrapper.setPackageMetaData(packageMetaData);
+
+    if (packagemetadata == null && currentRScriptWrapper != null) {
+        cg_util.httpGet(OPENCPU_SERVER + "/library/" + this._name + "/R", function(robjects) {
             console.log("R Objects: " + robjects);
             if (robjects != null) {
                 var robjsplit = robjects.split("\n");
                 for (var j = 0; j < robjsplit.length; j++) {
                     var robj = robjsplit[j];
                     console.log("Parsing R obj " + robj);
-                    var rscript = cg_util.httpGet(OPENCPU_SERVER + "/library/" + this._name + "/R/" + robj);
-                    //console.log("R script: " + rscript);
-                    if (rscript.indexOf("function") == 0) {
-                        // This is a R function script
-                        this.setScript(robj, rscript);
-                    }
+                    cg_util.httpGet(OPENCPU_SERVER + "/library/" + this._name + "/R/" + robj, function(rscript) {
+                        //console.log("R script: " + rscript);
+                        if (rscript.indexOf("function") == 0) {
+                            // This is a R function script
+                            currentRScriptWrapper.setScript(robj, rscript);
+                        }
+                    });
                 }
             }
         });
@@ -47,7 +59,7 @@ RScriptWrapper.prototype.handleMetaData = function(packagemetadata) {
 
 RScriptWrapper.prototype.processUI = function(pageData, organismshtml) {
     //$("#divScript").empty();
-    console.log("Generating input html for package " + this._name + " " + this._packageMetaData);
+    console.log("Generating input html for package " + this._name + " " + this._packageMetaData + " " + organismshtml);
     var resulthtml = "<div id='divDataDialog' style='display: none'><div id='divAccordionFunctions'>";
     if (this._packageMetaData != null) {
         var pagedatahtml = "<select class='selGaggleData' style='display: none'></select>";
@@ -422,7 +434,7 @@ function runScript(event)
                 }
                 else {
                     // User selected a data item (either from the gaggled web page or received from broadcast)
-                    parameters[paramname] = ""; //selected;
+                    parameters[paramname] = $(paramvalueinput).val(); //selected;
                 }
             }
         });
