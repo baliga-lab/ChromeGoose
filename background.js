@@ -4,6 +4,21 @@ var broadcastData = new Array();  // Data received from other geese
 var pipe2NumTabs = 0;
 var pipe2NotFound = 0;
 var pipe2TabResponses = new Array();
+var GAGGLE_OUTPUT_PAGE = "gaggle_output.html";
+
+
+// Inject data to the gaggle output page
+function injectOutput(tab, data)
+{
+    if (tab != null && data != null) {
+        var scripturl = data["script"];
+        var codetorun = data["code"];
+        cg_util.injectJavascriptToTab(tab.id, scripturl, function(result) {
+            cg_util.injectCodeToTab(tab.id, codetorun, null);
+        });
+    }
+}
+
 chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
     /* First, validate the message's structure */
     //alert("Event page event received: " + msg.from + " " + msg.subject);
@@ -29,10 +44,27 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                     var data = JSON.parse(msg.data);
                     if (data != null) {
                         var url = data['outputurl'];
-                        console.log("Open url for RScript: " + url);
-                        cg_util.openNewTab(url, function(tab) {
-
+                        var scripturl = data['script'];
+                        console.log("Open url for RScript: " + url + " script url: " + scripturl);
+                        // We inject the data to the output page
+                        chrome.tabs.getAllInWindow(null, function(tabs){
+                            var found = false;
+                            for (var i = 0; i < tabs.length; i++) {
+                                if (tabs[i].url.toLowerCase().indexOf(GAGGLE_OUTPUT_PAGE) >= 0) {
+                                    found = true;
+                                    injectOutput(tabs[i], data);
+                                }
+                            }
+                            if (!found) {
+                                cg_util.openNewTab(GAGGLE_SERVER + "/static/" + GAGGLE_OUTPUT_PAGE, function(tab) {
+                                    injectOutput(tab, data);
+                                });
+                            }
                         });
+
+                        //cg_util.openNewTab(url, function(tab) {
+                        //
+                        //});
                     }
                     if (sendResponse != null)
                         sendResponse();

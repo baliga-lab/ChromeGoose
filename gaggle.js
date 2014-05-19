@@ -64,10 +64,12 @@ function execRScript(broadcastData) {
         var openurl = OPENCPU_SERVER + "/library/" + packagename + "/www/" + funcname
             + "_output.html?host=" + OPENCPU_SERVER + "&sessionID=" + session.getKey() + "&species=" + species;
         console.log("Open output html page: " + openurl);
+        var scripturl = OPENCPU_SERVER + "/library/" + packagename + "/www/" + funcname + "_script.js";
+        var code = "parseData('" + packagename + "', '" + funcname + "', '" + session.getKey() + "', '" + species + "');"; // All the opencpu output data page should have this function
 
         // Pass an event including the open url to the extension
         var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_RSCRIPTEVENT,
-                              {outputurl: openurl}, function() {
+                              {outputurl: openurl, script: scripturl, code: code}, function() {
                               });
         msg.send();
 
