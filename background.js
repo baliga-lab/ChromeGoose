@@ -52,7 +52,10 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                             for (var i = 0; i < tabs.length; i++) {
                                 if (tabs[i].url.toLowerCase().indexOf(GAGGLE_OUTPUT_PAGE) >= 0) {
                                     found = true;
-                                    injectOutput(tabs[i], data);
+                                    chrome.tabs.update(tabs[i].id, {active: true}, function(tab) {
+                                        injectOutput(tabs[i], data);
+                                    });
+                                    break;
                                 }
                             }
                             if (!found) {

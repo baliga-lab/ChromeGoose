@@ -56,7 +56,7 @@ function execRScript(broadcastData) {
     console.log("Package name: " + packagename + ", Function name: " + funcname);
     ocpu.seturl(OPENCPU_SERVER + "/library/" + packagename + "/R");
     console.log("Parameter JSON string: " + JSON.stringify(parameters));
-    var species = receivedData["species"];
+    var species = parameters["org"];
     console.log("Package species: " + species);
 
     var req = ocpu.call(funcname, parameters, function(session){
@@ -64,8 +64,8 @@ function execRScript(broadcastData) {
         var openurl = OPENCPU_SERVER + "/library/" + packagename + "/www/" + funcname
             + "_output.html?host=" + OPENCPU_SERVER + "&sessionID=" + session.getKey() + "&species=" + species;
         console.log("Open output html page: " + openurl);
-        var scripturl = OPENCPU_SERVER + "/library/" + packagename + "/www/" + funcname + "_script.js";
-        var code = "parseData('" + packagename + "', '" + funcname + "', '" + session.getKey() + "', '" + species + "');"; // All the opencpu output data page should have this function
+        var scripturl = "handlers/" + funcname.toLowerCase() + ".js";
+        var code = "parseData('" + OPENCPU_SERVER + "', '" + packagename + "', '" + funcname + "', '" + session.getKey() + "', '" + species + "');"; // All the opencpu output data page should have this function
 
         // Pass an event including the open url to the extension
         var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_RSCRIPTEVENT,
@@ -100,12 +100,18 @@ function parsePage() {
     //alert("Parsing page...");
     var control = $("#inputDataParsingFinishSignal");
     if (control != null) {
-        var jsInitChecktimer = setInterval (checkForJS_Finish, 500);
+        var jsInitChecktimer = setInterval (checkForJS_Finish, 2000);
 
         function checkForJS_Finish () {
             if ($("#inputDataParsingFinishSignal").val() == "True")
             {
-                clearInterval (jsInitChecktimer);
+                // Clear the array since we are on the same page, and we do not want to
+                // show the same data item multiple times
+                pageGaggleData.length = 0;
+
+                $("#inputDataParsingFinishSignal").val("False");
+                //pageGaggleData = {};
+                //clearInterval (jsInitChecktimer);
                 getPageData();
             }
         }
