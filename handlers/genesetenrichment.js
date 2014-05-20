@@ -118,7 +118,7 @@ function parseData(host, packagename, functionname, sessionid, species)
     
     console.log(newdata);
     newdata = newdata.replace(/\n/g, "<br />");
-    newdata = "<div class='divGaggleOutputUnit'>" + newdata + "</div>";
+    newdata = "<p><div class='panel panel-primary'><div class='panel-heading'><h4 class='panel-title'> Output - Gene Set Enrichment - " + species + "</h4></div><div class='divGaggleOutputUnit'><div class='panel-body'>" + newdata + "</div></div></div></p>";
     var html = $("#divGaggleOutput").html();
     html += newdata;
     $("#divGaggleOutput").html(html);
