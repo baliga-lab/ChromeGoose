@@ -86,6 +86,9 @@ KEGG.prototype.toKeggSpeciesCode = function(s) {
 		}
 	}
 
+    if (s != null && s.length > 0)
+        return s;
+
 	// return "map" which means get the reference pathway
 	return "map";
 }

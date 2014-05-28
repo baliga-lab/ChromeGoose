@@ -15,6 +15,56 @@ function generateGaggleDataHtml(organism, moduleid, names)
   return html;
 }
 
+function generateEnrichmentHtml(species, linefields, propertyfields)
+{
+    if (linefields != null &&  propertyfields != null && linefields.length == propertyfields.length) {
+        var html = "<div class='gaggle-enrichment' style='display: none'>";
+        for (var i = 0; i < linefields.length; i++) {
+            var fieldvalue = linefields[i];
+            var ftype="value";
+            if (i == 1) {
+                ftype = "url";
+                fieldvalue = "http://networks.systemsbiology.net/" + species + "/network/1/module/" + linefields[i];
+            }
+            html += "<label><input value='" + propertyfields[i] + "' /><input value='" + fieldvalue + "' /><input value='" + ftype + "' /></label>";
+        }
+        html += "</div>";
+        return html;
+    }
+    return "";
+}
+
+
+function getFields(line, delimit)
+{
+    console.log("Get fields from line " + line + " delimit " + delimit.charCodeAt(0));
+    line = line.trim();
+    var fields = new Array();
+    if (line != null) {
+        var start = 0;
+        do
+        {
+            var loc = line.indexOf(delimit, start);
+            if (loc < 0)
+                loc = line.length;
+            //console.log("delimit location: " + loc);
+            if (loc > start) {
+                var value = line.substr(start, loc - start);
+                console.log("Get Field value: " + value);
+                fields.push(value);
+
+                start = loc;
+                //console.log("Character at " + start + ": " + line.charCodeAt(start));
+                while (line.charCodeAt(start) == delimit.charCodeAt(0) && start < line.length) {
+                   start++;
+                }
+            }
+        }
+        while (start < line.length);
+    }
+    return fields;
+}
+
 function parseData(host, packagename, functionname, sessionid, species)
 {
   /*var queries = {};
@@ -31,10 +81,16 @@ function parseData(host, packagename, functionname, sessionid, species)
     
     var splitted = data.split("\n");
     var newdata = splitted[0] + "<br />";
+    var enrichmentfields = getFields(splitted[0], ' ');
+    console.log("Enrichment fields: " + enrichmentfields);
+
     var i = 1;
     var modules = new Array();
     var namelists = new Array();
-    
+    var wrapdiv = document.createElement("div");
+    wrapdiv.setAttribute("id", "divNewGaggledData");
+
+    var gaggledhtml = "";
     while(i < splitted.length) {
        var line = splitted[i];
        if (line == null || line.length == 0)
@@ -66,8 +122,10 @@ function parseData(host, packagename, functionname, sessionid, species)
             var html = generateGaggleDataHtml(species, moduleid, genenames);
             if (html != null) {
               console.log("Generated html: " + html);
-              var existinghtml = $("#divGaggledData").html();
-              $("#divGaggledData").html(existinghtml + html);
+              gaggledhtml += html;
+
+              //var existinghtml = $("#divGaggledData").html();
+              //$("#divGaggledData").html(existinghtml + html);
             }
           }
           while (modulecnt < modules.length && i < splitted.length);
@@ -75,7 +133,14 @@ function parseData(host, packagename, functionname, sessionid, species)
        }
        else {
          i++;
-         
+         line = line.replace("x", " ");
+         var linefields = getFields(line, ' ');
+         console.log("Line fields: " + linefields);
+         var enrichmenthtml = generateEnrichmentHtml(species, linefields, enrichmentfields);
+         console.log("enrichment line html: " + enrichmenthtml);
+         gaggledhtml += enrichmenthtml;
+
+
          var newline = "";
          var findex = 0;
          var start = 0;
@@ -115,16 +180,24 @@ function parseData(host, packagename, functionname, sessionid, species)
          newdata += newline + "<br />";
        }
     }
-    
+    console.log("gaggled html: " + gaggledhtml);
+    $(wrapdiv).html(gaggledhtml);
+    document.body.appendChild(wrapdiv);
+    // Send custom event to page
+    console.log("Send GaggleDataAddEvent event...");
+    var event = new CustomEvent('GaggleDataAddEvent', {detail: {funcname: functionname, species: species},
+                                    bubbles: true, cancelable: false});
+    document.dispatchEvent(event);
+
     console.log(newdata);
-    newdata = newdata.replace(/\n/g, "<br />");
-    newdata = "<p><div class='panel panel-primary'><div class='panel-heading'><h4 class='panel-title'> Output - Gene Set Enrichment - " + species + "</h4></div><div class='divGaggleOutputUnit'><div class='panel-body'>" + newdata + "</div></div></div></p>";
-    var html = $("#divGaggleOutput").html();
-    html += newdata;
-    $("#divGaggleOutput").html(html);
-    $(".divGaggleOutputUnit").draggable({
+    //newdata = newdata.replace(/\n/g, "<br />");
+    //newdata = "<p><div class='panel panel-primary divGaggleOutputUnit'><div class='panel-heading'><h4 class='panel-title'> Output - Gene Set Enrichment - " + species + "</h4></div><div class='divGaggleDataSet'><div class='panel-body'>" + newdata + "</div></div></div></p>";
+    //var html = $("#divGaggleOutput").html();
+    //html += newdata;
+    //$("#divGaggleOutput").html(html);
+    //$(".divGaggleOutputUnit").draggable({
       
-    });
+    //});
     $("#inputDataParsingFinishSignal").val("True");
   });
 }
