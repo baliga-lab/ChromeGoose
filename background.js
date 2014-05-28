@@ -25,7 +25,14 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
     try {
         if (msg.from && (msg.from == MSG_FROM_CONTENT)) {
              if (msg.subject) {
-                if (msg.subject == MSG_SUBJECT_RETRIEVEDATA) {
+                if (msg.subject == MSG_SUBJECT_STOREDATA)  {
+                    // data is json stringified
+                    console.log("Received data storage request from content page: " + msg.data);
+                    dataToBeProcessed = msg.data;
+                    if (sendResponse != null)
+                        sendResponse("Done!");
+                }
+                else if (msg.subject == MSG_SUBJECT_RETRIEVEDATA) {
                     //alert("Received retrieval request from content script " + dataToBeProcessed);
                     var handlerdata = JSON.parse(msg.data);
                     var handler = handlerdata["handler"];

@@ -7,6 +7,19 @@ function init()
     // Load web handler content script
     webHandlers = webhandlers.loadContentPageHandlers();
 
+    document.addEventListener("GaggleOutputPageEvent", function(e) {
+        console.log("Received data from Gaggle Output Page " + e.detail);
+        var data = e.detail.data;
+        var handlerName = (e.detail)["handler"];
+        console.log("Data " + data + " handler " + handlerName);
+
+        if (data != null) {
+            var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_STOREDATA,
+                                  { handler: handlerName, source: data }, null);
+            msg.send();
+        }
+    });
+
     document.addEventListener("RScriptWrapperEvent", function(e) {
         var outputurl = e.detail.outputurl;
         if (outputurl!= null) {

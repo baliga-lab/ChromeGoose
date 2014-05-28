@@ -9,6 +9,7 @@
 
 function David()
 {
+    //alert("This is david!");
     handler_base.call(this, "DAVID", true, "handlers/david.js", "http://david.abcc.ncifcrf.gov/");
 }
 
@@ -18,7 +19,7 @@ David.prototype.constructor = David;
 
 David.prototype.scanPage = function ()
 {
-    console.log("DAVID scan page...");
+    //alert("DAVID scan page...");
     cg_util.checkHandlerData(david, this.processData);
 
     /*var url = document.location.href;
@@ -179,4 +180,6 @@ David.prototype.insertNamelistIntoPasteBox = function(species, names) {
 
 
 var david = new David();
+if (parent == top)
+    david.scanPage();
 //david.scanPage();
