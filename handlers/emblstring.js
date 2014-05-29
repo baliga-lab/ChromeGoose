@@ -231,5 +231,6 @@ EMBLString.prototype.toStringSpeciesName = function(species) {
 }; */
 
 var emblString = new EMBLString();
-
+if (parent == top)
+    emblString.scanPage();
 //FG_addWebsiteHandler("EMBL String", FG_emblString);

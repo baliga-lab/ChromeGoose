@@ -180,6 +180,8 @@ David.prototype.insertNamelistIntoPasteBox = function(species, names) {
 
 
 var david = new David();
+// If I am injected in an iframe within the gaggle_output.html,
+// I need to check if there is data for me
 if (parent == top)
     david.scanPage();
 //david.scanPage();
