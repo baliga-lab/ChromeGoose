@@ -1,4 +1,4 @@
-var dataToBeProcessed = null; // Data to be processed by a web handler
+var dataToBeProcessed = new Array(); // Data to be processed by a web handler
 var geeseJSONString = null;  //  JSON result of calling GetGeese from the Boss
 var broadcastData = new Array();  // Data received from other geese
 var pipe2NumTabs = 0;
@@ -19,6 +19,25 @@ function injectOutput(tab, data)
     }
 }
 
+function findHandlerData(handler)
+{
+    if (dataToBeProcessed != null) {
+        console.log("Searching " + dataToBeProcessed + " " + dataToBeProcessed.length);
+        for (var i = 0; i < dataToBeProcessed.length; i++) {
+            var datatosend = dataToBeProcessed[i];
+            console.log(datatosend);
+            var jsondata = JSON.parse(datatosend);
+            var datahandler = jsondata["handler"];
+            if (datahandler == handler) {
+                console.log("Data to send for " + handler + " " + datatosend);
+                dataToBeProcessed.splice(i, 1);
+                return datatosend;
+            }
+        }
+    }
+    return null;
+}
+
 chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
     /* First, validate the message's structure */
     //alert("Event page event received: " + msg.from + " " + msg.subject);
@@ -28,21 +47,17 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                 if (msg.subject == MSG_SUBJECT_STOREDATA)  {
                     // data is json stringified
                     console.log("Received data storage request from content page: " + msg.data);
-                    dataToBeProcessed = msg.data;
+                    //var jsondata = JSON.parse(msg.data);
+                    dataToBeProcessed.push(msg.data);
                     if (sendResponse != null)
                         sendResponse("Done!");
                 }
                 else if (msg.subject == MSG_SUBJECT_RETRIEVEDATA) {
-                    //alert("Received retrieval request from content script " + dataToBeProcessed);
+                    console.log("Received retrieval request from content script " + dataToBeProcessed);
                     var handlerdata = JSON.parse(msg.data);
                     var handler = handlerdata["handler"];
-                    var datatosend = null;
-                    if (dataToBeProcessed != null) {
-                        var jsondata = JSON.parse(dataToBeProcessed);
-                        var datahandler = jsondata["handler"];
-                        if (datahandler == handler)
-                           datatosend = dataToBeProcessed;
-                    }
+                    console.log("Handler: " + handler);
+                    var datatosend = findHandlerData(handler);
                     if (sendResponse != null)
                         sendResponse(datatosend);
                 }
@@ -96,12 +111,15 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                                     // No PIPE2 page is found, we need to start a new tab and pass the data
                                     //alert("No PIPE2 page found , start new tab");
                                     if (dataToBeProcessed != null) {
-                                        var datasaved = JSON.parse(dataToBeProcessed);
-                                        var pipe2URL = datasaved['handler_pageurl'];
-                                        //alert("Open PIPE2 Url: " + pipe2URL);
-                                        cg_util.openNewTab(pipe2URL, function(tab) {
+                                        var handlerdata = findHandlerData("PIPE2");
+                                        if (handlerdata != null) {
+                                            var datasaved = JSON.parse(handlerdata);
+                                            var pipe2URL = datasaved['handler_pageurl'];
+                                            //alert("Open PIPE2 Url: " + pipe2URL);
+                                            cg_util.openNewTab(pipe2URL, function(tab) {
 
-                                        });
+                                            });
+                                        }
                                     }
                                 }
                             }
@@ -117,8 +135,11 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                             if (sendResponse != null) {
                                 //console.log("Pass PIPE2 species " + pipe2Species + " PIPE2 Names: " + pipe2Names);
                                 chrome.tabs.update(tabid, {active: true}, null);
-                                var data = parseJSONdataToGaggle(dataToBeProcessed);
-                                sendResponse(data, null);
+                                var handlerdata = findHandlerData("PIPE2");
+                                if (handlerdata != null) {
+                                    var data = parseJSONdataToGaggle(handlerdata);
+                                    sendResponse(data, null);
+                                }
                             }
                         }
                     }
@@ -132,8 +153,9 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
             if (msg.subject) {
                 if (msg.subject == MSG_SUBJECT_STOREDATA)  {
                     // data is json stringified
-                    //alert("Received data storage request from popup " + msg.data);
-                    dataToBeProcessed = msg.data;
+                    console.log("Received data storage request from content page: " + msg.data);
+                    dataToBeProcessed.push(msg.data);
+                    console.log(dataToBeProcessed);
                     if (sendResponse != null)
                         sendResponse("Done!");
                 }
