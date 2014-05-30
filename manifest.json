@@ -42,7 +42,7 @@
       },
       {
         "matches": ["http://david.abcc.ncifcrf.gov/*"],
-        "js": ["jquery-1.11.0.min.js","jquery-ui-1.10.4.js", "opencpu-0.4.js", "message.js", "util.js", "ufmt.js",
+        "js": ["jquery-1.11.0.min.js","jquery-ui-1.10.4.js", "message.js", "util.js", "ufmt.js",
                 "handlers/handler.js",
                 "handlers/david.js",
                 "handlers/webhandler.js",
@@ -51,12 +51,21 @@
       },
       {
           "matches": ["http://string.embl.de/*"],
-          "js": ["jquery-1.11.0.min.js","jquery-ui-1.10.4.js", "opencpu-0.4.js", "message.js", "util.js", "ufmt.js",
+          "js": ["jquery-1.11.0.min.js","jquery-ui-1.10.4.js", "message.js", "util.js", "ufmt.js",
                   "handlers/handler.js",
                   "handlers/emblstring.js",
                   "handlers/webhandler.js",
                   "data/gaggle_data.js", "data/namelist.js", "data/datamatrix.js", "data/cluster.js", "gaggle.js"],
           "all_frames": true
+      },
+      {
+        "matches": ["http://maggie.systemsbiology.net/*"],
+        "js": ["jquery-1.11.0.min.js","jquery-ui-1.10.4.js", "message.js", "util.js", "ufmt.js",
+                "handlers/handler.js",
+                "handlers/maggie.js",
+                "handlers/webhandler.js",
+                "data/gaggle_data.js", "data/namelist.js", "data/datamatrix.js", "data/cluster.js", "gaggle.js"],
+        "all_frames": true
       }
     ],
 

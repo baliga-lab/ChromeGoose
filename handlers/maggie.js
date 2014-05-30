@@ -106,3 +106,5 @@ MaggieHandler.prototype.processData = function(jsondata) {
 
 // create and register website handler
 var maggie = new MaggieHandler();
+if (parent == top)
+    maggie.scanPage();
