@@ -33,6 +33,7 @@ function init()
     $(".btnCancelFileInput").click(cancelFileInput);
 
     $("#ahrefGeneSetEnrichment").click(geneSetEnrichmentSelected);
+    $("#ahrefplotexpression").click(plotDataSelected);
 
     getGeese(function (response) {
         //alert("Listening geese: " + response);
@@ -454,6 +455,13 @@ function geneSetEnrichmentSelected()
 {
     var handler = opencpuHandlers["gagglefunctionalenrichment"];
     console.log("Gene set enrichment handler " + handler.getName());
+    broadcastFetchedData(null, handler);
+}
+
+function plotDataSelected()
+{
+    var handler = opencpuHandlers["gaggleplotexpression"];
+    console.log("Plot Expression handler " + handler.getName());
     broadcastFetchedData(null, handler);
 }
 

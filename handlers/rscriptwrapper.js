@@ -1,13 +1,13 @@
 // A RScriptWrapper wraps a R script/package, which contains one or many
 // R functions. We parse the script to extract the functions and their parameters
-var currentRScriptWrapper = null;
+//var currentRScriptWrapper = null;
 function RScriptWrapper(name, script, datasrcelement)
 {
     try {
         handler_base.call(this, name, true, 'handlers/rscriptwrapper.js', null, null);
 
         // Set the current rscriptwrapper to set the metadata in the callback funtion
-        currentRScriptWrapper = this;
+        //currentRScriptWrapper = this;
         cg_util.httpGet(OPENCPU_SERVER + "/library/" + this._name + "/www/" + this._name + ".txt", this.handleMetaData);
 
         this._script = script;
@@ -33,10 +33,17 @@ RScriptWrapper.prototype.setPackageMetaData = function(packageMetaData)
 RScriptWrapper.prototype.handleMetaData = function(packagemetadata) {
     console.log("Package meta data: " + packagemetadata);
     var packageMetaData = (packagemetadata == null) ? null : JSON.parse(packagemetadata);
-    if (currentRScriptWrapper != null)
-        currentRScriptWrapper.setPackageMetaData(packageMetaData);
+    var rscriptwrapper = null;
+    if (packageMetaData != null) {
+        var packagename = packageMetaData["PackageName"];
+        console.log("Obtained package name: " + packagename);
+        rscriptwrapper = opencpuHandlers[packagename];
+        console.log("Wrapper: " + rscriptwrapper);
+        if (rscriptwrapper != null)
+            rscriptwrapper.setPackageMetaData(packageMetaData);
+    }
 
-    if (packagemetadata == null && currentRScriptWrapper != null) {
+    /*if (rscriptWrapper == null) {
         cg_util.httpGet(OPENCPU_SERVER + "/library/" + this._name + "/R", function(robjects) {
             console.log("R Objects: " + robjects);
             if (robjects != null) {
@@ -54,7 +61,7 @@ RScriptWrapper.prototype.handleMetaData = function(packagemetadata) {
                 }
             }
         });
-    }
+    } */
 }
 
 RScriptWrapper.prototype.processUI = function(pageData, organismshtml) {
@@ -62,9 +69,13 @@ RScriptWrapper.prototype.processUI = function(pageData, organismshtml) {
     console.log("Generating input html for package " + this._name + " " + this._packageMetaData + " " + organismshtml);
     var resulthtml = "<div id='divDataDialog' style='display: none'><div id='divAccordionFunctions'>";
     if (this._packageMetaData != null) {
-        var pagedatahtml = "<select class='selGaggleData' style='display: none'></select>";
+        //var pagedatahtml = "<select class='selGaggleData' style='display: none'></select>";
 
-        /*var pagedatahtml = "<select class='selGaggleData'>";
+        var pagedatahtml = "<select class='form-control input-sm selGaggleData'>" +
+                           "<option value='-1'>----- Input Data -----</option>" +
+                           "<option value='OtherText'> Paste/Enter text input</p></option>" +
+                           "<option value='OtherFile'>Upload a File</option>" +
+                           "<option value='-2'>----- Select a Data Item on Page -----</option>";
 
         // Generate the html for gaggled data on the current page
         var firstdata = true;
@@ -82,18 +93,19 @@ RScriptWrapper.prototype.processUI = function(pageData, organismshtml) {
                 text = (pagedata["_type"] != null) ? pagedata["_type"] : pagedata["type"];
             console.log("option text: " + text);
             if (text != null) {
-                if (firstdata) {
-                    pagedatahtml += "<option value='-1'>----- Select a data item -----</option>";
-                    firstdata = false;
-                }
                 var gaggledata = (pagedata["_data"] != null) ? pagedata["_data"] : pagedata["gaggle-data"];
                 if (gaggledata != null && gaggledata.length > 0)
                     text += " (" + gaggledata.length + ")";
                 pagedatahtml += "<option value='" + guid + "'>" + text + "</option>";
             }
         }
+        pagedatahtml += ("</select><br />" +
+                        "<div class='divTextInput' style='display:none;'>" +
+                        "<input class='inputTextData' type='text' /><input class='btnCancelTextInput' type='button' value='Cancel' /></div>" +
+                        "<div class='divFileInput' style='display:none;'>" +
+                        "<input class='inputFileData' type='file' /><input class='btnCancelFileInput' type='button' value='Cancel' /></div>");
         console.log("Page data input html: " + pagedatahtml);
-        */
+
 
         // Now we parse package meta data to
         var parameterhtml = "";
@@ -124,7 +136,7 @@ RScriptWrapper.prototype.processUI = function(pageData, organismshtml) {
                                 var paramtoshow = parameterobj["Show"];
                                 console.log("Parameter name: " + paramname + " Parameter desc: " + paramdesc + " Parameter Show: " + paramtoshow);
                                 if (paramtoshow == "True") {
-                                    parameterhtml += "<li><label>" + paramdesc + "</label><input type='hidden' value='" + paramname + "' />&nbsp;&nbsp;" + pagedatahtml;
+                                    parameterhtml += "<li><label>" + paramdesc + "</label><input type='hidden' value='" + paramname + "' /><input type='hidden' value='" + paramtype + "' />&nbsp;&nbsp;";
                                     // Now generate html
                                     var inputhtml = "";
                                     if (paramtype == "file") {
@@ -143,6 +155,33 @@ RScriptWrapper.prototype.processUI = function(pageData, organismshtml) {
                                     else if (paramtype == "organism") {
                                         inputhtml += (organismshtml != null && organismshtml.length > 0) ? organismshtml : "<input class='inputTextData' type='text' />";
                                         //parameterhtml += "<option value='-3'>------- Invalid Parameter Type -------</option>";
+                                    }
+                                    else if (paramtype == "data") {
+                                        inputhtml += pagedatahtml;
+                                    }
+                                    else if (paramtype == "Select") {
+                                        var optionsobj = parameterobj["Options"];
+                                        if (optionsobj != null) {
+                                            inputhtml += "<select>";
+                                            var optionindex = 0;
+                                            var finished = false;
+                                            do {
+                                                var optionobj = optionsobj[optionindex.toString()];
+                                                console.log("Option obj: " + optionobj);
+                                                if (optionobj == null)
+                                                    finished = true;
+                                                else {
+                                                    var name = optionobj["Name"];
+                                                    var value = optionobj["Value"];
+                                                    console.log("Name: " + name + " Value: " + value);
+                                                    inputhtml += "<option value='" + value + "'>" + name + "</option>";
+                                                    optionindex++;
+                                                }
+                                            }
+                                            while (!finished);
+                                            inputhtml += "</select>";
+                                        }
+
                                     }
                                     parameterhtml += inputhtml + "</li>";
                                 }
@@ -395,47 +434,72 @@ function runScript(event)
         var species = "";
         var source = event.target; // The Run button
         var parentdiv = $(source).parent();
-        $(parentdiv).find(".selGaggleData").each(function () {
-            console.log("selGaggleData: " + $(this).val());
-            var selected = $(this).val();
-            if (selected != "-1") {
-                var paramlabel = $(this).parent().find("label");
-                var paramdesc = $(paramlabel).html();
-                var paramnameinput = $(paramlabel).next();
-                var paramname = $(paramnameinput).val();
-                var paramvalueinput = $(paramnameinput).next().next();
+        $(parentdiv).find("li").each(function () {
+            console.log("Parameter li: " + $(this));
+            //var selected = $(this).val();
+            var paramlabel = $(this).find("label");
+            var paramdesc = $(paramlabel).html();
+            var paramnameinput = $(paramlabel).next();
+            var paramname = $(paramnameinput).val();
+            var paramtypeinput = $(paramnameinput).next();
+            var paramtype = $(paramtypeinput).val();
+            var paramvalueinput = $(paramtypeinput).next();
 
-                console.log("Parameter Name: " + paramname + " Param value input type: " + $(paramvalueinput).prop('type'));
-                //if (selected == "OtherText") {
-                if ($(paramvalueinput).prop("type").toLowerCase() == "text") {
-                    var textinput = $(this).parent().find(".inputTextData");
-                    var paramvalue = $(paramvalueinput).val();
-                    console.log("Parameter value: " + paramvalue);  //$(textinput).val());
-                    //if ($(textinput).val() != null) {
-                    if (paramvalue != null) {
-                        parameters[paramname] = paramvalue;
-                        if (paramdesc.toLowerCase().indexOf("organism") >= 0 || paramdesc.toLowerCase().indexOf("species") >= 0)
-                        {
-                            species = paramvalue;
-                            console.log("Species: " + species);
-                        }
+            console.log("Parameter Name: " + paramname + " Param type: " + paramtype + " Param value: " + $(paramvalueinput).val());
+            //if (selected == "OtherText") {
+            if (paramtype.toLowerCase() == "organism" || paramtype.toLowerCase() == "organism") {
+                //var textinput = $(this).find(".inputTextData");
+                var paramvalue = $(paramvalueinput).val();
+                console.log("Parameter value: " + paramvalue);  //$(textinput).val());
+                //if ($(textinput).val() != null) {
+                if (paramvalue != null) {
+                    parameters[paramname] = paramvalue;
+                    if (paramdesc.toLowerCase().indexOf("organism") >= 0 || paramdesc.toLowerCase().indexOf("species") >= 0)
+                    {
+                        species = paramvalue;
+                        console.log("Species: " + species);
                     }
                 }
-                //else if (selected == "OtherFile") {
-                else if ($(paramvalueinput).prop("type").toLowerCase() == "file") {
-                    //var fileinput = $(this).parent().find(".inputFileData");
-                    //var file = $(fileinput)[0].files[0];
-                    var file = $(paramvalueinput)[0].files[0];
+            }
+            else if (paramtype.toLowerCase() == "file") {
+                var file = $(paramvalueinput)[0].files[0];
 
-                    console.log("File parameter: " + file);
-                    if (file != null) {
-                        parameters[paramname] = file;
-                    }
+                console.log("File parameter: " + file);
+                if (file != null) {
+                    parameters[paramname] = file;
+                }
+            }
+            else if (paramtype.toLowerCase() == "data") {
+                console.log("Select element" + $(paramvalueinput).val());
+                if ($(paramvalueinput).val() == "OtherText") {
+                    var textinput = $(this).find(".inputTextData");
+                    var text = $(textinput)[0].val();
+                    parameters[paramname] = text;
+                }
+                else if ($(paramvalueinput).val() == "OtherFile") {
+                    var fileinput = $(this).find(".inputFileData");
+                    var file = $(fileinput)[0].files[0];
+                    parameters[paramname] = file;
                 }
                 else {
-                    // User selected a data item (either from the gaggled web page or received from broadcast)
-                    parameters[paramname] = $(paramvalueinput).val(); //selected;
+                    // page data
+                    parameters[paramname] = $(paramvalueinput).val();
                 }
+            }
+            else if (paramtype.toLowerCase() == "select") {
+                var selectedvalue = $(paramvalueinput).val();
+                console.log("Selected value: " + selectedvalue);
+                $(paramvalueinput).children().each(function () {
+                    var value = $(this).val();
+                    var text = $(this).text();
+                    console.log("Option text " + text + " value: " + value);
+                    parameters[value] = (value == selectedvalue) ? "T" : "F";
+                });
+
+            }
+            else {
+                // User selected a data item (either from the gaggled web page or received from broadcast)
+                parameters[paramname] = $(paramvalueinput).val(); //selected;
             }
         });
 
@@ -447,8 +511,9 @@ function runScript(event)
             var parafunc = $(parentdiv).prev();
             var funcname = $(parafunc).text();
             console.log("Package name: " + packagename + " function name: " + funcname);
+            // Send event to the extension to execute the rscript
             var event = new CustomEvent('RScriptWrapperEvent', {detail: {packageName: packagename,
-                                            functionName: funcname,  scriptParameters : parameters, species: species},
+                                            functionName: funcname, scriptParameters : parameters, species: species},
                                             bubbles: true, cancelable: false});
             document.dispatchEvent(event);
         }

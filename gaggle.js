@@ -20,6 +20,7 @@ function init()
         }
     });
 
+    // Execute R script
     document.addEventListener("RScriptWrapperEvent", function(e) {
         var outputurl = e.detail.outputurl;
         if (outputurl!= null) {
@@ -53,6 +54,7 @@ function init()
 
 function execRScript(broadcastData) {
     var parameters = receivedData["scriptParameters"];
+    // Get data using GUID if parameter is gaggled data on page
     for (var k in parameters) {
         if (parameters.hasOwnProperty(k)) {
            var p = parameters[k];
@@ -78,9 +80,11 @@ function execRScript(broadcastData) {
             + "_output.html?host=" + OPENCPU_SERVER + "&sessionID=" + session.getKey() + "&species=" + species;
         console.log("Open output html page: " + openurl);
         var scripturl = "handlers/" + funcname.toLowerCase() + ".js";
-        var code = "parseData('" + OPENCPU_SERVER + "', '" + packagename + "', '" + funcname + "', '" + session.getKey() + "', '" + species + "');"; // All the opencpu output data page should have this function
+        // Note that the variable name of the corresponding handler should be the same as the package name
+        var code = packagename + ".parseData('" + OPENCPU_SERVER + "', '" + packagename + "', '" + funcname + "', '" + session.getKey() + "', '" + species + "');"; // All the opencpu output data page should have this function
 
-        // Pass an event including the open url to the extension
+        // Call background page to verify if the gaggle_output.html is already opened, and inject the script and
+        // execute the code
         var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_RSCRIPTEVENT,
                               {outputurl: openurl, script: scripturl, code: code}, function() {
                               });

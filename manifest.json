@@ -15,7 +15,8 @@
                                 "handlers/MRMAtlasGoose.js",
                                 "handlers/maggie.js",
                                 "handlers/rscriptwrapper.js",
-                                "handlers/genesetenrichment.js"],
+                                "handlers/genesetenrichment.js",
+                                "handlers/plotexpression.js"],
 
   //"content_security_policy": "script-src 'self' https://localhost:8000 https://networks.systemsbiology.net; object-src 'self'",
 
