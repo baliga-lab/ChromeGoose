@@ -373,7 +373,6 @@ function processRScriptInputDataUI(packagename, opencpuurl)
        buttons: {
            "Cancel": function() {
                 $('#divDataDialog').dialog('close');
-                $(this).dialog('destroy').remove();
            }
        }
    });

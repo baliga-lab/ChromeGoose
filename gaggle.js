@@ -229,10 +229,15 @@ chrome.runtime.onMessage.addListener(function(msg, sender, response) {
                         // Insert jquery ui css
                         console.log("Tab ID: " + tabid + " script url " + injectscripturl + ' code: ' + injectcode);
                         try {
-                            var div = document.createElement("div");
-                            div.setAttribute("id", "divChromeGooseInject");
-                            div.innerHTML = html;
-                            document.body.appendChild(div);
+                            var injectdiv = document.getElementById("divChromeGooseInject");
+                            if (injectdiv)
+                                injectdiv.innerHTML = html;
+                            else {
+                                var div = document.createElement("div");
+                                div.setAttribute("id", "divChromeGooseInject");
+                                div.innerHTML = html;
+                                document.body.appendChild(div);
+                            }
 
                             cg_util.injectJavascript("jquery-1.11.0.min.js", function() {
                                 cg_util.injectJavascript("jquery-ui-1.10.4.js", function() {
