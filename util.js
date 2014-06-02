@@ -313,6 +313,24 @@ getFileFromUrl: function (url, callback) {
     }
 },
 
+readTextFile: function(file, callback) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var contents = e.target.result;
+        console.log( "Got the file.\n"
+          +"name: " + file.name + "\n"
+          +"type: " + file.type + "\n"
+          +"size: " + file.size + " bytes\n"
+          + "Content: " + contents
+        );
+        if (callback != null) {
+            callback(contents);
+        }
+    }
+
+    reader.readAsText(file);
+},
+
 httpGet: function(theUrl, callback)
 {
     //alert("Http Get " + theUrl);

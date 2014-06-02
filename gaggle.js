@@ -60,12 +60,16 @@ function execRScript(broadcastData) {
            var p = parameters[k];
            var data = cg_util.findDataByGuid(broadcastData, p);
            if (data == null)
-               data = cg_util.findDataByGuid(pageGaggleData ,p);
+               data = cg_util.findDataByGuid(pageGaggleData, p);
            if (data != null)
-               parameters[k] = data;
+           {
+               var originaldata = data.data;
+               console.log("Parameter data: " + originaldata);
+               parameters[k] = originaldata.getData();
+           }
         }
-
     }
+
     var funcname = receivedData["functionName"];
     var packagename = receivedData["packageName"];
     console.log("Package name: " + packagename + ", Function name: " + funcname);
@@ -104,7 +108,7 @@ function execRScript(broadcastData) {
     });
 
     req.fail(function(){
-        console.log("Server error: " + req.responseText);
+        alert("OPENCPU Server error: " + req.responseText);
     });
 }
 
