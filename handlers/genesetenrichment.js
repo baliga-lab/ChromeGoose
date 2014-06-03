@@ -35,6 +35,17 @@ var gagglefunctionalenrichment = {
         return "";
     },
 
+    generateGagglePValueHtml: function(species, moduleid, propertyfields, fields) {
+        if (propertyfields != null && fields != null) {
+            var html = "<div class='gaggle-pvalue' style='display: none'>";
+            for (var i = 0; i < fields.length; i++) {
+                html += "<label><input value='" + propertyfields[i] + "'><input value='" + fields[i] + "' /></label>";
+            }
+            html += "</div>";
+            return html;
+        }
+        return "";
+    },
 
     getFields: function(line, delimit)
     {
@@ -132,8 +143,34 @@ var gagglefunctionalenrichment = {
               while (modulecnt < modules.length && i < splitted.length);
               i++;
            }
+           else if (line.indexOf("Enrichment.p.value") >= 0) {
+              line = "Module  " + line;  // Insert the module id property
+
+              var propertyfields = gagglefunctionalenrichment.getFields(line, ' ');
+              console.log("p value property fields: " + propertyfields);
+
+              var modulecnt = 0;
+              do {
+                  var line = splitted[++i];
+                  var linefields = gagglefunctionalenrichment.getFields(line, ' ');
+                  console.log("P value fields: " + linefields);
+                  var loc = line.indexOf(" ");
+                  var moduleidstr = linefields[0];
+                  var moduleid = parseInt(moduleidstr);
+                  modulecnt++;
+
+                  var html = gagglefunctionalenrichment.generateGagglePValueHtml(species, moduleid, propertyfields, linefields);
+                  if (html != null) {
+                    console.log("Generated pvalue html: " + html);
+                    gaggledhtml += html;
+                  }
+              }
+              while (modulecnt < modules.length && i < splitted.length);
+              i++;
+           }
            else {
              i++;
+
              line = line.replace("x", " ");
              var linefields = gagglefunctionalenrichment.getFields(line, ' ');
              console.log("Line fields: " + linefields);
