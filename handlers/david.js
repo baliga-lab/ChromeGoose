@@ -66,7 +66,7 @@ David.prototype.processData = function (jsondata) {
 
                         // If we are in the iframe (which means we are on the gaggle_output.html page),
                         // we need to send information to the Selenium driver to click the button
-                        if (parent == top) {
+                        if (window.self != top) {
                             var iframeid = sourceobj["iframeId"];
                             console.log("Target iframe Id: " + iframeid);
 
@@ -203,6 +203,6 @@ David.prototype.insertNamelistIntoPasteBox = function(species, names) {
 var david = new David();
 // If I am injected in an iframe within the gaggle_output.html,
 // I need to check if there is data for me
-if (parent == top)
+if (window.self != top)
     david.scanPage();
 //david.scanPage();

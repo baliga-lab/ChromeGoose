@@ -9,11 +9,12 @@ KEGG.prototype.constructor = KEGG;
 
 KEGG.prototype.scanPage = function ()
 {
-    console.log("KEGG scan page...");
+    console.log("KEGG scan page..." + (window.self == window.top));
 
     this.checkData();
 
-    if (parent == top) {
+    if (window.self != top) {
+        // Executed if in an iframe
         var statusdiv = document.getElementById("all_status");
         var iframeurl = window.location.href;
         console.log("KEGG iframe href: " + iframeurl);
@@ -1000,6 +1001,6 @@ KEGG.prototype.speciesCodes = {
 
 
 var kegg = new KEGG();
-if (parent == top)
+if (window.self != top)
     kegg.scanPage();
 //kegg.scanPage();
