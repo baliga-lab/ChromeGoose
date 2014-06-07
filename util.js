@@ -9,9 +9,10 @@
 
 
 var WEBHANDLERS_UPDATE_INTERVAL = 24 * 60 * 60 * 1000; // Update after 24 hour
-//var GAGGLE_SERVER = "http://localhost:8000";
-var GAGGLE_SERVER = "http://networks.systemsbiology.net";
+var GAGGLE_SERVER = "http://localhost:8000";
+//var GAGGLE_SERVER = "http://networks.systemsbiology.net";
 var GAGGLE_HOME = "http://gaggle.systemsbiology.net";
+var GAGGLE_OUTPUT_PAGE = GAGGLE_SERVER + "/static/gaggle_output.html";
 var BOSS_JNLP = GAGGLE_SERVER + "/static/jnlp/boss.jnlp";
 var HTTPBOSS_ADDRESS = "http://localhost:8082/";
 var WEBHANDLER_BASEURL = GAGGLE_SERVER + "/static/javascripts/handlers/";
@@ -114,6 +115,43 @@ openNewTab: function(url, callback) {
         if (callback != null)
             callback(tab);
     });
+},
+
+createIFrame: function(url, iframeid, containerClass, divClass, iframeClass, embedhtml) {
+    if (containerClass != null && url != null) {
+        var div = document.createElement("div");
+        div.className = divClass;
+        var iframe = document.createElement("iframe");
+        console.log("New Iframe Id: " + iframeid);
+        iframe.setAttribute("id", iframeid);
+        iframe.src = url;
+        iframe.className = iframeClass;
+        if (embedhtml != null && embedhtml.length > 0)
+            $(div).html(embedhtml);
+        div.appendChild(iframe);
+        ($(containerClass)[0]).appendChild(div);
+        $("." + divClass).draggable(
+        {
+        });
+        $("." + divClass).resizable({
+            alsoResize : iframeClass
+        });
+    }
+},
+
+processRelativeUrl: function(topurl, relativeurl) {
+    if (relativeurl.indexOf("/") >= 0)
+    {
+        var host = topurl.host;
+        var protocol = topurl.protocol;
+        return protocol + "//" + host + relativeurl;
+    }
+},
+
+mapGeneNameToGeneId: function(geneName) {
+    // TODO
+    // we need to do the mapping according to some table
+    return geneName;
 },
 
 injectJavascriptToTab: function(tabid, scripturl, callback) {

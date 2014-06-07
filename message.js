@@ -1,6 +1,7 @@
 var MSG_FROM_POPUP = "popup";
 var MSG_FROM_CONTENT = "content";
 var MSG_FROM_WEBSOCKET = "websocket";
+var MSG_FROM_BACKGROUND = "background";
 
 var MSG_SUBJECT_PAGEDATA = "PageData";
 var MSG_SUBJECT_HANDLER = "Handler";
@@ -18,6 +19,9 @@ var MSG_SUBJECT_PIPE2DATA = "PIPE2DATA";
 var MSG_SUBJECT_PIPE2SEARCHRESULT = "PIPE2SearchResult";
 var MSG_SUBJECT_OPENTABANDEXECUTE = "OpenAndExecuteCode";
 var MSG_SUBJECT_GETORGANISMSHTML = "GetOrganismsHtml";
+var MSG_SUBJECT_OPENURL = "OpenUrl";
+var MSG_SUBJECT_GAGGLEPARSERESULT = "GaggleParseResult";
+
 
 function Message(from, to, targetid, subject, data, callback)
 {

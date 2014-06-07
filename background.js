@@ -5,6 +5,7 @@ var pipe2NumTabs = 0;
 var pipe2NotFound = 0;
 var pipe2TabResponses = new Array();
 var GAGGLE_OUTPUT_PAGE = "gaggle_output.html";
+var dictIFrameIdUrl = new Array();
 
 
 // Inject data to the gaggle output page
@@ -17,6 +18,17 @@ function injectOutput(tab, data)
             cg_util.injectCodeToTab(tab.id, codetorun, null);
         });
     }
+}
+
+function findIFrameIdFromUrl(url)
+{
+    for (var i = 0; i < dictIFrameIdUrl.length; i++)
+    {
+        var iframeidurlpair = dictIFrameIdUrl[i];
+        if (iframeidurlpair.Url == url)
+            return i;
+    }
+    return -1;
 }
 
 function findHandlerData(handler)
@@ -94,6 +106,72 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                     if (sendResponse != null)
                         sendResponse();
                 }
+                else if (msg.subject == MSG_SUBJECT_OPENURL) {
+                    console.log("Background open url: " + msg.data);
+                    var data = JSON.parse(msg.data);
+                    var url = data["Url"];
+                    var target = data["Target"];
+                    var geneId = data["GeneId"];
+                    var geneName = data["GeneName"];
+                    var source = data["Source"];
+                    var iframeId = data["IFrameId"];
+                    var tabUrlSearchPattern = data["TabUrlSearchPattern"];
+                    var containerClass = data["ContainerClass"];
+                    var iframeDivClass = data["IFrameDivClass"];
+                    var iframeClass = data["IFrameClass"];
+                    var embedHtml = data["EmbedHtml"];
+
+                    var iframeurlpair = {IFrameId: iframeId, Url: url};
+                    dictIFrameIdUrl.push(iframeurlpair);
+
+                    console.log("Searching for tab with pattern: " + tabUrlSearchPattern);
+                    chrome.tabs.query({url: tabUrlSearchPattern}, function(tabs) {
+                        console.log("gaggle_output.html tab: " + tabs.length);
+                        if (tabs.length > 0) {
+                            var tab = tabs[0];
+                            var msg = new Message(MSG_FROM_BACKGROUND, chrome.tabs, tab.id, MSG_SUBJECT_OPENURL,
+                                                 {Url: url, Target: target, GeneId: geneId, GeneName: geneName,
+                                                  Source: source,
+                                                  IFrameId: iframeId,
+                                                  ContainerClass: containerClass, IFrameDivClass: iframeDivClass,
+                                                  IFrameClass: iframeClass,
+                                                  EmbedHtml: embedHtml
+                                                  }, null);
+                            msg.send();
+                        }
+                    });
+                }
+                else if (msg.subject == MSG_SUBJECT_GAGGLEPARSERESULT) {
+                    console.log("Background received gaggle parse result from web handler: " + msg.data);
+                    var data = JSON.parse(msg.data);
+                    var geneId = data["GeneId"];
+                    var geneName = data["GeneName"];
+                    var type = data["Type"];
+                    var source = data["Source"];
+                    var desc = data["Description"];
+                    var url = data["Url"];
+                    var tabUrlSearchPattern = data["TabUrlSearchPattern"];
+                    var iframeUrl = data["IFrameUrl"];
+
+                    var index = findIFrameIdFromUrl(iframeUrl);
+                    var iframeid = "";
+                    if (index >= 0) {
+                        iframeid = dictIFrameIdUrl[index].IFrameId;
+                    }
+                    console.log("IFrame Id for " + url + ": " + iframeid);
+                    chrome.tabs.query({url: tabUrlSearchPattern}, function(tabs) {
+                        console.log("gaggle_output.html tab: " + tabs.length);
+                        if (tabs.length > 0) {
+                            var tab = tabs[0];
+                            var msg = new Message(MSG_FROM_BACKGROUND, chrome.tabs, tab.id, MSG_SUBJECT_GAGGLEPARSERESULT,
+                                                 {
+                                                  GeneId: geneId, GeneName: geneName, Url: url, IFrameId: iframeid,
+                                                  Source: source, Type: type, Source: source, Description: desc
+                                                 }, null);
+                            msg.send();
+                        }
+                    });
+                }
                 else if (msg.subject == MSG_SUBJECT_PIPE2SEARCHRESULT) {
                     //alert("Received PIPE2 Search result event: " + msg.data);
                     var data = JSON.parse(msg.data);
@@ -162,12 +240,31 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                 else if (msg.subject == MSG_SUBJECT_WEBSOCKETSEND) {
                     console.log("Received data to be sent to websocket " + msg.data);
                     //alert(websocketconnection);
-                    if (websocketconnection == null) {
-                        createWebSocket(BossWebSocketUrl, webSocketOpenCallback, parseData);
-                    }
-                    else {
-                        //alert("Send data to websocket " + msg.data);
-                        websocketconnection.send(msg.data);
+                    var retries = 0;
+                    while (retries < 2) {
+                        if (websocketconnection == null) {
+                            createWebSocket(BossWebSocketUrl, webSocketOpenCallback, parseData);
+                        }
+                        if (websocketconnection != null) {
+                            //alert("Send data to websocket " + msg.data);
+                            //websocketconnection.send(msg.data);
+                            var jsonobj = JSON.parse(msg.data);
+                            var id = jsonobj["ID"];
+                            if (id == null || id.length == 0)
+                                id = websocketid;
+                            var action = jsonobj["Action"];
+                            var data = jsonobj["Data"];
+                            console.log("ID: " + id + " Action: " + action + " Data: " + data);
+                            try {
+                                sendDataWebSocket(id, action, data);
+                                break;
+                            }
+                            catch (e) {
+                                console.log("Failed to send to websocket " + e);
+                                websocketconnection = null;
+                                retries++;
+                            }
+                        }
                     }
                     if (sendResponse != null)
                         sendResponse(geeseJSONString);

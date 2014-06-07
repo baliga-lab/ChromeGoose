@@ -24,7 +24,7 @@ handler_base.prototype.getPageUrl = function() {
     return this._pageUrl;
 }
 
-handler_base.prototype.scanPage = function() {
+handler_base.prototype.checkData = function() {
     // First check if there is any data to be processed for the page
     console.log(this._name + " checking targeted data... " + this);
     cg_util.checkHandlerData(this, this.processData);
@@ -41,6 +41,10 @@ handler_base.prototype.scanPage = function() {
             }
         });
     }
+}
+
+handler_base.prototype.scanPage = function() {
+    this.checkData();
 }
 
 handler_base.prototype.openTabAndExecute = function(pageurl, extensionurl, code, callback) {

@@ -12,7 +12,7 @@ function getGeese(callback) {
     //var url = HTTPBOSS_ADDRESS + "?command=getGeese";
     //cg_util.getFileFromUrl(url, callback);
     var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_WEBSOCKETSEND,
-                                   {ID: "", Action: "GetGeese", data: "" }, callback);
+                                   {ID: "", Action: "GetGeese", Data: "" }, callback);
     //alert(callback);
     msg.send();
 }
@@ -27,6 +27,7 @@ function init()
     $("#selGaggleMenu").change(gaggleMenuItemSelected);
     $("#btnStartBoss").click(startBoss);
     $("#btnGaggleWebsite").click(openGaggleWebsite);
+    $("#btnGaggleOutput").click(openGaggleOutputPage);
 
     $(".selGaggleData").change(gaggleDataItemSelected);
     $(".btnCancelTextInput").click(cancelTextInput);
@@ -99,7 +100,7 @@ function init()
 }
 
 function setDOMInfo(pageData) {
-    console.log("Set DOM Info... " + pageData + " " + pageData.length);
+    console.log("Set DOM Info... " + pageData);
     //alert(pageData.length);
 
     //alert("Page data stored");
@@ -151,6 +152,17 @@ function openGaggleWebsite()
     cg_util.openNewTab(GAGGLE_HOME, null);
 }
 
+function openGaggleOutputPage()
+{
+    // Tell the Selenium driver to open the page
+    console.log("Open gaggle output page...");
+    var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_WEBSOCKETSEND,
+                       {ID: "", Action: "Chrome", Data: {Command: "OpenPage", Data: {PageUrl: GAGGLE_OUTPUT_PAGE}}},
+                       function() {
+                       });
+    msg.send();
+}
+
 function gaggleMenuItemSelected(event) {
     console.log("Gaggle menu item selected "); // + $("#selGaggleMenu").val());
 
@@ -176,7 +188,7 @@ function gaggleMenuItemSelected(event) {
         // DEBUG send data through the websocket
         alert("Send data to websocket");
         var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_WEBSOCKETSEND,
-                               { data: "GetID" }, null);
+                               {ID: "", Action: "Test", data: "GetID" }, null);
         msg.send();
     }
 }

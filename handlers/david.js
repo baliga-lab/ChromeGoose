@@ -42,7 +42,7 @@ David.prototype.scanPage = function ()
 
 David.prototype.processData = function (jsondata) {
     if (jsondata != null) {
-        //alert("Data received: " + jsondata);
+        console.log("Data received: " + jsondata);
 
         var jsonobj = JSON.parse(jsondata);
         if (jsonobj != null) {
@@ -63,6 +63,27 @@ David.prototype.processData = function (jsondata) {
                         console.log("Global DAVID object: " + david);
                         david.selectUploadTab();
                         david.insertNamelistIntoPasteBox(this.species, this.names);
+
+                        // If we are in the iframe (which means we are on the gaggle_output.html page),
+                        // we need to send information to the Selenium driver to click the button
+                        if (parent == top) {
+                            var iframeid = sourceobj["iframeId"];
+                            console.log("Target iframe Id: " + iframeid);
+
+                            // first click the "Upload" tab to make sure the upload button is visible
+                            var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_WEBSOCKETSEND,
+                                               {ID: "", Action: "Chrome", Data: {Command: "ClickIFrame", Data: {IFrameId: iframeid, ElementId: "", ElementClass: "current"}}},
+                                               function() {
+                                               });
+                            msg.send();
+
+                            // Now click the upload button
+                            var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_WEBSOCKETSEND,
+                                               {ID: "", Action: "Chrome", Data: {Command: "ClickIFrame", Data: {IFrameId: iframeid, ElementId: "", ElementClass: "upload"}}},
+                                               function() {
+                                               });
+                            msg.send();
+                        }
                     }
                 }
                 catch (e) {

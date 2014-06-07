@@ -7,18 +7,115 @@ KEGG.prototype = new handler_base();
 
 KEGG.prototype.constructor = KEGG;
 
-/*KEGG.prototype.scanPage = function ()
+KEGG.prototype.scanPage = function ()
 {
     console.log("KEGG scan page...");
 
-    // Then scan the page
-    cg_util.retrieveFrom("KEGG", WEBHANDLER_BASEURL + "kegg-server.js", function(code) {
-        console.log("Got KEGG code");
-        if (code != null) {
-            cg_util.executeCode(code);
+    this.checkData();
+
+    if (parent == top) {
+        var statusdiv = document.getElementById("all_status");
+        var iframeurl = window.location.href;
+        console.log("KEGG iframe href: " + iframeurl);
+        if (statusdiv != null) {
+            // This is the page that shows status of all the genes
+            var ul = $(statusdiv).next();
+            var geneId = "";
+            var geneName = "";
+            $(ul).find("a").each(function () {
+                // Find the link that contains the name of the gene
+                var href = $(this).attr("href");
+                if (href.indexOf("javascript") != 0) {   // ignore javascript ahref
+                    if (href.indexOf("dbget-bin/www_bget") >= 0)  {
+                       var loc = href.lastIndexOf(":");
+                       if (loc >= 0) {
+                          geneName = href.substr(loc + 1).toLowerCase();
+                          geneId = cg_util.mapGeneNameToGeneId(geneName);
+                          console.log("KEGG gene: " + geneName);
+                       }
+                    }
+                }
+            });
+
+            $(ul).find("a").each(function () {
+                // Iterate through all the links of genes
+                var href = $(this).attr("href");
+                if (href.indexOf("javascript") != 0) {
+                    href = cg_util.processRelativeUrl(window.location, href);
+                    var text= $(this).text();
+                    console.log("Url: " + href + " text: " + text);
+                    var firstspace = text.indexOf(" ");
+                    var description = text.substr(firstspace + 1);
+                    console.log("Gene " + geneName + " Description: " + description);
+
+
+                    // Inform ChromeGoose to open an iframe
+                    // We embed the geneId and name in the created div because there is no way
+                    // we can get the gene name from the show_pathway page
+                    var embedhtml = "<div class='divChromeGooseEmbedInfo'><input class='inputGeneId' type='hidden' value='" + geneId + "' /><input class='inputGeneName' type='hidden' value='" + geneName + "' /></div>";
+                    var iframeid = cg_util.generateUUID();
+                    var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_OPENURL,
+                                          {GeneId: geneId, GeneName: geneName, Target: "IFrame", Url: href, Source: "KEGG",
+                                           TabUrlSearchPattern: "http://*/static/gaggle_output.html",
+                                           ContainerClass: ".divResultIFrames", IFrameId: iframeid, IFrameDivClass: "iframediv",
+                                           IFrameClass: "gaggleiframe", EmbedHtml: embedhtml},
+                                          function() {
+                                          });
+                    msg.send();
+                }
+            });
+
+            var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_GAGGLEPARSERESULT,
+                                  {GeneId: geneId, GeneName: geneName, Type: "detail",
+                                   TabUrlSearchPattern: "http://*/static/gaggle_output.html",
+                                   Url: iframeurl, Source: "KEGG", Description: "Search Result",
+                                   IFrameUrl: (window.location)["href"]},
+                                  function() {
+                                  });
+            msg.send();
         }
-    });
-} */
+        else if (iframeurl.indexOf("show_pathway?") >= 0) {
+            // Individual gene pathway image page
+            console.log("Gene pathway page...");
+            $("*").find("img").each(function () {
+                var src = $(this).attr("src");
+                if (src != null && src.indexOf("pathway") >= 0) {
+                    var loc1 = src.lastIndexOf("/");
+                    var loc2 = src.lastIndexOf(".");
+                    if (loc2 > loc1) {
+                        var geneName = src.substr(loc1 + 1, loc2 - loc1 - 1);
+                        var geneId = cg_util.mapGeneNameToGeneId(geneName);
+                        console.log("KEGG Pathway gene: " + geneName);
+                        src = cg_util.processRelativeUrl(window.location, src);
+                        var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_GAGGLEPARSERESULT,
+                                              {GeneId: geneId, GeneName: geneName, Type: "image",
+                                               TabUrlSearchPattern: "http://*/static/gaggle_output.html",
+                                               Url: src, Source: "KEGG", Description: "KEGG Pathway",
+                                               IFrameUrl: (window.location)["href"]},
+                                              function() {
+                                              });
+                        msg.send();
+                    }
+                }
+            });
+        }
+        else if (iframeurl.indexOf("dbget-bin/www_bget?") >= 0) {
+            // Gene summary page
+            var loc = iframeurl.lastIndexOf(":");
+            var geneName = iframeurl.substr(loc + 1).toLowerCase();
+            console.log("KEGG get gene: " + geneName);
+            var geneId = cg_util.mapGeneNameToGeneId(geneName);
+            var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_GAGGLEPARSERESULT,
+                                  {GeneId: geneId, GeneName: geneName, Type: "iframe",
+                                   TabUrlSearchPattern: "http://*/static/gaggle_output.html",
+                                   Url: iframeurl, Source: "KEGG", Description: "KEGG Gene Information",
+                                   IFrameUrl: (window.location)["href"]},
+                                  function() {
+                                  });
+            msg.send();
+        }
+    }
+}
 
 KEGG.prototype.handleNameList = function(namelist) {
 	// construct a query string out of the name list
@@ -903,4 +1000,6 @@ KEGG.prototype.speciesCodes = {
 
 
 var kegg = new KEGG();
+if (parent == top)
+    kegg.scanPage();
 //kegg.scanPage();

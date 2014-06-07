@@ -11,7 +11,9 @@ function init()
         console.log("Received data from Gaggle Output Page " + e.detail);
         var data = e.detail.data;
         var handlerName = (e.detail)["handler"];
-        console.log("Data " + data + " handler " + handlerName);
+        var iframeid = (e.detail)["iframeId"];
+        data.iframeId = iframeid;
+        console.log("Data " + data + " handler " + handlerName + " Iframe Id: " + iframeid);
 
         if (data != null) {
             var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_STOREDATA,
@@ -173,7 +175,62 @@ chrome.runtime.onMessage.addListener(function(msg, sender, response) {
     /* First, validate the message's structure */
     //if (msg.subject == MSG_SUBJECT_INSERTRSCRIPTDATAHTML)
     //alert("Content script message received from " + msg.from + " subject: " + msg.subject);
+    if (msg.from && (msg.from == MSG_FROM_BACKGROUND)) {
+        if (msg.subject) {
+            if (msg.subject == MSG_SUBJECT_OPENURL) {
+                console.log("Open url: " + msg.data);
+                var data = JSON.parse(msg.data);
+                var url = data["Url"];
+                var target = data["Target"];
+                var geneId = data["GeneId"];
+                var geneName = data["GeneName"];
+                var source = data["Source"];
+                var iframeId = data["IFrameId"];
+                var containerClass = data["ContainerClass"];
+                var iframeDivClass = data["IFrameDivClass"];
+                var iframeClass = data["IFrameClass"];
+                var embedhtml = data["EmbedHtml"];
+                console.log("Embed html: " + embedhtml)
+                if (target == "IFrame") {
+                    cg_util.createIFrame(url, iframeId, containerClass, iframeDivClass, iframeClass, embedhtml);
+                }
+            }
+            else if (msg.subject == MSG_SUBJECT_GAGGLEPARSERESULT) {
+                console.log("Received gaggle parse result: " + msg.data);
+                var data = JSON.parse(msg.data);
+                var geneId = data["GeneId"];
+                var geneName = data["GeneName"];
+                var type = data["Type"];
+                var source = data["Source"];
+                var desc = data["Description"];
+                var url = data["Url"];
+                var iframeid = data["IFrameId"];
 
+                if ($("#" + iframeid).parent().find(".divChromeGooseEmbedInfo").length > 0) {
+                    var embeddiv = $("#" + iframeid).parent().find(".divChromeGooseEmbedInfo")[0];
+                    var inputgeneId = $(embeddiv).find(".inputGeneId")[0];
+                    var inputgeneName = $(embeddiv).find(".inputGeneName")[0];
+                    geneId = $(inputgeneId).val();
+                    geneName = $(inputgeneName).val();
+                    console.log("Gaggle.js found embedded geneId " + geneId + " Gene name: " + geneName);
+                }
+                var event = new CustomEvent('GaggleParseEvent',
+                                            {detail:
+                                                {
+                                                 GeneId: geneId,
+                                                 GeneName: geneName,
+                                                 Url: url,
+                                                 Type: type,
+                                                 Source: source,
+                                                 Description: desc,
+                                                 IFrameId: iframeid
+                                                 },
+                                             bubbles: true,
+                                             cancelable: false});
+                document.dispatchEvent(event);
+            }
+        }
+    }
     if (msg.from && (msg.from == MSG_FROM_POPUP))
     {
         if (msg.subject) {
