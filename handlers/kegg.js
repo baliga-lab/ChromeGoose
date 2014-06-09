@@ -89,9 +89,9 @@ KEGG.prototype.scanPage = function ()
                         console.log("KEGG Pathway gene: " + geneName);
                         src = cg_util.processRelativeUrl(window.location, src);
                         var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_GAGGLEPARSERESULT,
-                                              {GeneId: geneId, GeneName: geneName, Type: "image",
+                                              {GeneId: geneId, GeneName: geneName, Type: "iframe",
                                                TabUrlSearchPattern: "http://*/static/gaggle_output.html",
-                                               Url: src, Source: "KEGG", Description: "KEGG Pathway",
+                                               Url: iframeurl, Source: "KEGG", Description: "KEGG Pathway",
                                                IFrameUrl: (window.location)["href"]},
                                               function() {
                                               });

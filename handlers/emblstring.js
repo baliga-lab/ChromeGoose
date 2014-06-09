@@ -64,6 +64,15 @@ EMBLString.prototype.show = function() {
     //getBrowser().selectedTab = newTab;
 };
 
+EMBLString.prototype.scanPage = function ()
+{
+    console.log("EMBL String scan page..." + (window.self == window.top));
+
+    this.checkData();
+
+
+}
+
 
 /**
  * Create a closure which will be called on the page "load" event that
@@ -136,6 +145,34 @@ EMBLString.prototype.processData = function(jsondata) {//stringSpeciesName, name
                             input_form.submit();
                         }
                     }
+                }
+
+                // Now call Selenium to click the button
+                if (window.self != top) {
+                    var iframeid = sourceobj["iframeId"];
+                    this.intervalId = setInterval(function() {
+                                          var found = false;
+                                          $("input[type=submit]").each(function () {
+                                              console.log("Found submit input: " + $(this).val());
+                                              if ($(this).val().indexOf("Continue") >= 0) {
+                                                  found = true;
+                                                  console.log("EMBL String target iframe Id: " + iframeid);
+
+                                                  // click the "Continue" button
+                                                  var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_WEBSOCKETSEND,
+                                                                     {ID: "", Action: "Chrome", Data: {Command: "ClickIFrame", Data: {IFrameId: iframeid, ElementId: "", ElementClass: "current",
+                                                                                                                                      TagName: "input", AttributeName: "value", SearchText: "Continue", OnlyOne: "true"}}},
+                                                                     function() {
+                                                                     });
+                                                  msg.send();
+                                              };
+                                          });
+
+                                          if (found) {
+                                             console.log("Remove timer: " + this.intervalId);
+                                             clearInterval(this.intervalId);
+                                          }
+                                      }, 1000);
                 }
             }
             catch (e) {
@@ -231,6 +268,6 @@ EMBLString.prototype.toStringSpeciesName = function(species) {
 }; */
 
 var emblString = new EMBLString();
-if (parent == top)
+if (window.self != top)
     emblString.scanPage();
-//FG_addWebsiteHandler("EMBL String", FG_emblString);
+
