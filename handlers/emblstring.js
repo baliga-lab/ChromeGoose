@@ -66,12 +66,53 @@ EMBLString.prototype.show = function() {
 
 EMBLString.prototype.scanPage = function ()
 {
-    console.log("EMBL String scan page..." + (window.self == window.top));
+    console.log("EMBL String scan page..." + window.location);
 
     this.checkData();
 
+    // Now call Selenium to click the button
+    if (window.self != top) {
+        var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_RETRIEVEHANDLERIFRAMEID,
+                              { handler: this._name },
+                              function(iframeid) {
+                                 console.log("EMBL String got iframeId: " + iframeid);
+                                 if (iframeid == null)
+                                    return;
 
-}
+                                 this.retries = 0;
+                                 this.intervalId = setInterval(function() {
+                                                       var found = false;
+                                                       $("input[type=submit]").each(function () {
+                                                           console.log("Found submit input: " + $(this).val());
+                                                           if ($(this).val().indexOf("Continue") >= 0) {
+                                                               found = true;
+                                                               console.log("EMBL String target iframe Id: " + iframeid);
+
+                                                               // click the "Continue" button
+                                                               var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_WEBSOCKETSEND,
+                                                                                  {ID: "", Action: "Chrome", Data: {Command: "ClickIFrame", Data: {IFrameId: iframeid, ElementId: "", ElementClass: "current",
+                                                                                                                                                   TagName: "input", AttributeName: "value", SearchText: "Continue", OnlyOne: "true"}}},
+                                                                                  function() {
+                                                                                  });
+                                                               msg.send();
+                                                           };
+                                                       });
+
+                                                       if (found) {
+                                                          console.log("Remove timer: " + this.intervalId);
+                                                          clearInterval(this.intervalId);
+                                                       }
+                                                       else {
+                                                         this.retries++;
+                                                         if (this.retries == 10)
+                                                             clearInterval(this.intervalId);
+                                                       }
+                                                   }, 1000);
+                             });
+        msg.send();
+    }
+
+};
 
 
 /**
@@ -145,34 +186,6 @@ EMBLString.prototype.processData = function(jsondata) {//stringSpeciesName, name
                             input_form.submit();
                         }
                     }
-                }
-
-                // Now call Selenium to click the button
-                if (window.self != top) {
-                    var iframeid = sourceobj["iframeId"];
-                    this.intervalId = setInterval(function() {
-                                          var found = false;
-                                          $("input[type=submit]").each(function () {
-                                              console.log("Found submit input: " + $(this).val());
-                                              if ($(this).val().indexOf("Continue") >= 0) {
-                                                  found = true;
-                                                  console.log("EMBL String target iframe Id: " + iframeid);
-
-                                                  // click the "Continue" button
-                                                  var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_WEBSOCKETSEND,
-                                                                     {ID: "", Action: "Chrome", Data: {Command: "ClickIFrame", Data: {IFrameId: iframeid, ElementId: "", ElementClass: "current",
-                                                                                                                                      TagName: "input", AttributeName: "value", SearchText: "Continue", OnlyOne: "true"}}},
-                                                                     function() {
-                                                                     });
-                                                  msg.send();
-                                              };
-                                          });
-
-                                          if (found) {
-                                             console.log("Remove timer: " + this.intervalId);
-                                             clearInterval(this.intervalId);
-                                          }
-                                      }, 1000);
                 }
             }
             catch (e) {
@@ -268,6 +281,8 @@ EMBLString.prototype.toStringSpeciesName = function(species) {
 }; */
 
 var emblString = new EMBLString();
-if (window.self != top)
+if (window.self != top) {
+    console.log("EMBL scanning page in iframe...");
     emblString.scanPage();
+}
 

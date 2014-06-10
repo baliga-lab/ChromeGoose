@@ -6,6 +6,7 @@ var pipe2NotFound = 0;
 var pipe2TabResponses = new Array();
 var GAGGLE_OUTPUT_PAGE = "gaggle_output.html";
 var dictIFrameIdUrl = new Array();
+var dictIframeIdHandler = new Array();
 
 
 // Inject data to the gaggle output page
@@ -18,6 +19,18 @@ function injectOutput(tab, data)
             cg_util.injectCodeToTab(tab.id, codetorun, null);
         });
     }
+}
+
+function findIFrameIdFromHandler(handler)
+{
+    console.log("Searching iframe id for " + handler + " in " + dictIframeIdHandler);
+    for (var i = 0; i < dictIframeIdHandler.length; i++)
+    {
+        var pair = dictIframeIdHandler[i];
+        if (pair.handler == handler)
+            return pair.iframeid;
+    }
+    return null;
 }
 
 function findIFrameIdFromUrl(url)
@@ -56,7 +69,34 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
     try {
         if (msg.from && (msg.from == MSG_FROM_CONTENT)) {
              if (msg.subject) {
-                if (msg.subject == MSG_SUBJECT_STOREDATA)  {
+                if (msg.subject == MSG_SUBJECT_GAGGLEOUTPUTINIT) {
+                    console.log("Background received gaggle output init event");
+                    dictIFrameIdUrl = new Array();
+                    dictIframeIdHandler = new Array();
+                }
+                else if (msg.subject == MSG_SUBJECT_STOREHANDLERIFRAMEID) {
+                    console.log("Background received store iframe for handler msg: " + msg.data);
+                    var jsonobj = JSON.parse(msg.data);
+                    var handler = jsonobj["handler"];
+                    var iframeid = jsonobj["iframeId"];
+                    console.log("Background store handler iframeid: " + handler + " " + iframeid);
+                    var pair = {};
+                    pair.handler = handler;
+                    pair.iframeid = iframeid;
+                    dictIframeIdHandler.push(pair);
+                    if (sendResponse != null)
+                        sendResponse();
+                }
+                else if (msg.subject == MSG_SUBJECT_RETRIEVEHANDLERIFRAMEID) {
+                    console.log("Background received retrieving iframe for handler msg: " + msg.data);
+                    var jsonobj = JSON.parse(msg.data);
+                    var handler = jsonobj["handler"];
+                    console.log("Background searching iframeid for " + handler);
+                    var iframeid = findIFrameIdFromHandler(handler);
+                    if (sendResponse != null)
+                        sendResponse(iframeid);
+                }
+                else if (msg.subject == MSG_SUBJECT_STOREDATA)  {
                     // data is json stringified
                     console.log("Received data storage request from content page: " + msg.data);
                     //var jsondata = JSON.parse(msg.data);
@@ -255,12 +295,11 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                             var action = jsonobj["Action"];
                             var data = jsonobj["Data"];
                             console.log("ID: " + id + " Action: " + action + " Data: " + data);
-                            try {
-                                sendDataWebSocket(id, action, data);
+                            if (sendDataWebSocket(id, action, data))
                                 break;
-                            }
-                            catch (e) {
-                                console.log("Failed to send to websocket " + e);
+                            else
+                            {
+                                console.log("Failed to send to websocket");
                                 websocketconnection = null;
                                 retries++;
                             }

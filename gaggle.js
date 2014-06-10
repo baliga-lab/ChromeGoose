@@ -7,6 +7,25 @@ function init()
     // Load web handler content script
     webHandlers = webhandlers.loadContentPageHandlers();
 
+    document.addEventListener("GaggleOutputInitEvent", function(e) {
+        console.log("Received GaggleOutputInitEvent");
+        // Pass it to background page to save the iframeid for the handler
+        var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_GAGGLEOUTPUTINIT,
+                              null, null);
+        msg.send();
+    });
+
+    document.addEventListener("IFrameOpenEvent", function (e) {
+        console.log("Received IFrameOpenEvent " + e.detail);
+        var handler = e.detail.handler;
+        var iframeid = e.detail.iframeId;
+
+        // Pass it to background page to save the iframeid for the handler
+        var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_STOREHANDLERIFRAMEID,
+                              { handler: handler, iframeId: iframeid }, null);
+        msg.send();
+    });
+
     document.addEventListener("GaggleOutputPageEvent", function(e) {
         console.log("Received data from Gaggle Output Page " + e.detail);
         var data = e.detail.data;

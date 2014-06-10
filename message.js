@@ -21,6 +21,9 @@ var MSG_SUBJECT_OPENTABANDEXECUTE = "OpenAndExecuteCode";
 var MSG_SUBJECT_GETORGANISMSHTML = "GetOrganismsHtml";
 var MSG_SUBJECT_OPENURL = "OpenUrl";
 var MSG_SUBJECT_GAGGLEPARSERESULT = "GaggleParseResult";
+var MSG_SUBJECT_STOREHANDLERIFRAMEID = "StoreHandlerIFrameId";
+var MSG_SUBJECT_RETRIEVEHANDLERIFRAMEID = "RetrieveHandlerIFrameId";
+var MSG_SUBJECT_GAGGLEOUTPUTINIT = "GaggleOutputInit";
 
 
 function Message(from, to, targetid, subject, data, callback)

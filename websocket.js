@@ -14,7 +14,7 @@ function webSocketOpenCallback()
             //websocketconnection.send('GetID'); // Send the message 'Ping' to the server
         }
         catch (e) {
-            alert("Failed to send GetID " + e);
+            console.log("Failed to send GetID " + e);
         }
 }
 
@@ -50,7 +50,7 @@ function parseData(result) {
             }
         }
         catch (e) {
-            alert("Failed to process websocket server data " + e);
+            console.log("Failed to process websocket server data " + e);
         }
     }
 };
@@ -81,7 +81,7 @@ function createWebSocket(serverurl, onOpenCallback, onMessageCallback)
             websocketconnection.onerror = onWebsocketError;
         }
         catch (e) {
-            alert("Failed to open web socket: " + e);
+            console.log("Failed to open web socket: " + e);
         }
     }
 }
@@ -95,8 +95,10 @@ function sendDataWebSocket(id, action, data)
         jsonobj.Data = data;
         if (websocketconnection != null)
             websocketconnection.send(JSON.stringify(jsonobj));
+        return true;
     }
     catch (e) {
-        alert("Failed to send data over websocket " + e);
+        console.log("Failed to send data over websocket " + e);
+        return false;
     }
 }
