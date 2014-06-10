@@ -79,36 +79,41 @@ EMBLString.prototype.scanPage = function ()
                                  if (iframeid == null)
                                     return;
 
-                                 this.retries = 0;
-                                 this.intervalId = setInterval(function() {
-                                                       var found = false;
-                                                       $("input[type=submit]").each(function () {
-                                                           console.log("Found submit input: " + $(this).val());
-                                                           if ($(this).val().indexOf("Continue") >= 0) {
-                                                               found = true;
-                                                               console.log("EMBL String target iframe Id: " + iframeid);
+                                 var poller = new Object();
+                                 poller.timerCount = 0;
+                                 poller.poll = function() {
+                                       this.timerCount++;
+                                       var found = false;
+                                       $("input[type=submit]").each(function () {
+                                           console.log("Found submit input: " + $(this).val());
+                                           if ($(this).val().indexOf("Continue") >= 0) {
+                                               found = true;
+                                               console.log("EMBL String target iframe Id: " + iframeid);
 
-                                                               // click the "Continue" button
-                                                               var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_WEBSOCKETSEND,
-                                                                                  {ID: "", Action: "Chrome", Data: {Command: "ClickIFrame", Data: {IFrameId: iframeid, ElementId: "", ElementClass: "current",
-                                                                                                                                                   TagName: "input", AttributeName: "value", SearchText: "Continue", OnlyOne: "true"}}},
-                                                                                  function() {
-                                                                                  });
-                                                               msg.send();
-                                                           };
-                                                       });
+                                               // click the "Continue" button
+                                               var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_WEBSOCKETSEND,
+                                                                  {ID: "", Action: "Chrome", Data: {Command: "ClickIFrame", Data: {IFrameId: iframeid, ElementId: "", ElementClass: "current",
+                                                                                                                                   TagName: "input", AttributeName: "value", SearchText: "Continue", OnlyOne: "true"}}},
+                                                                  function() {
+                                                                  });
+                                               msg.send();
+                                           };
+                                       });
 
-                                                       if (found) {
-                                                          console.log("Remove timer: " + this.intervalId);
-                                                          clearInterval(this.intervalId);
-                                                       }
-                                                       else {
-                                                         this.retries++;
-                                                         if (this.retries == 10)
-                                                             clearInterval(this.intervalId);
-                                                       }
-                                                   }, 1000);
-                             });
+                                       if (found) {
+                                          console.log("EMBL Remove timer: " + this.timerId);
+                                          clearInterval(this.timerId);
+                                       }
+                                       else if (this.timerCount == 10)  {
+                                          console.log("EMBL Couldn't find the element, clear timer: " + this.timerId);
+                                          clearInterval(this.timerId);
+                                       }
+                                 };
+
+                                 console.log("EMBL String starting poller timer...");
+                                 poller.timerId = setInterval(function() { poller.poll(); }, 500);
+                              });
+
         msg.send();
     }
 

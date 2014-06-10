@@ -5,12 +5,12 @@ var currentCallback = null;
 
 function webSocketOpenCallback()
 {
-    //alert('Web Socket OPENED ' + websocketconnection);
+    console.log('Web Socket OPENED ' + websocketconnection);
     if (websocketconnection != null)
         try
         {
-            sendDataWebSocket("", "Register", "ChromeGoose");
-            sendDataWebSocket("", "GetGeese", "");
+            sendDataWebSocket("", "Register", "ChromeGoose", null);
+            sendDataWebSocket("", "GetGeese", "", null);
             //websocketconnection.send('GetID'); // Send the message 'Ping' to the server
         }
         catch (e) {
@@ -86,19 +86,81 @@ function createWebSocket(serverurl, onOpenCallback, onMessageCallback)
     }
 }
 
-function sendDataWebSocket(id, action, data)
+// Make the function wait until the connection is made...
+function waitForSocketConnection(socket, callback){
+    var retries = 0;
+    if (socket == null) {
+        if (callback != null)
+            callback(false);
+    }
+
+    var poller = new Object();
+    poller.timerCount = 0;
+    poller.poll = function() {
+        this.timerCount++;
+        if (socket.readyState === 1) {
+            console.log("Connection is made");
+            clearInterval(this.timerId);
+            if(callback != null){
+                callback(true);
+            }
+        } else {
+            console.log("wait for connection " + this.timerCount);
+            if (retries == 20) {
+                console.log("time out, clear timer " + this.timerId);
+                clearInterval(this.timerId);
+                if (callback)
+                    callback(false);
+            }
+        }
+    };
+    console.log("websocket starting poller timer...");
+    poller.timerId = setInterval(function() { poller.poll(); }, 500);
+}
+
+function sendDataFunc(jsonobj, callback)
+{
+    waitForSocketConnection(websocketconnection,
+        function(ready){
+            if (ready) {
+                console.log("message sent!!!");
+                try {
+                    websocketconnection.send(JSON.stringify(jsonobj));
+                    if (callback)
+                        callback(true);
+                }
+                catch (e) {
+                    console.log("Failed to send data over websocket " + e);
+                    websocketconnection = null;
+                    if (callback)
+                        callback(false);
+                }
+            }
+            else {
+                console.log("Websocket wait for ready failed");
+                if (callback)
+                    callback(false);
+            }
+        }
+    );
+}
+
+function sendDataWebSocket(id, action, data, callback)
 {
     var jsonobj = {};
-    try {
-        jsonobj.ID = id;
-        jsonobj.Action = action;
-        jsonobj.Data = data;
-        if (websocketconnection != null)
-            websocketconnection.send(JSON.stringify(jsonobj));
-        return true;
+    jsonobj.ID = id;
+    jsonobj.Action = action;
+    jsonobj.Data = data;
+
+    if (websocketconnection == null || websocketconnection.readyState == 3) {
+       createWebSocket(BossWebSocketUrl, function() {
+          webSocketOpenCallback();
+          sendDataFunc(jsonobj, callback);
+       },
+       parseData);
     }
-    catch (e) {
-        console.log("Failed to send data over websocket " + e);
-        return false;
+    else  {
+        console.log("Websocket state: " + websocketconnection.readyState);
+        sendDataFunc(jsonobj, callback);
     }
 }

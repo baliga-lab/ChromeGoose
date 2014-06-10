@@ -281,30 +281,21 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                     console.log("Received data to be sent to websocket " + msg.data);
                     //alert(websocketconnection);
                     var retries = 0;
-                    while (retries < 2) {
-                        if (websocketconnection == null) {
-                            createWebSocket(BossWebSocketUrl, webSocketOpenCallback, parseData);
-                        }
-                        if (websocketconnection != null) {
-                            //alert("Send data to websocket " + msg.data);
-                            //websocketconnection.send(msg.data);
-                            var jsonobj = JSON.parse(msg.data);
-                            var id = jsonobj["ID"];
-                            if (id == null || id.length == 0)
-                                id = websocketid;
-                            var action = jsonobj["Action"];
-                            var data = jsonobj["Data"];
-                            console.log("ID: " + id + " Action: " + action + " Data: " + data);
-                            if (sendDataWebSocket(id, action, data))
-                                break;
-                            else
-                            {
-                                console.log("Failed to send to websocket");
-                                websocketconnection = null;
-                                retries++;
-                            }
-                        }
-                    }
+                    var jsonobj = JSON.parse(msg.data);
+                    var id = jsonobj["ID"];
+                    if (id == null || id.length == 0)
+                        id = websocketid;
+                    var action = jsonobj["Action"];
+                    var data = jsonobj["Data"];
+
+                    console.log("ID: " + id + " Action: " + action + " Data: " + data);
+                    sendDataWebSocket(id, action, data, function(success) {
+                        if (success)
+                            console.log("Send to websocket succeeded!");
+                        else
+                            console.log("Send to websocket failed!");
+                    });
+
                     if (sendResponse != null)
                         sendResponse(geeseJSONString);
                 }
