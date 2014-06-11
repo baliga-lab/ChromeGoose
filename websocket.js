@@ -97,18 +97,18 @@ function waitForSocketConnection(socket, callback){
     var poller = new Object();
     poller.timerCount = 0;
     poller.poll = function() {
-        this.timerCount++;
+        poller.timerCount++;
         if (socket.readyState === 1) {
             console.log("Connection is made");
-            clearInterval(this.timerId);
+            clearInterval(poller.timerId);
             if(callback != null){
                 callback(true);
             }
         } else {
             console.log("wait for connection " + this.timerCount);
-            if (retries == 20) {
+            if (poller.timerCount == 20) {
                 console.log("time out, clear timer " + this.timerId);
-                clearInterval(this.timerId);
+                clearInterval(poller.timerId);
                 if (callback)
                     callback(false);
             }
@@ -120,6 +120,7 @@ function waitForSocketConnection(socket, callback){
 
 function sendDataFunc(jsonobj, callback)
 {
+    console.log("Send data to websocket: " + jsonobj);
     waitForSocketConnection(websocketconnection,
         function(ready){
             if (ready) {

@@ -9,12 +9,12 @@
 
 
 var WEBHANDLERS_UPDATE_INTERVAL = 24 * 60 * 60 * 1000; // Update after 24 hour
-var GAGGLE_SERVER = "http://localhost:8000";
-//var GAGGLE_SERVER = "http://networks.systemsbiology.net";
+//var GAGGLE_SERVER = "http://localhost:8000";
+var GAGGLE_SERVER = "http://networks.systemsbiology.net";
 var GAGGLE_HOME = "http://gaggle.systemsbiology.net";
 var GAGGLE_OUTPUT_PAGE = GAGGLE_SERVER + "/static/gaggle_output.html";
 var BOSS_JNLP = GAGGLE_SERVER + "/static/jnlp/boss.jnlp";
-var HTTPBOSS_ADDRESS = "http://localhost:8082/";
+var HTTPBOSS_ADDRESS = "ws://localhost:8083/BossWebSocket";
 var WEBHANDLER_BASEURL = GAGGLE_SERVER + "/static/javascripts/handlers/";
 var OPENCPU_SERVER = "http://10.10.3.175/ocpu";
 
@@ -26,16 +26,65 @@ startBoss: function() {
 
 bossStarted: function(callback) {
     console.log("Verifying if boss has started...");
-    cg_util.urlExists(HTTPBOSS_ADDRESS, function(status){
+    var ws = new WebSocket(HTTPBOSS_ADDRESS);
+    ws.onopen = function()
+    {
+        // Web Socket is connected, send data using send()
+        console.log("bossStarted: Boss Websocket connected");
+        if (callback) {
+            callback(true);
+        }
+    };
+    ws.onmessage = function (evt)
+    {
+        var received_msg = evt.data;
+
+    };
+    ws.onclose = function()
+    {
+        // websocket is closed.
+        console.log("bossStarted: Connection is closed...");
+        if (callback)
+            callback(false);
+    };
+    ws.onerror = function() {
+        console.log("bossStarted: Error encountered...");
+        //if (callback)
+        //    callback(false);
+    };
+
+    /*var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_CHECKBOSSCONNECTION,
+                          {
+                           IFrameClass: "gaggleiframe", EmbedHtml: embedhtml},
+                          function() {
+                          });
+    msg.send();
+
+    if (websocket != null && websocket.readyState != 3) {
+        console.log("Boss started...");
+        if (callback != null)
+        {
+           callback(true);
+        }
+    }
+    else {
+        console.log("Boss not started...");
+        if (callback != null)
+            callback(false);
+    } */
+
+    /*cg_util.urlExists(HTTPBOSS_ADDRESS, function(status){
         if(status == 200){
            // file was found
+           alert("Boss started...");
            callback(true);
         }
         else if(status == 404 || status == 0){
            // 404 not found
+           alert("Boss not started " + status);
            callback(false);
         }
-    });
+    }); */
 },
 
 

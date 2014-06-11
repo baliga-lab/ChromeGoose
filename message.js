@@ -24,6 +24,7 @@ var MSG_SUBJECT_GAGGLEPARSERESULT = "GaggleParseResult";
 var MSG_SUBJECT_STOREHANDLERIFRAMEID = "StoreHandlerIFrameId";
 var MSG_SUBJECT_RETRIEVEHANDLERIFRAMEID = "RetrieveHandlerIFrameId";
 var MSG_SUBJECT_GAGGLEOUTPUTINIT = "GaggleOutputInit";
+var MSG_SUBJECT_STARTGAGGLEOUTPUT = "StartGaggleOutput";
 
 
 function Message(from, to, targetid, subject, data, callback)

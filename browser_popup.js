@@ -25,7 +25,7 @@ function init()
     //$("#divScript").empty();
 
     $("#selGaggleMenu").change(gaggleMenuItemSelected);
-    $("#btnStartBoss").click(startBoss);
+    $("#btnStartBoss").click(startBossFromButton);
     $("#btnGaggleWebsite").click(openGaggleWebsite);
     $("#btnGaggleOutput").click(openGaggleOutputPage);
 
@@ -133,18 +133,30 @@ function setDOMInfo(pageData) {
     }
 }
 
-function startBoss()
+function startBossFromButton()
+{
+    startBoss(true, null);
+}
+
+function startBoss(forceStart, callback)
 {
     cg_util.bossStarted(function (started) {
-        console.log("Check boss response: " + started);
-        if (!started) {
-            cg_util.startBoss();
-            $("#imgGaggleConnected").attr("src", "img/connected.png");
-        }
-        else {
-            $("#imgGaggleConnected").attr("src", "img/connected.png");
-        }
+          console.log("First check boss response: " + started);
+          if (!started) {
+              $("#imgGaggleConnected").attr("src", "img/disconnected.png");
+              if (forceStart)
+                cg_util.startBoss();
+              if (callback != null)
+                callback(false);
+          }
+          else {
+              $("#imgGaggleConnected").attr("src", "img/connected.png");
+              if (callback != null)
+                callback(true);
+          }
     });
+
+
 }
 
 function openGaggleWebsite()
@@ -156,11 +168,27 @@ function openGaggleOutputPage()
 {
     // Tell the Selenium driver to open the page
     console.log("Open gaggle output page...");
-    var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_WEBSOCKETSEND,
-                       {ID: "", Action: "Chrome", Data: {Command: "OpenPage", Data: {PageUrl: GAGGLE_OUTPUT_PAGE}}},
-                       function() {
-                       });
-    msg.send();
+
+    // Start the Boss
+    startBoss(false, function (started) {
+        if (started) {
+            console.log("Boss started. Now we start the Gaggle Output Page...");
+            var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_WEBSOCKETSEND,
+                                   {ID: "", Action: "Chrome", Data: {Command: "Start", Data: {PageUrl: GAGGLE_OUTPUT_PAGE}}},
+                                   function() {
+                                   });
+            msg.send();
+        }
+        else {
+            console.log("Failed to start boss. Now we start Boss and Gaggle Output page from background page...");
+            var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_STARTGAGGLEOUTPUT,
+                                   {ID: "", Action: "Chrome", Data: {Command: "Start", Data: {PageUrl: GAGGLE_OUTPUT_PAGE}}},
+                                   function() {
+                                   });
+            msg.send();
+            cg_util.startBoss();
+        }
+    });
 }
 
 function gaggleMenuItemSelected(event) {
@@ -169,11 +197,11 @@ function gaggleMenuItemSelected(event) {
     var selected = $("#selGaggleMenu").val();
     if (selected == "0") {
         // Start the Boss
-        cg_util.bossStarted(function (started) {
+        cg_util.bossStarted(websocketconnection, function (started) {
             console.log("Check boss response: " + started);
             if (!started) {
                 cg_util.startBoss();
-                $("#imgGaggleConnected").attr("src", "img/connected.png");
+                $("#imgGaggleConnected").attr("src", "img/disconnected.png");
             }
             else {
                 $("#imgGaggleConnected").attr("src", "img/connected.png");

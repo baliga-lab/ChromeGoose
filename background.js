@@ -277,10 +277,48 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                     if (sendResponse != null)
                         sendResponse("Done!");
                 }
+                else if (msg.subject == MSG_SUBJECT_STARTGAGGLEOUTPUT) {
+                    console.log("Background received message to start gaggle output page: " + msg.data);
+                    var jsonobj = JSON.parse(msg.data);
+                    var id = jsonobj["ID"];
+                    if (id == null || id.length == 0)
+                        id = websocketid;
+                    var action = jsonobj["Action"];
+                    var data = jsonobj["Data"];
+
+                    // Now we start the poller to verify whether boss is started
+                    var poller = new Object();
+                    poller.timerCount = 0;
+                    poller.poll = function() {
+                        poller.timerCount++;
+                        cg_util.bossStarted(function (started) {
+                          console.log("Background page Check boss response: " + started);
+                          if (!started) {
+                             console.log("Boss not started: " + poller.timerCount);
+                             if (poller.timerCount == 20) {
+                                console.log("Failed to start boss");
+                                clearInterval(poller.timerId);
+                             }
+                          }
+                          else {
+                              console.log("Boss started! Stop polling " + poller.timerId);
+                              clearInterval(poller.timerId);
+                              sendDataWebSocket(id, action, data, function(success) {
+                                 if (success)
+                                     console.log("Start Gaggle Output Page: Send to websocket succeeded!");
+                                 else
+                                     console.log("Start Gaggle Output Page: Send to websocket failed!");
+                              });
+                          }
+                        });
+                      };
+                      console.log("Background page: Starting startboss poller...");
+                      poller.timerId = setInterval(function() { poller.poll(); }, 3000);
+                      if (sendResponse != null)
+                          sendResponse();
+                }
                 else if (msg.subject == MSG_SUBJECT_WEBSOCKETSEND) {
                     console.log("Received data to be sent to websocket " + msg.data);
-                    //alert(websocketconnection);
-                    var retries = 0;
                     var jsonobj = JSON.parse(msg.data);
                     var id = jsonobj["ID"];
                     if (id == null || id.length == 0)
