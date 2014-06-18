@@ -20,6 +20,7 @@ var webhandlers = {
            handlers[12] = new StampHandler();
            handlers[13] = new MRMAtlas();
            handlers[14] = new MaggieHandler();
+           handlers[15] = new Metlin();
        }
        catch (e) {
            console.log("Failed to load handler: " + e);
@@ -38,6 +39,7 @@ var webhandlers = {
            handlers[3] = new Pipe2Goose();
            handlers[4] = new OpenCPUHandler();
            handlers[5] = new EMBLString();
+           handlers[6] = new Metlin();
 
            //handlers[3] = new David();
            //handlers[4] = new KEGG();
