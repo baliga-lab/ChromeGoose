@@ -23,6 +23,8 @@ var webhandlers = {
            handlers[15] = new Metlin();
            handlers[16] = new OntDiscEnvHandler();
            handlers[17] = new PDDB();
+           handlers[18] = new SGD(SGD.GO_SLIM_MAPPER, "SGD GO Slim Mapper");
+           handlers[19] = new SGD(SGD.GO_TERM_FINDER, "SGD GO Term Finder");
        }
        catch (e) {
            console.log("Failed to load handler: " + e);
@@ -42,6 +44,8 @@ var webhandlers = {
            handlers[4] = new OpenCPUHandler();
            handlers[5] = new EMBLString();
            handlers[6] = new Metlin();
+           handlers[7] = new SGD(SGD.GO_SLIM_MAPPER, "SGD GO Slim Mapper");
+           handlers[8] = new SGD(SGD.GO_TERM_FINDER, "SGD GO Term Finder");
 
            //handlers[3] = new David();
            //handlers[4] = new KEGG();

@@ -36,6 +36,7 @@
                 "handlers/pipe2Goose.js",
                 "handlers/opencpuhandler.js",
                 "handlers/metlin.js",
+                "handlers/sgd.js",
                 "handlers/emblstring.js",
                 "handlers/webhandler.js",
                 "data/gaggle_data.js", "data/namelist.js", "data/datamatrix.js", "data/cluster.js", "gaggle.js"],
