@@ -395,7 +395,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                       broadcastdata.data = jsonobj["data"];
                       broadcastdata.source = "Broadcast";
                       broadcastdata.guid = cg_util.generateUUID();
-                      var jsondata = JSON.stringify(pagedata);
+                      var jsondata = JSON.stringify(broadcastdata);
                       broadcastdata.jsondata = jsondata;
                       broadcastData.push(broadcastdata);
                   }
