@@ -317,6 +317,11 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                       if (sendResponse != null)
                           sendResponse();
                 }
+                else if (msg.subject == MSG_SUBJECT_GETGEESE) {
+                    console.log("Received get geese request: " + geeseJSONString);
+                    if (sendResponse != null)
+                       sendResponse(geeseJSONString);
+                }
                 else if (msg.subject == MSG_SUBJECT_WEBSOCKETSEND) {
                     console.log("Received data to be sent to websocket " + msg.data);
                     var jsonobj = JSON.parse(msg.data);
@@ -335,7 +340,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                     });
 
                     if (sendResponse != null)
-                        sendResponse(geeseJSONString);
+                        sendResponse();
                 }
                 else if (msg.subject == MSG_SUBJECT_BROADCASTDATA) {
                     // Get the data broadcast from other geese

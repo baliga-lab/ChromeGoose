@@ -9,12 +9,25 @@ var bossConnected = false;
 var currentScriptToRun = null;
 
 function getGeese(callback) {
-    //var url = HTTPBOSS_ADDRESS + "?command=getGeese";
-    //cg_util.getFileFromUrl(url, callback);
-    var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_WEBSOCKETSEND,
-                                   {ID: "", Action: "GetGeese", Data: "" }, callback);
-    //alert(callback);
-    msg.send();
+    sendDataWebSocket("", "GetGeese", "", callback);
+}
+
+function setBossConnected(bossConnected) {
+    console.log("setBossConnected: " + bossConnected);
+
+    if (bossConnected) {
+        $("#imgGaggleConnected").removeClass("glyphicon glyphicon-minus-sign");
+        $("#imgGaggleConnected").addClass("glyphicon glyphicon-plus-sign");
+        $("#btnBossConnected").prop("title", "Connected");
+    }
+    else {
+        $("#imgGaggleConnected").removeClass("glyphicon glyphicon-plus-sign");
+        $("#imgGaggleConnected").addClass("glyphicon glyphicon-minus-sign"); //("src", "img/connected.png");
+        $("#btnBossConnected").prop("title", "Not connected");
+
+        $("#selTarget").empty();
+        $("#selTarget").prepend($("<option></option>").attr("value", "-1").text("-- Select a Target to Broadcast --"));
+    }
 }
 
 function init()
@@ -36,38 +49,56 @@ function init()
     $("#ahrefGeneSetEnrichment").click(geneSetEnrichmentSelected);
     $("#ahrefplotexpression").click(plotDataSelected);
 
-    getGeese(function (response) {
+    getGeese(function (succeeded) {
         //alert("Listening geese: " + response);
-        if (response == null)
-            bossConnected = false;
+        if (!succeeded)
+            setBossConnected(false);
         else {
            try {
-               var jsonobj = JSON.parse(response);
-               var geesestring = jsonobj["Data"];
-               var socketid = jsonobj["ID"];
-               console.log("web socket ID: " + socketid);
-               bossConnected = (socketid != null && socketid.length > 0) ? true : false;
-               if (geesestring != null) {
-                   var splitted = geesestring.split(";;;");
-                   for (var i = 0; i < splitted.length; i++) {
-                        if (splitted[i] != null && splitted[i].length > 0)
-                            $("#selTarget").prepend($("<option></option>").attr("value", splitted[i]).text(splitted[i]));
-                   }
-               }
+               // Start the timer to get geese string
+               bossConnected = true;
+               var poller = new Object();
+               poller.timerCount = 0;
+               poller.poll = function() {
+                   poller.timerCount++;
+                   var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_GETGEESE,
+                                         {}, function(response) {
+                                            console.log("Received geese string: " + response);
+                                            var hasresult = false;
+                                            if (response != null) {
+                                                var jsonobj = JSON.parse(response);
+                                                var geesestring = jsonobj["Data"];
+                                                var socketid = jsonobj["ID"];
+                                                console.log("web socket ID: " + socketid + " geese string: " + geesestring);
+                                                var bossConnected = (socketid != null && socketid.length > 0) ? true : false;
+                                                setBossConnected(bossConnected);
+                                                if (geesestring != null && geesestring.length > 0) {
+                                                    console.log("Clear poller: " + poller.timerId);
+                                                    clearInterval(poller.timerId);
+                                                    hasresult = true;
+                                                    var splitted = geesestring.split(";;;");
+                                                    for (var i = 0; i < splitted.length; i++) {
+                                                       if (splitted[i] != null && splitted[i].length > 0)
+                                                           $("#selTarget").prepend($("<option></option>").attr("value", splitted[i]).text(splitted[i]));
+                                                    }
+                                                    $("#selTarget").prepend($("<option></option>").attr("value", "Boss").text("Boss"));
+                                                    $("#selTarget").prepend($("<option></option>").attr("value", "-1").text("-- Select a Target to Broadcast --"));
+                                                }
+                                            }
+
+                                            if (!hasresult && poller.timerCount == 10) {
+                                                console.log("Failed to get geese, stop the timer...");
+                                                clearInterval(poller.timerId);
+                                            }
+                                         });
+                   msg.send();
+               };
+               console.log("browser popup starting getgeese poller timer...");
+               poller.timerId = setInterval(function() { poller.poll(); }, 200);
            }
            catch (e) {
                console.log(e);
            }
-        }
-
-        console.log("Check boss response: " + bossConnected);
-        if (bossConnected) {
-            $("#imgGaggleConnected").attr("src", "img/connected.png");
-            $("#selTarget").prepend($("<option></option>").attr("value", "Boss").text("Boss"));
-            $("#selTarget").prepend($("<option></option>").attr("value", "-1").text("-- Select a Target to Broadcast --"));
-        }
-        else {
-            $("#selTarget").prepend($("<option></option>").attr("value", "-1").text("-- Select a Target to Broadcast --"));
         }
     });
 

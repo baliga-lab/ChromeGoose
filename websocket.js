@@ -21,11 +21,11 @@ function webSocketOpenCallback()
 function parseData(result) {
     if (result != null) {
         try {
-            //alert(result);
+            console.log("Received websocket result: " + result);
             var data = result.data;
             //alert(data);
             var jsondata = JSON.parse(data);
-            //alert("JSON data: " + jsondata);
+            console.log("JSON data: " + jsondata);
             if (jsondata['ID'] != null) {
                 websocketid = jsondata['ID'];
                 //alert("websocket id: " + websocketid);
@@ -36,7 +36,7 @@ function parseData(result) {
             if (jsondata['Action'] != null) {
                 var action = jsondata["Action"];
                 if (action == "GetGeese") {
-                    //alert("Geese: " + data);
+                    console.log("Geese: " + data);
                     // Boss returns the getGeese result
                     // Save the result JSON string to geeseJSONString to be retrieved by browser popup
                     geeseJSONString = result.data;
