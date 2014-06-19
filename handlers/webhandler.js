@@ -22,6 +22,7 @@ var webhandlers = {
            handlers[14] = new MaggieHandler();
            handlers[15] = new Metlin();
            handlers[16] = new OntDiscEnvHandler();
+           handlers[17] = new PDDB();
        }
        catch (e) {
            console.log("Failed to load handler: " + e);
