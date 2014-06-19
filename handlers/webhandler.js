@@ -21,6 +21,7 @@ var webhandlers = {
            handlers[13] = new MRMAtlas();
            handlers[14] = new MaggieHandler();
            handlers[15] = new Metlin();
+           handlers[16] = new OntDiscEnvHandler();
        }
        catch (e) {
            console.log("Failed to load handler: " + e);

@@ -66,14 +66,14 @@ KEGG.prototype.scanPage = function ()
                 }
             });
 
-            var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_GAGGLEPARSERESULT,
-                                  {GeneId: geneId, GeneName: geneName, Type: "detail",
-                                   TabUrlSearchPattern: "http://*/static/gaggle_output.html",
-                                   Url: iframeurl, Source: "KEGG", Description: "Search Result",
-                                   IFrameUrl: (window.location)["href"]},
-                                  function() {
-                                  });
-            msg.send();
+            //var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_GAGGLEPARSERESULT,
+            //                      {GeneId: geneId, GeneName: geneName, Type: "detail",
+            //                       TabUrlSearchPattern: "http://*/static/gaggle_output.html",
+            //                       Url: iframeurl, Source: "KEGG", Description: "Search Result",
+            //                       IFrameUrl: (window.location)["href"]},
+            //                      function() {
+            //                      });
+            //msg.send();
         }
         else if (iframeurl.indexOf("show_pathway?") >= 0) {
             // Individual gene pathway image page
@@ -148,7 +148,6 @@ KEGG.prototype.handleNameList = function(namelist) {
 
 	// open the kegg URL in a new tab
 	console.log("KEGG open url: " + keggurl);
-    //this.openTabAndExecute(keggurl, this._extensionUrl, "kegg.scanPage();", null);
     chrome.tabs.create({ url: keggurl });
 }
 
