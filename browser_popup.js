@@ -27,8 +27,8 @@ function setBossConnected(bossConnected) {
         $("#imgGaggleConnected").addClass("glyphicon glyphicon-remove-circle"); //("src", "img/connected.png");
         $("#btnBossConnected").prop("title", "Not connected");
 
-        $("#selTarget").empty();
-        $("#selTarget").prepend($("<option></option>").attr("value", "-1").text("-- Select a Target to Broadcast --"));
+    	$("#selTarget").empty();
+		$("#selTarget").prepend($("<option></option>").attr("value", "-1").text("-- Select a Target to Broadcast --"));
     }
 }
 
