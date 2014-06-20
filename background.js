@@ -1,5 +1,4 @@
 var dataToBeProcessed = new Array(); // Data to be processed by a web handler
-var geeseJSONString = null;  //  JSON result of calling GetGeese from the Boss
 var broadcastData = new Array();  // Data received from other geese
 var pipe2NumTabs = 0;
 var pipe2NotFound = 0;
@@ -7,7 +6,18 @@ var pipe2TabResponses = new Array();
 var GAGGLE_OUTPUT_PAGE = "gaggle_output.html";
 var dictIFrameIdUrl = new Array();
 var dictIframeIdHandler = new Array();
+var geeseJSONString = null;  //  JSON result of calling GetGeese from the Boss
+var bossConnected = false;
 
+function poll()
+{
+    // Poll whether the boss is connected and the geese connected to the Boss
+    sendDataWebSocket(websocketid, "GetGeese", "", function(connected) {
+        bossConnected = connected;
+    });
+}
+
+setInterval(poll, 3000);
 
 // Inject data to the gaggle output page
 function injectOutput(tab, data)
@@ -318,7 +328,8 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                           sendResponse();
                 }
                 else if (msg.subject == MSG_SUBJECT_GETGEESE) {
-                    console.log("Received get geese request: " + geeseJSONString);
+                    console.log("Received get geese request: " + bossConnected + " " + geeseJSONString);
+                    
                     if (sendResponse != null)
                        sendResponse(geeseJSONString);
                 }
@@ -410,7 +421,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 
 
 // Establish a websocket with the Boss
-createWebSocket(BossWebSocketUrl, webSocketOpenCallback, parseData);
+//createWebSocket(BossWebSocketUrl, webSocketOpenCallback, parseData);
 
 var organismSelectionHtml = "";
 function getOrganisms(callback) {

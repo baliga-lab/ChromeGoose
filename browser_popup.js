@@ -49,59 +49,30 @@ function init()
     $("#ahrefGeneSetEnrichment").click(geneSetEnrichmentSelected);
     $("#ahrefplotexpression").click(plotDataSelected);
 
-    getGeese(function (succeeded) {
-        //alert("Listening geese: " + response);
-        if (!succeeded)
-            setBossConnected(false);
-        else {
-           try {
-               // Start the timer to get geese string
-               bossConnected = true;
-               var poller = new Object();
-               poller.timerCount = 0;
-               poller.poll = function() {
-                   poller.timerCount++;
-                   var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_GETGEESE,
-                                         {}, function(response) {
-                                            console.log("Received geese string: " + response);
-                                            var hasresult = false;
-                                            if (response != null) {
-                                                var jsonobj = JSON.parse(response);
-                                                var geesestring = jsonobj["Data"];
-                                                var socketid = jsonobj["ID"];
-                                                console.log("web socket ID: " + socketid + " geese string: " + geesestring);
-                                                var bossConnected = (socketid != null && socketid.length > 0) ? true : false;
-                                                setBossConnected(bossConnected);
-                                                if (geesestring != null && geesestring.length > 0) {
-                                                    console.log("Clear poller: " + poller.timerId);
-                                                    clearInterval(poller.timerId);
-                                                    hasresult = true;
-                                                    var splitted = geesestring.split(";;;");
-                                                    for (var i = 0; i < splitted.length; i++) {
-                                                       if (splitted[i] != null && splitted[i].length > 0)
-                                                           $("#selTarget").prepend($("<option></option>").attr("value", splitted[i]).text(splitted[i]));
-                                                    }
-                                                    $("#selTarget").prepend($("<option></option>").attr("value", "Boss").text("Boss"));
-                                                    $("#selTarget").prepend($("<option></option>").attr("value", "-1").text("-- Select a Target to Broadcast --"));
-                                                }
-                                            }
-
-                                            if (!hasresult && poller.timerCount == 10) {
-                                                console.log("Failed to get geese, stop the timer...");
-                                                clearInterval(poller.timerId);
-                                            }
-                                         });
-                   msg.send();
-               };
-               console.log("browser popup starting getgeese poller timer...");
-               poller.timerId = setInterval(function() { poller.poll(); }, 200);
-           }
-           catch (e) {
-               console.log(e);
-           }
-        }
-    });
-
+    // Get geese and boss connect status
+    var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_GETGEESE,
+                          {}, function(geeseJSONString) {
+                              console.log("Received GetGeese result: " + geeseJSONString);
+                              if (geeseJSONString != null) {
+                                    var jsonobj = JSON.parse(geeseJSONString);
+                                    var geesestring = jsonobj["Data"];
+                                    var socketid = jsonobj["ID"];
+                                    console.log("web socket ID: " + socketid + " geese string: " + geesestring);
+                                    setBossConnected((socketid != null));
+                                    if (geesestring != null && geesestring.length > 0) {
+                                        var splitted = geesestring.split(";;;");
+                                        for (var i = 0; i < splitted.length; i++) {
+                                           if (splitted[i] != null && splitted[i].length > 0)
+                                               $("#selTarget").prepend($("<option></option>").attr("value", splitted[i]).text(splitted[i]));
+                                        }
+                                        $("#selTarget").prepend($("<option></option>").attr("value", "Boss").text("Boss"));
+                                        $("#selTarget").prepend($("<option></option>").attr("value", "-1").text("-- Select a Target to Broadcast --"));
+                                    }
+                             }
+                             else
+                                setBossConnected(false);
+                          });
+    msg.send();
 
     // Load web handlers at the browser action side. Note we need to load instances of web handlers
     // for both browser action (to process data) and content scripts (to parse web pages).
@@ -123,11 +94,6 @@ function init()
         if (rscriptwrapper != null)
             $("#selTarget").append($("<option></option>").attr("value", i.toString()).text(rscriptwrapper.getName()));
     }); */
-
-    // Verify if Boss is started
-    //cg_util.bossStarted(function (bossConnected) {
-
-    //});
 }
 
 function setDOMInfo(pageData) {

@@ -1,7 +1,8 @@
 var BossWebSocketUrl = 'ws://localhost:8083/BossWebSocket';
 var websocketconnection = null;
-var websocketid = null;
+var websocketid = "";
 var currentCallback = null;
+
 
 function webSocketOpenCallback()
 {
@@ -60,6 +61,7 @@ function onWebsocketClose(event) {
     //alert("Websocket closed with code: " + event.code + " reason: " + event.reason);
     websocketconnection = null;
     geeseJSONString = null;
+    bossConnected = false;
 };
 
 function onWebsocketError(event)
@@ -67,6 +69,7 @@ function onWebsocketError(event)
     //alert("Web socket error: " + event.code + " reason: " + event.reason);
     websocketconnection = null;
     geeseJSONString = null;
+    bossConnected = false;
 }
 
 function createWebSocket(serverurl, onOpenCallback, onMessageCallback)
