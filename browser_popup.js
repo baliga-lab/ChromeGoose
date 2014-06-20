@@ -16,13 +16,15 @@ function setBossConnected(bossConnected) {
     console.log("setBossConnected: " + bossConnected);
 
     if (bossConnected) {
-        $("#imgGaggleConnected").removeClass("btn btn-default label label-danger glyphicon glyphicon-minus-sign");
-        $("#imgGaggleConnected").addClass("btn btn-default label label-success glyphicon glyphicon-plus-sign");
+        $("#imgGaggleConnected").removeClass("glyphicon glyphicon-minus-sign");
+        $("#imgGaggleConnected").addClass("glyphicon glyphicon-ok-circle");
         $("#btnBossConnected").prop("title", "Connected");
+        $("#btnBossConnected").removeClass("btn btn-danger");
+        $("#btnBossConnected").addClass("btn btn-success");
     }
     else {
-        $("#imgGaggleConnected").removeClass("btn btn-default label label-success glyphicon glyphicon-plus-sign");
-        $("#imgGaggleConnected").addClass("btn btn-default label label-danger glyphicon glyphicon-minus-sign"); //("src", "img/connected.png");
+        $("#imgGaggleConnected").removeClass("glyphicon glyphicon-ok-circle");
+        $("#imgGaggleConnected").addClass("glyphicon glyphicon-minus-sign"); //("src", "img/connected.png");
         $("#btnBossConnected").prop("title", "Not connected");
 
         $("#selTarget").empty();
