@@ -16,7 +16,7 @@ function setBossConnected(bossConnected) {
     console.log("setBossConnected: " + bossConnected);
 
     if (bossConnected) {
-        $("#imgGaggleConnected").removeClass("glyphicon glyphicon-minus-sign");
+        $("#imgGaggleConnected").removeClass("glyphicon glyphicon-remove-circle");
         $("#imgGaggleConnected").addClass("glyphicon glyphicon-ok-circle");
         $("#btnBossConnected").prop("title", "Connected");
         $("#btnBossConnected").removeClass("btn btn-danger");
@@ -24,7 +24,7 @@ function setBossConnected(bossConnected) {
     }
     else {
         $("#imgGaggleConnected").removeClass("glyphicon glyphicon-ok-circle");
-        $("#imgGaggleConnected").addClass("glyphicon glyphicon-minus-sign"); //("src", "img/connected.png");
+        $("#imgGaggleConnected").addClass("glyphicon glyphicon-remove-circle"); //("src", "img/connected.png");
         $("#btnBossConnected").prop("title", "Not connected");
 
         $("#selTarget").empty();
