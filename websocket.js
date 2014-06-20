@@ -10,8 +10,8 @@ function webSocketOpenCallback()
     if (websocketconnection != null)
         try
         {
-            sendDataWebSocket("", "Register", "ChromeGoose", null);
-            sendDataWebSocket("", "GetGeese", "", null);
+            sendDataWebSocket("", "Register", "ChromeGoose", true, null);
+            sendDataWebSocket("", "GetGeese", "", true, null);
             //websocketconnection.send('GetID'); // Send the message 'Ping' to the server
         }
         catch (e) {
@@ -90,7 +90,7 @@ function createWebSocket(serverurl, onOpenCallback, onMessageCallback)
 }
 
 // Make the function wait until the connection is made...
-function waitForSocketConnection(socket, callback){
+function waitForSocketConnection(socket, showloginfo, callback){
     var retries = 0;
     if (socket == null) {
         if (callback != null)
@@ -102,46 +102,54 @@ function waitForSocketConnection(socket, callback){
     poller.poll = function() {
         poller.timerCount++;
         if (socket.readyState === 1) {
-            console.log("Connection is made");
+            if (showloginfo)
+                console.log("Connection is made");
             clearInterval(poller.timerId);
             if(callback != null){
                 callback(true);
             }
         } else {
-            console.log("wait for connection " + this.timerCount);
+            if (showloginfo)
+                console.log("wait for connection " + this.timerCount);
             if (poller.timerCount == 20) {
-                console.log("time out, clear timer " + this.timerId);
+                if (showloginfo)
+                    console.log("time out, clear timer " + this.timerId);
                 clearInterval(poller.timerId);
                 if (callback)
                     callback(false);
             }
         }
     };
-    console.log("websocket starting poller timer...");
+    if (showloginfo)
+        console.log("websocket starting poller timer...");
     poller.timerId = setInterval(function() { poller.poll(); }, 500);
 }
 
-function sendDataFunc(jsonobj, callback)
+function sendDataFunc(jsonobj, showloginfo, callback)
 {
-    console.log("Send data to websocket: " + jsonobj);
-    waitForSocketConnection(websocketconnection,
+    if (showloginfo)
+        console.log("Send data to websocket: " + jsonobj);
+    waitForSocketConnection(websocketconnection, showloginfo,
         function(ready){
             if (ready) {
-                console.log("message sent!!!");
+                if (showloginfo)
+                    console.log("message sent!!!");
                 try {
                     websocketconnection.send(JSON.stringify(jsonobj));
                     if (callback)
                         callback(true);
                 }
                 catch (e) {
-                    console.log("Failed to send data over websocket " + e);
+                    if (showloginfo)
+                        console.log("Failed to send data over websocket " + e);
                     websocketconnection = null;
                     if (callback)
                         callback(false);
                 }
             }
             else {
-                console.log("Websocket wait for ready failed");
+                if (showloginfo)
+                    console.log("Websocket wait for ready failed");
                 if (callback)
                     callback(false);
             }
@@ -149,7 +157,7 @@ function sendDataFunc(jsonobj, callback)
     );
 }
 
-function sendDataWebSocket(id, action, data, callback)
+function sendDataWebSocket(id, action, data, showloginfo, callback)
 {
     var jsonobj = {};
     jsonobj.ID = id;
@@ -159,12 +167,13 @@ function sendDataWebSocket(id, action, data, callback)
     if (websocketconnection == null || websocketconnection.readyState == 3) {
        createWebSocket(BossWebSocketUrl, function() {
           webSocketOpenCallback();
-          sendDataFunc(jsonobj, callback);
+          sendDataFunc(jsonobj, showloginfo, callback);
        },
        parseData);
     }
     else  {
-        console.log("Websocket state: " + websocketconnection.readyState);
-        sendDataFunc(jsonobj, callback);
+        if (showloginfo)
+            console.log("Websocket state: " + websocketconnection.readyState);
+        sendDataFunc(jsonobj, showloginfo, callback);
     }
 }

@@ -12,7 +12,7 @@ var bossConnected = false;
 function poll()
 {
     // Poll whether the boss is connected and the geese connected to the Boss
-    sendDataWebSocket(websocketid, "GetGeese", "", function(connected) {
+    sendDataWebSocket(websocketid, "GetGeese", "", false, function(connected) {
         bossConnected = connected;
     });
 }
@@ -313,7 +313,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                           else {
                               console.log("Boss started! Stop polling " + poller.timerId);
                               clearInterval(poller.timerId);
-                              sendDataWebSocket(id, action, data, function(success) {
+                              sendDataWebSocket(id, action, data, true, function(success) {
                                  if (success)
                                      console.log("Start Gaggle Output Page: Send to websocket succeeded!");
                                  else
@@ -343,7 +343,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                     var data = jsonobj["Data"];
 
                     console.log("ID: " + id + " Action: " + action + " Data: " + data);
-                    sendDataWebSocket(id, action, data, function(success) {
+                    sendDataWebSocket(id, action, data, true, function(success) {
                         if (success)
                             console.log("Send to websocket succeeded!");
                         else

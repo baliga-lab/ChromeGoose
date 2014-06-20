@@ -9,7 +9,7 @@ var bossConnected = false;
 var currentScriptToRun = null;
 
 function getGeese(callback) {
-    sendDataWebSocket("", "GetGeese", "", callback);
+    sendDataWebSocket("", "GetGeese", "", true, callback);
 }
 
 function setBossConnected(bossConnected) {
