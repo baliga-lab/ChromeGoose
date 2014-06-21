@@ -2,17 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 var webHandlers = [];
+var opencpuHandlers = {};
+
 var currentPageData = [];
 var bossConnected = false;
 var currentScriptToRun = null;
 
 function getGeese(callback) {
-    //var url = HTTPBOSS_ADDRESS + "?command=getGeese";
-    //cg_util.getFileFromUrl(url, callback);
-    var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_WEBSOCKETSEND,
-                                   {ID: "", Action: "GetGeese", data: "" }, callback);
-    //alert(callback);
-    msg.send();
+    sendDataWebSocket("", "GetGeese", "", true, callback);
+}
+
+function setBossConnected(bossConnected) {
+    console.log("setBossConnected: " + bossConnected);
+
+    if (bossConnected) {
+        $("#imgGaggleConnected").removeClass("glyphicon glyphicon-remove-circle");
+        $("#imgGaggleConnected").addClass("glyphicon glyphicon-ok-circle");
+        $("#btnBossConnected").prop("title", "Connected");
+        $("#btnBossConnected").removeClass("btn btn-danger");
+        $("#btnBossConnected").addClass("btn btn-success");
+    }
+    else {
+        $("#imgGaggleConnected").removeClass("glyphicon glyphicon-ok-circle");
+        $("#imgGaggleConnected").addClass("glyphicon glyphicon-remove-circle"); //("src", "img/connected.png");
+        $("#btnBossConnected").prop("title", "Not connected");
+
+    	$("#selTarget").empty();
+		$("#selTarget").prepend($("<option></option>").attr("value", "-1").text("-- Select a Target to Broadcast --"));
+    }
 }
 
 function init()
@@ -23,46 +40,41 @@ function init()
     //$("#divScript").empty();
 
     $("#selGaggleMenu").change(gaggleMenuItemSelected);
+    $("#btnStartBoss").click(startBossFromButton);
+    $("#btnGaggleWebsite").click(openGaggleWebsite);
+    $("#btnGaggleOutput").click(openGaggleOutputPage);
 
     $(".selGaggleData").change(gaggleDataItemSelected);
     $(".btnCancelTextInput").click(cancelTextInput);
     $(".btnCancelFileInput").click(cancelFileInput);
 
-    getGeese(function (response) {
-        //alert("Listening geese: " + response);
-        if (response == null)
-            bossConnected = false;
-        else {
-           try {
-               var jsonobj = JSON.parse(response);
-               var geesestring = jsonobj["Data"];
-               var socketid = jsonobj["ID"];
-               console.log("web socket ID: " + socketid);
-               bossConnected = (socketid != null && socketid.length > 0) ? true : false;
-               if (geesestring != null) {
-                   var splitted = geesestring.split(";;;");
-                   for (var i = 0; i < splitted.length; i++) {
-                        if (splitted[i] != null && splitted[i].length > 0)
-                            $("#selTarget").prepend($("<option></option>").attr("value", splitted[i]).text(splitted[i]));
-                   }
-               }
-           }
-           catch (e) {
-               console.log(e);
-           }
-        }
+    $("#ahrefGeneSetEnrichment").click(geneSetEnrichmentSelected);
+    $("#ahrefplotexpression").click(plotDataSelected);
 
-        console.log("Check boss response: " + bossConnected);
-        if (bossConnected) {
-            $("#imgGaggleConnected").attr("src", "img/connected.png");
-            $("#selTarget").prepend($("<option></option>").attr("value", "Boss").text("Boss"));
-            $("#selTarget").prepend($("<option></option>").attr("value", "-1").text("-- Select a Target Webservice --"));
-        }
-        else {
-            $("#selTarget").prepend($("<option></option>").attr("value", "-1").text("-- Select a Target Webservice --"));
-        }
-    });
-
+    // Get geese and boss connect status
+    var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_GETGEESE,
+                          {}, function(geeseJSONString) {
+                              console.log("Received GetGeese result: " + geeseJSONString);
+                              if (geeseJSONString != null) {
+                                    var jsonobj = JSON.parse(geeseJSONString);
+                                    var geesestring = jsonobj["Data"];
+                                    var socketid = jsonobj["ID"];
+                                    console.log("web socket ID: " + socketid + " geese string: " + geesestring);
+                                    setBossConnected((socketid != null));
+                                    if (geesestring != null && geesestring.length > 0) {
+                                        var splitted = geesestring.split(";;;");
+                                        for (var i = 0; i < splitted.length; i++) {
+                                           if (splitted[i] != null && splitted[i].length > 0)
+                                               $("#selTarget").prepend($("<option></option>").attr("value", splitted[i]).text(splitted[i]));
+                                        }
+                                        $("#selTarget").prepend($("<option></option>").attr("value", "Boss").text("Boss"));
+                                        $("#selTarget").prepend($("<option></option>").attr("value", "-1").text("-- Select a Target to Broadcast --"));
+                                    }
+                             }
+                             else
+                                setBossConnected(false);
+                          });
+    msg.send();
 
     // Load web handlers at the browser action side. Note we need to load instances of web handlers
     // for both browser action (to process data) and content scripts (to parse web pages).
@@ -76,24 +88,18 @@ function init()
     // Load R packages from OpenCPU
     var selGaggleDataParent = $(".selGaggleData").parent();
     //alert($(selGaggleDataParent)[0].outerHTML);
-    webhandlers.loadOpenCPU(selGaggleDataParent, function(rscriptwrapper) {
-        if (rscriptwrapper != null)
-            $("#selTarget").append($("<option></option>").attr("value", i.toString()).text(rscriptwrapper.getName()));
+    webhandlers.loadOpenCPU(selGaggleDataParent, function(handlers) {
+        opencpuHandlers = handlers;
     });
 
-    webhandlers.loadWorkflowComponents("selGaggleData", function(rscriptwrapper) {
+    /*webhandlers.loadWorkflowComponents("selGaggleData", function(rscriptwrapper) {
         if (rscriptwrapper != null)
             $("#selTarget").append($("<option></option>").attr("value", i.toString()).text(rscriptwrapper.getName()));
-    });
-
-    // Verify if Boss is started
-    //cg_util.bossStarted(function (bossConnected) {
-
-    //});
+    }); */
 }
 
 function setDOMInfo(pageData) {
-    console.log("Set DOM Info... " + pageData + " " + pageData.length);
+    console.log("Set DOM Info... " + pageData);
     //alert(pageData.length);
 
     //alert("Page data stored");
@@ -120,10 +126,68 @@ function setDOMInfo(pageData) {
                 $(".selGaggleData").append($("<option></option>").attr("value", guid).text(text));  //(i).toString()
 
                 // Change the text of the "no data" option
-                $(".selGaggleData option[value=-1]").text("--- Select a data item ----");
+                //$(".selGaggleData option[value=-2]").text("--- Select a data item ----");
             }
         }
     }
+}
+
+function startBossFromButton()
+{
+    startBoss(true, null);
+}
+
+function startBoss(forceStart, callback)
+{
+    cg_util.bossStarted(function (started) {
+          console.log("First check boss response: " + started);
+          if (!started) {
+              $("#imgGaggleConnected").attr("src", "img/disconnected.png");
+              if (forceStart)
+                cg_util.startBoss();
+              if (callback != null)
+                callback(false);
+          }
+          else {
+              $("#imgGaggleConnected").attr("src", "img/connected.png");
+              if (callback != null)
+                callback(true);
+          }
+    });
+
+
+}
+
+function openGaggleWebsite()
+{
+    cg_util.openNewTab(GAGGLE_HOME, null);
+}
+
+function openGaggleOutputPage()
+{
+    // Tell the Selenium driver to open the page
+    console.log("Open gaggle output page...");
+
+    // Start the Boss
+    startBoss(false, function (started) {
+        if (started) {
+            console.log("Boss started. Now we start the Gaggle Output Page...");
+            var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_WEBSOCKETSEND,
+                                   {ID: "", Action: "Chrome", Data: {Command: "Start", Data: {PageUrl: GAGGLE_OUTPUT_PAGE}}},
+                                   function() {
+                                   });
+            msg.send();
+        }
+        else {
+            console.log("Failed to start boss. Now we start Boss and Gaggle Output page from background page...");
+            var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_STARTGAGGLEOUTPUT,
+                                   {ID: "", Action: "Chrome", Data: {Command: "Start", Data: {PageUrl: GAGGLE_OUTPUT_PAGE}}},
+                                   function() {
+                                   });
+            msg.send();
+            cg_util.startBoss();
+        }
+    });
 }
 
 function gaggleMenuItemSelected(event) {
@@ -132,11 +196,11 @@ function gaggleMenuItemSelected(event) {
     var selected = $("#selGaggleMenu").val();
     if (selected == "0") {
         // Start the Boss
-        cg_util.bossStarted(function (started) {
+        cg_util.bossStarted(websocketconnection, function (started) {
             console.log("Check boss response: " + started);
             if (!started) {
                 cg_util.startBoss();
-                $("#imgGaggleConnected").attr("src", "img/connected.png");
+                $("#imgGaggleConnected").attr("src", "img/disconnected.png");
             }
             else {
                 $("#imgGaggleConnected").attr("src", "img/connected.png");
@@ -151,7 +215,7 @@ function gaggleMenuItemSelected(event) {
         // DEBUG send data through the websocket
         alert("Send data to websocket");
         var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_WEBSOCKETSEND,
-                               { data: "GetID" }, null);
+                               {ID: "", Action: "Test", data: "GetID" }, null);
         msg.send();
     }
 }
@@ -177,9 +241,11 @@ function gaggleDataItemSelected(event)
     console.log("Selected data value: " + selected);
     if (selected == "OtherText") {
         showDataInput(source, ".divTextInput");
+        $(".divFileInput").hide();
     }
     else if (selected == "OtherFile") {
         showDataInput(source, ".divFileInput");
+        $(".divTextInput").hide();
     }
 }
 
@@ -217,7 +283,7 @@ function broadcastFetchedData(jsonobj, handler)
                 handler = webHandlers[parseInt(handlerindexstr)];
             var data = jsonObj["data"];
             var type = (data["_type"] != null) ? data["_type"] : data["type"];
-            console.log("Data type: " + type);
+            console.log("Data type: " + type + " Handler: " + handler.getName());
             var gaggledata = null;
             if (type.toLowerCase() == "namelist") {
                 gaggledata = new Namelist("", 0, "", null);
@@ -234,16 +300,20 @@ function broadcastFetchedData(jsonobj, handler)
                     handler.handleNameList(gaggledata); //.getData());
                 }
             }
-            else if (type == "DataMatrix") {
+            else if (type.toLowerCase() == "datamatrix") {
+                console.log("Handling data matrix...");
                 gaggledata = new DataMatrix("", "", null, 0, 0, null, null, null);
                 gaggledata.parseJSON(data);
+                console.log("getData: " + gaggledata.getData);
                 if (gaggledata.getData() != null) {
-                    if (handler.handleDataMatrix != null)
+                    console.log("Handler handleMatrix: " + handler.handleMatrix);
+                    if (handler.handleMatrix != null)
                     {
+                        console.log("Passing data matrix to " + handler.getName());
                         var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_STOREDATA,
                                              { handler: handler.getName(), source: gaggledata }, handlerResponse);
                         msg.send();
-                        handler.handleDataMatrix(gaggledata);
+                        handler.handleMatrix(gaggledata);
                     }
                     else {
                         var namelist = gaggledata.getDataAsNameList();
@@ -284,17 +354,52 @@ function broadcastFetchedData(jsonobj, handler)
                     }
                 }
             }
+            else if (type.toLowerCase() == "network") {
+
+            }
         }
         else {
             // The handler might be a script wrapper, we need to show the UI.
             if (handler.processUI != null)
                 console.log("Processing script wrapper...");
-                handler.processUI(currentPageData);
+                var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_GETORGANISMSHTML,
+                                     null, function(organismshtml) {
+                                        handler.processUI(currentPageData, organismshtml);
+                                     });
+                msg.send();
+
         }
     }
     catch(e) {
         console.log("broadcastFetchedData: Failed to broadcast data " + e);
     }
+}
+
+function generateNamelist(nameliststring)
+{
+    if (nameliststring != null && nameliststring.length > 0)
+    {
+        console.log("Generating namelist from " + nameliststring);
+        var list = new Array();
+        var splitted = nameliststring.split("\n");
+        for (var i = 0; i < splitted.length; i++)
+        {
+            var line = splitted[i];
+            console.log("Line: " + line);
+            var delimitted = line.split(";");
+            if (delimitted.length == 1)
+                delimitted = line.split("\t");
+            if (delimitted.length == 1)
+                delimitted = line.split(",");
+            for (var j = 0; j < delimitted.length; j++) {
+                console.log("Name " + delimitted[j]);
+                list.push(delimitted[j]);
+            }
+        }
+        var namelist = new Namelist("", list.length, "", list);
+        return namelist;
+    }
+    return null;
 }
 
 function broadcastData()
@@ -314,31 +419,59 @@ function broadcastData()
             try {
                 var pagedata = null;
                 var source = null;
-                //if (selecteddataindex >= 0) {
-                //    pagedata = currentPageData[parseInt(selecteddataindex)];
-                //    source = (pagedata["source"] == null) ? pagedata.source : pagedata["source"];
-                //}
-                pagedata = cg_util.findDataByGuid(currentPageData, selecteddataindex);
-                if (pagedata != null)
-                    source = (pagedata["source"] == null) ? pagedata.source : pagedata["source"];
-                console.log("Data from source: " + source);
-                if (source == "Page") {
-                    cg_util.getActiveTab(function (tab) {
-                        if (tab != null) {
-                            var msg = new Message(MSG_FROM_POPUP, chrome.tabs, tab.id, MSG_SUBJECT_GETDATABYINDEX,
-                                                   {handlerindex: target, dataindex: selecteddataindex }, broadcastFetchedData);
-                            msg.send();
+                if (selecteddataindex == "OtherText") {
+                    var namelisttext = $(".inputTextData").val();
+                    console.log("Namelist test from input: " + namelisttext);
+                    var namelist = generateNamelist(namelisttext);
+                    if (namelist != null) {
+                        var dataobj = {};
+                        dataobj.data = namelist;
+                        broadcastFetchedData(JSON.stringify(dataobj), handler);
+                    }
+                }
+                else if (selecteddataindex == "OtherFile") {
+                    var reader = new FileReader();
+                    var file = $(".inputFileData")[0].files[0];
+                    reader.onload = function(e) {
+                        var contents = e.target.result;
+                        console.log( "Got the file.\n"
+                          +"name: " + file.name + "\n"
+                          +"type: " + file.type + "\n"
+                          +"size: " + file.size + " bytes\n"
+                          + "Content: " + contents
+                        );
+                        var namelist = generateNamelist(contents);
+                        if (namelist != null) {
+                            var dataobj = {};
+                            dataobj.data = namelist;
+                            broadcastFetchedData(JSON.stringify(dataobj), handler);
                         }
-                    });
-                }
-                else if (source == "Broadcast" || source == null) {
-                    console.log("Send broadcast data to " + handler.getName());
-                    if (pagedata != null)
-                        broadcastFetchedData(pagedata.jsondata, handler);
-                    else
-                        broadcastFetchedData(null, handler);
-                }
+                    }
 
+                    reader.readAsText(file);
+                }
+                else {
+                    pagedata = cg_util.findDataByGuid(currentPageData, selecteddataindex);
+                    if (pagedata != null)
+                        source = (pagedata["source"] == null) ? pagedata.source : pagedata["source"];
+                    console.log("Data from source: " + source);
+                    if (source == "Page") {
+                        cg_util.getActiveTab(function (tab) {
+                            if (tab != null) {
+                                var msg = new Message(MSG_FROM_POPUP, chrome.tabs, tab.id, MSG_SUBJECT_GETDATABYINDEX,
+                                                       {handlerindex: target, dataindex: selecteddataindex }, broadcastFetchedData);
+                                msg.send();
+                            }
+                        });
+                    }
+                    else if (source == "Broadcast" || source == null) {
+                        console.log("Send broadcast data to " + handler.getName());
+                        if (pagedata != null)
+                            broadcastFetchedData(pagedata.jsondata, handler);
+                        else
+                            broadcastFetchedData(null, handler);
+                    }
+                }
             }
             catch(e) {
                 console.log("broadcastData " + e);
@@ -355,6 +488,20 @@ function broadcastData()
             }
         }); */
     }
+}
+
+function geneSetEnrichmentSelected()
+{
+    var handler = opencpuHandlers["gagglefunctionalenrichment"];
+    console.log("Gene set enrichment handler " + handler.getName());
+    broadcastFetchedData(null, handler);
+}
+
+function plotDataSelected()
+{
+    var handler = opencpuHandlers["gaggleplotexpression"];
+    console.log("Plot Expression handler " + handler.getName());
+    broadcastFetchedData(null, handler);
 }
 
 document.addEventListener('DOMContentLoaded', function () {
