@@ -3,6 +3,13 @@ var websocketconnection = null;
 var websocketid = "";
 var currentCallback = null;
 
+function webSocketClose()
+{
+    console.log("Closing websocket " + websocketconnection);
+    if (websocketconnection != null) {
+        websocketconnection.close();
+    }
+}
 
 function webSocketOpenCallback()
 {
@@ -22,28 +29,29 @@ function webSocketOpenCallback()
 function parseData(result) {
     if (result != null) {
         try {
-            console.log("Received websocket result: " + result);
+            //console.log("Received websocket result: " + result);
             var data = result.data;
             //alert(data);
             var jsondata = JSON.parse(data);
-            console.log("JSON data: " + jsondata);
+            //console.log("JSON data: " + jsondata);
             if (jsondata['ID'] != null) {
                 websocketid = jsondata['ID'];
                 //alert("websocket id: " + websocketid);
             }
 
             var gaggledata = jsondata['Data'];
-            console.log("Received data: " + gaggledata + " with action: " + jsondata['Action']);
+            //console.log("Received data: " + gaggledata + " with action: " + jsondata['Action']);
             if (jsondata['Action'] != null) {
                 var action = jsondata["Action"];
                 if (action == "GetGeese") {
-                    console.log("Geese: " + data);
+                    //console.log("Geese: " + data);
                     // Boss returns the getGeese result
                     // Save the result JSON string to geeseJSONString to be retrieved by browser popup
                     geeseJSONString = result.data;
                 }
                 else if (action == "Broadcast") {
                     // Other goose broadcasts data to me, pass the data to the background page
+                    console.log("Websocket received broadcast data " + gaggledata);
                     var msg = new Message(MSG_FROM_WEBSOCKET, chrome.runtime, null, MSG_SUBJECT_WEBSOCKETRECEIVEDDATA,
                                                    { data: gaggledata }, null);
                     msg.send();
@@ -72,14 +80,14 @@ function onWebsocketError(event)
     bossConnected = false;
 }
 
-function createWebSocket(serverurl, onOpenCallback, onMessageCallback)
+function createWebSocket(serverurl, onOpenCallback, onMessageCallback, onCloseCallback)
 {
     if (websocketconnection == null) {
         try {
             console.log("Websocket server url: " + serverurl);
             websocketconnection = new WebSocket(serverurl); //, ['chat', 'super-awesome-chat']); // (BossWebSocketUrl, ['soap', 'xmpp'], connectionOpened, parseData);
             websocketconnection.onopen = onOpenCallback;
-            websocketconnection.onclose = onWebsocketClose;
+            websocketconnection.onclose = onCloseCallback; // onWebsocketClose;
             websocketconnection.onmessage = onMessageCallback;
             websocketconnection.onerror = onWebsocketError;
         }
@@ -101,7 +109,12 @@ function waitForSocketConnection(socket, showloginfo, callback){
     poller.timerCount = 0;
     poller.poll = function() {
         poller.timerCount++;
-        if (socket.readyState === 1) {
+        if (socket == null || socket.readyState == 3) {
+            clearInterval(poller.timerId);
+            if (callback != null)
+                callback(false);
+        }
+        else if (socket.readyState === 1) {
             if (showloginfo)
                 console.log("Connection is made");
             clearInterval(poller.timerId);
@@ -169,7 +182,13 @@ function sendDataWebSocket(id, action, data, showloginfo, callback)
           webSocketOpenCallback();
           sendDataFunc(jsonobj, showloginfo, callback);
        },
-       parseData);
+       parseData,
+       function() {
+          // If boss is not running now, we simply pass false to the callback function
+          onWebsocketClose();
+          if (callback != null)
+            callback(false);
+       });
     }
     else  {
         if (showloginfo)

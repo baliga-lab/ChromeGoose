@@ -25,6 +25,7 @@ function setBossConnected(bossConnected) {
     else {
         $("#imgGaggleConnected").removeClass("glyphicon glyphicon-ok-circle");
         $("#imgGaggleConnected").addClass("glyphicon glyphicon-remove-circle"); //("src", "img/connected.png");
+        $("#btnBossConnected").addClass("btn btn-danger");
         $("#btnBossConnected").prop("title", "Not connected");
 
     	$("#selTarget").empty();
@@ -41,6 +42,7 @@ function init()
 
     $("#selGaggleMenu").change(gaggleMenuItemSelected);
     $("#btnStartBoss").click(startBossFromButton);
+    $("#btnBossConnected").click(toggleConnectToBoss);
     $("#btnGaggleWebsite").click(openGaggleWebsite);
     $("#btnGaggleOutput").click(openGaggleOutputPage);
 
@@ -135,6 +137,34 @@ function setDOMInfo(pageData) {
 function startBossFromButton()
 {
     startBoss(true, null);
+}
+
+function toggleConnectToBoss()
+{
+    console.log("Toggle connect to boss...");
+    var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_GETGEESE,
+                          {},
+                          function(geeseJSONString) {
+                              console.log("Received GetGeese result: " + geeseJSONString);
+                              var connected = false;
+                              if (geeseJSONString != null) {
+                                    var jsonobj = JSON.parse(geeseJSONString);
+                                    var geesestring = jsonobj["Data"];
+                                    var socketid = jsonobj["ID"];
+                                    console.log("web socket ID: " + socketid + " geese string: " + geesestring);
+                                    connected = (socketid != null)
+                              }
+
+                              if (connected) {
+                                  cg_util.disconnectFromBoss(null);
+                                  setBossConnected(false);
+                              }
+                              else {
+                                  cg_util.connectToBoss(null);
+                                  setBossConnected(true);
+                              }
+                         });
+    msg.send();
 }
 
 function startBoss(forceStart, callback)

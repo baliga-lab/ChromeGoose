@@ -24,6 +24,28 @@ startBoss: function() {
     window.open(BOSS_JNLP);
 },
 
+disconnectFromBoss: function(callback) {
+    console.log("Disconnecting from boss...");
+    var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_DISCONNECTBOSS,
+                          {}, function() {
+                                if (callback != null)
+                                    callback();
+                          });
+    msg.send();
+
+},
+
+connectToBoss: function(callback) {
+    console.log("Connecting to boss...");
+        var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_CONNECTTOBOSS,
+                              {}, function() {
+                                if (callback != null)
+                                   callback();
+                              });
+        msg.send();
+
+},
+
 bossStarted: function(callback) {
     console.log("Verifying if boss has started...");
     var ws = new WebSocket(HTTPBOSS_ADDRESS);

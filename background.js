@@ -8,6 +8,7 @@ var dictIFrameIdUrl = new Array();
 var dictIframeIdHandler = new Array();
 var geeseJSONString = null;  //  JSON result of calling GetGeese from the Boss
 var bossConnected = false;
+var pollerId = null;
 
 function poll()
 {
@@ -17,7 +18,35 @@ function poll()
     });
 }
 
-setInterval(poll, 3000);
+function pollAndStartBossIfNotConnected()
+{
+    sendDataWebSocket(websocketid, "GetGeese", "", false, function(connected) {
+        bossConnected = connected;
+        console.log("pollAndStartBossIfNotConnected get connected: " + connected);
+        if (!connected)
+        {
+            console.log("Starting boss...");
+            cg_util.startBoss();
+        }
+        startPolling(poll);
+    });
+}
+
+function startPolling(pollfunc) {
+    // Stop existing polling first
+    if (pollerId != null)
+        clearInterval(pollerId);
+    pollerId = setInterval(pollfunc, 3000);
+    console.log("Polling started: " + pollerId);
+}
+
+function stopPolling() {
+    console.log("Clearing polling: " + pollerId);
+    clearInterval(pollerId);
+    pollerId = null;
+}
+
+startPolling(poll);
 
 // Inject data to the gaggle output page
 function injectOutput(tab, data)
@@ -326,6 +355,28 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                       poller.timerId = setInterval(function() { poller.poll(); }, 3000);
                       if (sendResponse != null)
                           sendResponse();
+                }
+                else if (msg.subject == MSG_SUBJECT_DISCONNECTBOSS) {
+                    console.log("Background disconnecting Boss...");
+                    stopPolling();
+                    if (websocketconnection != null)
+                        // HACK HACK
+                        // the onclose function might be reset by pollAndStartBossIfNotConnected
+                        // if we don't set it back to onWebsocketClose, cg_util.startBoss will be called to
+                        // download the boss.jnlp, which is not right
+                        websocketconnection.onclose = onWebsocketClose;
+                    webSocketClose();
+                    geeseJSONString = null;
+
+                    if (sendResponse)
+                        sendResponse();
+                }
+                else if (msg.subject == MSG_SUBJECT_CONNECTTOBOSS) {
+                    console.log("Background connecting to Boss...");
+                    pollAndStartBossIfNotConnected();
+
+                    if (sendResponse)
+                        sendResponse();
                 }
                 else if (msg.subject == MSG_SUBJECT_GETGEESE) {
                     console.log("Received get geese request: " + bossConnected + " " + geeseJSONString);
