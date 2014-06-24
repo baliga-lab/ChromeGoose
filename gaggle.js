@@ -102,8 +102,42 @@ function execRScript(broadcastData) {
     var species = parameters["org"];
     console.log("Package species: " + species);
 
+
+    $("#divProgressBar").show();
+    var progressbar = $( "#divProgressBar" );
+    progressbarValue = progressbar.find( ".ui-progressbar-value" );
+    $("#divProgressBar").progressbar({value: 0});
+    progressbarValue.css({
+      "background": '#' + Math.floor( Math.random() * 16777215 ).toString( 16 )
+    });
+
+    var progress = 0;
+    var step = 10;
+    var progessid = setInterval(function() {
+        progress += step;
+        if (progress == 80)
+            step = 2;
+        else if (progress == 90)
+            step = 1;
+        else if (progress == 99)
+            step = 0;
+        progressbar.progressbar( "option", {
+                  value: progress
+                });
+    }, 500);
+
     var req = ocpu.call(funcname, parameters, function(session){
         console.log("Session ID: " + session.getKey() + " session URl: " + session.getLoc());
+
+        progressbar.progressbar( "option", {
+          value: 100
+        });
+        clearInterval(progessid);
+
+        /*$("#divProgressBar").progressbar( "option", {
+            value: 100
+        }); */
+
         var openurl = OPENCPU_SERVER + "/library/" + packagename + "/www/" + funcname
             + "_output.html?host=" + OPENCPU_SERVER + "&sessionID=" + session.getKey() + "&species=" + species;
         console.log("Open output html page: " + openurl);
@@ -132,6 +166,10 @@ function execRScript(broadcastData) {
     });
 
     req.fail(function(){
+        progressbar.progressbar( "option", {
+          value: 100
+        });
+        clearInterval(progessid);
         alert("OPENCPU Server error: " + req.responseText);
     });
 }
@@ -306,6 +344,10 @@ chrome.runtime.onMessage.addListener(function(msg, sender, response) {
                     var opencpuurl = jsonobj["opencpuurl"];
                     var injectscripturl = jsonobj['injectscripturl'];
                     var injectcode = jsonobj['injectcode'];
+                    var insertUIId = jsonobj["insertUIId"];
+
+                    // Remove existing dialog
+                    $(".ui-dialog").remove();
 
                     //alert("HTML to be inserted: " + html);
                     if (html != null) {

@@ -190,7 +190,7 @@ RScriptWrapper.prototype.processUI = function(pageData, organismshtml) {
                                 break;
                         }
                         while (true);
-                        parameterhtml += "</ul><br /><input class='btnRunScript' type='button' value='Run' />";
+                        parameterhtml += "</ul><br /><div id='divProgressBar'></div></br><input class='btnRunScript' type='button' value='Run' />";
                     }
                }
                else
@@ -245,6 +245,7 @@ RScriptWrapper.prototype.processUI = function(pageData, organismshtml) {
                     // Send message to the content page to inject the code and pop up the dialogbox
                     var msg = new Message(MSG_FROM_POPUP, chrome.tabs, tab.id, MSG_SUBJECT_INSERTRSCRIPTDATAHTML,
                                       {html: resulthtml, tabid: tab.id.toString(), packagename: myname,
+                                       insertUIId: "divDataDialog",
                                        injectscripturl: 'handlers/rscriptwrapper.js',
                                        injectcode: "var rscriptwrapper;var currentScriptToRun;var opencpuserver;processRScriptInputDataUI('" + myname + "', '" + OPENCPU_SERVER + "');",
                                        opencpuurl: OPENCPU_SERVER },
@@ -359,6 +360,8 @@ function processRScriptInputDataUI(packagename, opencpuurl)
        collapsible: true,
        heightStyle: "content"
    });
+
+   $("#divProgressBar").hide();
 
    $(".selGaggleData").change(gaggleDataItemSelected);
    $(".btnCancelTextInput").click(cancelTextInput);
@@ -510,6 +513,7 @@ function runScript(event)
             var parafunc = $(parentdiv).prev();
             var funcname = $(parafunc).text();
             console.log("Package name: " + packagename + " function name: " + funcname);
+
             // Send event to the extension to execute the rscript
             var event = new CustomEvent('RScriptWrapperEvent', {detail: {packageName: packagename,
                                             functionName: funcname, scriptParameters : parameters, species: species},
