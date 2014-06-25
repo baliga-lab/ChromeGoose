@@ -18,6 +18,7 @@ var gagglefunctionalenrichment = {
 
     generateEnrichmentHtml: function(species, linefields, propertyfields)
     {
+        console.log("generateenrichmentHtml: " + linefields.length + " " + propertyfields.length);
         if (linefields != null &&  propertyfields != null && linefields.length == propertyfields.length) {
             var html = "<div class='gaggle-enrichment' style='display: none'>";
             for (var i = 0; i < linefields.length; i++) {

@@ -90,6 +90,7 @@ function execRScript(broadcastData) {
                   parameters[k] = originaldata["gaggle-data"];
                else
                   parameters[k] = originaldata.getData();
+               console.log("Gaggle data: " + parameters[k]);
            }
         }
     }
