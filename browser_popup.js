@@ -54,6 +54,7 @@ function init()
     $("#ahrefplotexpression").click(plotDataSelected);
 
     // Get geese and boss connect status
+    var geeseHandlers = new Array();
     var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_GETGEESE,
                           {}, function(geeseJSONString) {
                               console.log("Received GetGeese result: " + geeseJSONString);
@@ -67,25 +68,36 @@ function init()
                                         var splitted = geesestring.split(";;;");
                                         for (var i = 0; i < splitted.length; i++) {
                                            if (splitted[i] != null && splitted[i].length > 0)
-                                               $("#selTarget").prepend($("<option></option>").attr("value", splitted[i]).text(splitted[i]));
+                                               //$("#selTarget").prepend($("<option></option>").attr("value", splitted[i]).text(splitted[i]));
+                                               var gaggleHandler = new GaggleHandler(splitted[i]);
+                                               geeseHandlers.push(gaggleHandler);
                                         }
-                                        $("#selTarget").prepend($("<option></option>").attr("value", "Boss").text("Boss"));
+                                        //$("#selTarget").prepend($("<option></option>").attr("value", "Boss").text("Boss"));
+                                        var gaggleHandler = new GaggleHandler("Boss");
+                                        geeseHandlers.push(gaggleHandler);
                                         $("#selTarget").prepend($("<option></option>").attr("value", "-1").text("-- Select a Target to Broadcast --"));
                                     }
                              }
                              else
                                 setBossConnected(false);
+
+                             // Load web handlers at the browser action side. Note we need to load instances of web handlers
+                             // for both browser action (to process data) and content scripts (to parse web pages).
+                             webHandlers = geeseHandlers.concat(webhandlers.loadHandlers());
+                             for (var i = 0; i < webHandlers.length; i++) {
+                                 console.log("Browser action loading " + webHandlers[i].getName() + " " + webHandlers[i].showInMenu());
+                                 if (webHandlers[i].showInMenu())
+                                     try {
+                                         $("#selTarget").append($("<option></option>").attr("value", i.toString()).text(webHandlers[i].getName()));
+                                     }
+                                     catch (e) {
+                                         console.log("Handler " + i + ": " + e);
+                                     }
+                             }
                           });
     msg.send();
 
-    // Load web handlers at the browser action side. Note we need to load instances of web handlers
-    // for both browser action (to process data) and content scripts (to parse web pages).
-    webHandlers = webhandlers.loadHandlers();
-    for (var i = 0; i < webHandlers.length; i++) {
-        //alert("Browser action loading " + webHandlers[i].getName());
-        if (webHandlers[i].showInMenu())
-            $("#selTarget").append($("<option></option>").attr("value", i.toString()).text(webHandlers[i].getName()));
-    }
+
 
     // Load R packages from OpenCPU
     var selGaggleDataParent = $(".selGaggleData").parent();
