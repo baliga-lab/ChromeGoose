@@ -114,7 +114,8 @@ var gagglefunctionalenrichment = {
            } */
            console.log("Original line: " + line);
 
-           if (line.indexOf("overlap.genes") >= 0) {
+           // Overlap.genes could be empty, and the line could be interleaved with the p.value line
+           if (line.indexOf("overlap.genes") >= 0 && line.indexOf("Enrichment.p.value") < 0) {
               newdata += line + "<br />";
               console.log("Parsing overlapping genes " + modules.length);
               var modulecnt = 0;
@@ -145,6 +146,7 @@ var gagglefunctionalenrichment = {
               i++;
            }
            else if (line.indexOf("Enrichment.p.value") >= 0) {
+              line = line.replace("overlap.genes", "");
               line = "Module  " + line;  // Insert the module id property
 
               var propertyfields = gagglefunctionalenrichment.getFields(line, ' ');

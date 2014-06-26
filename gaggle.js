@@ -134,6 +134,8 @@ function execRScript(broadcastData) {
           value: 100
         });
         clearInterval(progessid);
+        // remove the dialog
+        $(".ui-dialog").remove();
 
         /*$("#divProgressBar").progressbar( "option", {
             value: 100
