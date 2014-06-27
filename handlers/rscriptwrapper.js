@@ -134,7 +134,8 @@ RScriptWrapper.prototype.processUI = function(pageData, organismshtml) {
                                 var paramdesc = parameterobj["Description"];
                                 var paramtype = parameterobj["Type"];
                                 var paramtoshow = parameterobj["Show"];
-                                console.log("Parameter name: " + paramname + " Parameter desc: " + paramdesc + " Parameter Show: " + paramtoshow);
+                                var paramdefault = parameterobj["Default"];
+                                console.log("Parameter name: " + paramname + " Parameter desc: " + paramdesc + "Parameter type:" + paramtype + " Parameter Show: " + paramtoshow + " Parameter default value: " + paramdefault);
                                 if (paramtoshow == "True") {
                                     parameterhtml += "<li><label>" + paramdesc + "</label><input type='hidden' value='" + paramname + "' /><input type='hidden' value='" + paramtype + "' />&nbsp;&nbsp;";
                                     // Now generate html
@@ -150,7 +151,11 @@ RScriptWrapper.prototype.processUI = function(pageData, organismshtml) {
                                         //parameterhtml += "<option value='-2'>------- Select an action -------</option>";
                                         //parameterhtml += "<option value='OtherText'>Input Text</option></select>";
                                         //inputhtml = "<div class='divTextInput' style='display:none;'><input class='inputTextData' type='text' /><input class='btnCancelTextInput' type='button' value='Cancel' /></div>";
-                                        inputhtml = "<input class='inputTextData' type='text' />";
+                                        inputhtml = "<input class='inputTextData' type='text' ";
+                                        if (paramdefault != null) {
+                                            inputhtml += "value='" + paramdefault + "' ";
+                                        }
+                                        inputhtml += "/>";
                                     }
                                     else if (paramtype == "organism") {
                                         inputhtml += (organismshtml != null && organismshtml.length > 0) ? organismshtml : "<input class='inputTextData' type='text' />";
@@ -160,14 +165,25 @@ RScriptWrapper.prototype.processUI = function(pageData, organismshtml) {
                                         inputhtml += pagedatahtml;
                                     }
                                     else if (paramtype == "boolean") {
+                                        console.log("Boolean parameter");
                                         inputhtml += "<select>";
-                                        inputhtml += "<option value='True'>True</option>";
-                                        inputhtml += "<option value='False'>False</option></select>";
+                                        if (paramdefault == null || paramdefault.toLowerCase() == "true") {
+                                            inputhtml += "<option value='True'>True</option>";
+                                            inputhtml += "<option value='False'>False</option></select>";
+                                        }
+                                        else {
+                                            inputhtml += "<option value='False'>False</option>";
+                                            inputhtml += "<option value='True'>True</option></select>";
+                                        }
                                     }
                                     else if (paramtype == "Select") {
                                         var optionsobj = parameterobj["Options"];
                                         if (optionsobj != null) {
-                                            inputhtml += "<select>";
+                                            inputhtml += "<select";
+                                            if (paramdefault != null) {
+                                                inputhtml += " value='" + paramdefault + "'";
+                                            }
+                                            inputhtml += ">";
                                             var optionindex = 0;
                                             var finished = false;
                                             do {
@@ -189,6 +205,7 @@ RScriptWrapper.prototype.processUI = function(pageData, organismshtml) {
 
                                     }
                                     parameterhtml += inputhtml + "</li>";
+                                    console.log("Input html for parameter " + inputhtml);
                                 }
                             }
                             else
