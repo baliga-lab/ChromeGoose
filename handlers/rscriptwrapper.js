@@ -159,6 +159,11 @@ RScriptWrapper.prototype.processUI = function(pageData, organismshtml) {
                                     else if (paramtype == "data") {
                                         inputhtml += pagedatahtml;
                                     }
+                                    else if (paramtype == "boolean") {
+                                        inputhtml += "<select>";
+                                        inputhtml += "<option value='True'>True</option>";
+                                        inputhtml += "<option value='False'>False</option></select>";
+                                    }
                                     else if (paramtype == "Select") {
                                         var optionsobj = parameterobj["Options"];
                                         if (optionsobj != null) {
@@ -348,6 +353,25 @@ RScriptWrapper.prototype.parseRFunction = function(funcName, rFunctionText)
   return null;
 }
 
+function setOrganism()
+{
+    // set the selected option of the organism select
+    console.log("document.URL: " + document.URL);
+    console.log("window.location");
+    $(".selectOrganism").each(function () {
+      var currSelect = $(this);
+      $(this).find("option").each(function () {
+        console.log("Select organism option value: " + $(this).val());
+        if (document.URL.toLowerCase().indexOf("networks.systemsbiology.net") >= 0
+            && document.URL.indexOf($(this).val()) >= 0) {
+            console.log("Setting select vale to " + $(this).val());
+            $(currSelect).val($(this).val());
+            return;
+        }
+      });
+    });
+}
+
 // Show the dialog after injecting the code to the current page
 function processRScriptInputDataUI(packagename, opencpuurl)
 {
@@ -370,6 +394,8 @@ function processRScriptInputDataUI(packagename, opencpuurl)
    $(".btnRunScript").each(function() {
        $(this).click(runScript);
    });
+
+   setOrganism();
 
    // Now open it as a dialog
    $('#divDataDialog').dialog( { height:550, width:500,  modal: false,

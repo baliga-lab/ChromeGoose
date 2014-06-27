@@ -481,7 +481,7 @@ function getOrganisms(callback) {
         //alert(jsonorganisms);
         var organismsobj = JSON.parse(jsonorganisms);
         // Generate the organism selection html
-        organismSelectionHtml = "<select>";
+        organismSelectionHtml = "<select class='selectOrganism'>";
         for (var i in organismsobj) {
 
             var organism = organismsobj[i];

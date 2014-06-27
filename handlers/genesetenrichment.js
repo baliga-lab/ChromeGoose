@@ -1,3 +1,4 @@
+// Name has to be identical to the package name
 var gagglefunctionalenrichment = {
     generateGaggleDataHtml: function(organism, moduleid, names)
     {
