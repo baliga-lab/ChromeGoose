@@ -501,7 +501,8 @@ function runScript(event)
                 console.log("Select element" + $(paramvalueinput).val());
                 if ($(paramvalueinput).val() == "OtherText") {
                     var textinput = $(this).find(".inputTextData");
-                    var text = $(textinput)[0].val();
+                    console.log("text input: " + ($(textinput[0])).val());
+                    var text = ($(textinput[0])).val();
                     parameters[paramname] = text;
                 }
                 else if ($(paramvalueinput).val() == "OtherFile") {

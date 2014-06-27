@@ -50,6 +50,7 @@ function init()
     $(".btnCancelTextInput").click(cancelTextInput);
     $(".btnCancelFileInput").click(cancelFileInput);
 
+    $("#ahreftfoefilter").click(tfoefilterSelected);
     $("#ahrefGeneSetEnrichment").click(geneSetEnrichmentSelected);
     $("#ahrefplotexpression").click(plotDataSelected);
 
@@ -530,6 +531,13 @@ function broadcastData()
             }
         }); */
     }
+}
+
+function tfoefilterSelected()
+{
+    var handler = opencpuHandlers["gaggletfoefilter"];
+    console.log("tfoe filter " + handler.getName());
+    broadcastFetchedData(null, handler);
 }
 
 function geneSetEnrichmentSelected()

@@ -442,7 +442,7 @@ readTextFile: function(file, callback) {
 
 httpGet: function(theUrl, callback)
 {
-    //alert("Http Get " + theUrl);
+    console.log("Http Get " + theUrl);
     var xmlHttp = null;
     try {
         xmlHttp = new XMLHttpRequest();
