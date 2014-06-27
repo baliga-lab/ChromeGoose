@@ -55,6 +55,7 @@
 
   </head>
   <body>
+	  
   <p>
   <div class="btn-group btn-group-xs">
       <button type="button" id="btnBossConnected" class="btn btn-danger" data-toggle="tooltip" data-placement="left" title="Not connected"> <span id="imgGaggleConnected"></span></a><sub> Status</sub></button>
@@ -77,7 +78,7 @@
 
   <div class="panel panel-warning">
       <div class="panel-heading">
-          <div class="panel-title"><small>Select Data</small> </div>
+          <h3 class="panel-title">Select Data</h3>
       </div>
       <div class="panel-body">
           <p class="help-block">Select available data</p>
@@ -116,7 +117,7 @@
 
     <div class="panel panel-primary">
       <div class="panel-heading">
-          <div class="panel-title"><small>Analyze with Webservices</small></div>
+          <h3 class="panel-title">Analyze with Webservices</h3>
       </div>
       <div class="panel-body">
           <select id="selTarget">
@@ -134,13 +135,13 @@
 
   <div class="panel panel-info">
       <div class="panel-heading">
-          <div class="panel-title"><small>Analyze with R</small></div>
+          <h3 class="panel-title">Analyze with R</h3>
       </div>
       <div class="panel-body">
           <p>
           <div class="dropdown">
               <button class="btn btn-default btn-group-justified dropdown-toggle" type="button" id="dropdownMenuProcessing" data-toggle="dropdown">
-                  <div class="pull-left"><span class="glyphicon glyphicon-sort-by-attributes"> </span> Data Processing</div>
+                  <div class="pull-left"><span class="glyphicon glyphicon-sort-by-attributes"> </span> Data Process/Filter</div>
                   <span class="caret"></span>
               </button>
               <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenuProcessing">
@@ -148,8 +149,9 @@
                   <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Quantile Normalization | <span class="glyphicon glyphicon-question-sign"></span></a></li>
                   <li role="presentation"><a id="ahrefplotexpression", role="menuitem" tabindex="-1" href="#">Plot Data | <span class="glyphicon glyphicon-question-sign"></span></a></li>
                   <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Data Statistics | <span class="glyphicon glyphicon-question-sign"></span></a></li>
+				  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">MTB TFOE Filtering | <span class="glyphicon glyphicon-question-sign"></span></a></li>
                   <li role="presentation" class="divider"></li>
-                  <li role="presentation" class="dropdown-header">Dropdown header</li>
+                  <li role="presentation" class="dropdown-header"> </li>
               </ul>
           </div>
           </p>
