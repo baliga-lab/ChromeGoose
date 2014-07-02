@@ -47,7 +47,9 @@ var gaggletfoefilter = {
 
             var splitted = data.split("\n");
             var i = 0;
+            var outputlines = "";
             while (i < splitted.length) {
+                outputlines += splitted[i] + "<br />";
                 var start = splitted[i].indexOf("Expression of ");
                 if (start >= 0 && splitted[i].indexOf("TFOE experiments...") >= 0) {
                     var genes = new Array();
@@ -56,8 +58,10 @@ var gaggletfoefilter = {
                     var gene = splitted[i].substr(start + len, loc - start - len - 1);
                     console.log("Gene " + gene);
                     genes.push(gene.trim());
+                    outputlines += splitted[i + 1] + "<br />";
                     i += 2;
                     line = splitted[i];
+                    outputlines += line + "<br />";
 
                     console.log("Parsing expression line: " + line);
                     var fields = gaggletfoefilter.getFields(line, ' ');
@@ -85,7 +89,7 @@ var gaggletfoefilter = {
             $(wrapdiv).html(outputhtml);
 
             console.log("Send GaggleDataAddEvent event...");
-            var event = new CustomEvent('GaggleDataAddEvent', {detail: {funcname: functionname, species: "mtb", handlername: "tfoefilter", output: data},
+            var event = new CustomEvent('GaggleDataAddEvent', {detail: {funcname: functionname, species: "mtb", handlername: "tfoefilter", output: outputlines},
                                          bubbles: true, cancelable: false});
             document.dispatchEvent(event);
         });
