@@ -7,6 +7,25 @@ function init()
     // Load web handler content script
     webHandlers = webhandlers.loadContentPageHandlers();
 
+    document.addEventListener("IFrameGaggleDataEvent", function(e) {
+        console.log("Received IFrameGaggleDataEvent " + e.detail.data);
+        // Save the iframe gaggle data to pageGaggleData
+        // Only do it on top level window
+        if (window.self == top) {
+            console.log("Received iframe data " + e.detail.data);
+            var receivedData = e.detail.data;
+            if (receivedData != null) {
+                console.log("Received " + receivedData.length + " data items");
+                for (var i = 0; i < receivedData.length; i++) {
+                    console.log("Data item " + i + ": " + receivedData[i]);
+                    pageGaggleData.push(receivedData[i]);
+                }
+            }
+        }
+        else
+            console.log("Iframe data ignored");
+    });
+
     document.addEventListener("GaggleOutputInitEvent", function(e) {
         console.log("Received GaggleOutputInitEvent");
         // Pass it to background page to save the iframeid for the handler

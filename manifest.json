@@ -29,6 +29,7 @@
       {
         "matches": ["http://*/*", "https://*/*"],
         "js": ["jquery-1.11.0.min.js","jquery-ui-1.10.4.js", "opencpu-0.4.js", "message.js", "util.js", "ufmt.js",
+                "data/gaggle_data.js", "data/namelist.js", "data/datamatrix.js", "data/cluster.js",
                 "handlers/handler.js",
                 "handlers/gaggleMicroformat.js",
                 "handlers/gaggleXml.js",
@@ -39,10 +40,12 @@
                 "handlers/sgd.js",
                 "handlers/emblstring.js",
                 "handlers/webhandler.js",
-                "data/gaggle_data.js", "data/namelist.js", "data/datamatrix.js", "data/cluster.js", "gaggle.js"],
+                "gaggle.js"],
         "css" : ["jquery-ui-1.10.4.css"],
-        "run_at": "document_idle"
+        "run_at": "document_idle",
+        "all_frames": true
       },
+
       {
         "matches": ["http://david.abcc.ncifcrf.gov/*"],
         "js": ["jquery-1.11.0.min.js","jquery-ui-1.10.4.js", "message.js", "util.js", "ufmt.js",

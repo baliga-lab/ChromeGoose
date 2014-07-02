@@ -37,15 +37,15 @@ var webhandlers = {
        console.log("Loading content page handlers...");
        try {
            var handlers = new Array();
-           handlers[0] = new gaggleMicroformatPlaceHolder();
-           handlers[1] = new gaggleXml();
-           handlers[2] = new GaggleMicroformatHandler();
-           handlers[3] = new Pipe2Goose();
-           handlers[4] = new OpenCPUHandler();
-           handlers[5] = new EMBLString();
-           handlers[6] = new Metlin();
-           handlers[7] = new SGD(SGD.GO_SLIM_MAPPER, "SGD GO Slim Mapper");
-           handlers[8] = new SGD(SGD.GO_TERM_FINDER, "SGD GO Term Finder");
+           handlers.push(new gaggleMicroformatPlaceHolder());
+           handlers.push(new gaggleXml());
+           handlers.push(new GaggleMicroformatHandler());
+           handlers.push(new Pipe2Goose());
+           handlers.push(new OpenCPUHandler());
+           handlers.push(new EMBLString());
+           handlers.push(new Metlin());
+           handlers.push(new SGD(SGD.GO_SLIM_MAPPER, "SGD GO Slim Mapper"));
+           handlers.push(new SGD(SGD.GO_TERM_FINDER, "SGD GO Term Finder"));
 
            //handlers[3] = new David();
            //handlers[4] = new KEGG();
