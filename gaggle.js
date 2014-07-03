@@ -207,6 +207,8 @@ function execRScript(broadcastData) {
     console.log("Parameter JSON string: " + JSON.stringify(parameters));
     var species = parameters["org"];
     console.log("Package species: " + species);
+    var desc = receivedData["description"];
+    console.log("Desc: " + desc);
 
 
     $("#divProgressBar").show();
@@ -251,7 +253,7 @@ function execRScript(broadcastData) {
         console.log("Open output html page: " + openurl);
         var scripturl = "handlers/" + funcname.toLowerCase() + ".js";
         // Note that the variable name of the corresponding handler should be the same as the package name
-        var code = packagename + ".parseData('" + OPENCPU_SERVER + "', '" + packagename + "', '" + funcname + "', '" + session.getKey() + "', '" + species + "');"; // All the opencpu output data page should have this function
+        var code = packagename + ".parseData('" + OPENCPU_SERVER + "', '" + packagename + "', '" + funcname + "', '" + session.getKey() + "', '" + species + "', '" + desc + "');"; // All the opencpu output data page should have this function
 
         // Call background page to verify if the gaggle_output.html is already opened, and inject the script and
         // execute the code

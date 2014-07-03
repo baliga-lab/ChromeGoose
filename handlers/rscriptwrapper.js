@@ -479,6 +479,7 @@ function runScript(event)
         var species = "";
         var source = event.target; // The Run button
         var parentdiv = $(source).parent();
+        var datadesc = "";
         $(parentdiv).find("li").each(function () {
             console.log("Parameter li: " + $(this));
             //var selected = $(this).val();
@@ -522,15 +523,20 @@ function runScript(event)
                     var text = ($(textinput[0])).val();
                     var splitted = text.split(' ');
                     parameters[paramname] = splitted;
+                    datadesc = text;
                 }
                 else if ($(paramvalueinput).val() == "OtherFile") {
                     var fileinput = $(this).find(".inputFileData");
                     var file = $(fileinput)[0].files[0];
                     parameters[paramname] = file;
+                    datadesc = file.name;
                 }
                 else {
                     // page data
                     parameters[paramname] = $(paramvalueinput).val();
+                    var option = $(paramvalueinput).find("option[value='" + $(paramvalueinput).val() + "']");
+                    console.log("Selected data option: " + option + " text: " + $(option).text());
+                    datadesc = $(option).text();
                 }
             }
             else if (paramtype.toLowerCase() == "select") {
@@ -557,11 +563,11 @@ function runScript(event)
             //console.log("Result div: " + resultdiv);
             var parafunc = $(parentdiv).prev();
             var funcname = $(parafunc).text();
-            console.log("Package name: " + packagename + " function name: " + funcname);
+            console.log("Package name: " + packagename + " function name: " + funcname + " desc: " + datadesc);
 
             // Send event to the extension to execute the rscript
             var event = new CustomEvent('RScriptWrapperEvent', {detail: {packageName: packagename,
-                                            functionName: funcname, scriptParameters : parameters, species: species},
+                                            functionName: funcname, scriptParameters : parameters, species: species, description: datadesc},
                                             bubbles: true, cancelable: false});
             document.dispatchEvent(event);
         }

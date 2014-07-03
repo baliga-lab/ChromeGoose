@@ -79,7 +79,7 @@ var gagglefunctionalenrichment = {
         return fields;
     },
 
-    parseData: function(host, packagename, functionname, sessionid, species)
+    parseData: function(host, packagename, functionname, sessionid, species, desc)
     {
       /*var queries = {};
       $.each(document.location.search.substr(1).split('&'),function(c,q){
@@ -227,7 +227,8 @@ var gagglefunctionalenrichment = {
         document.body.appendChild(wrapdiv);
         // Send custom event to page
         console.log("Send GaggleDataAddEvent event...");
-        var event = new CustomEvent('GaggleDataAddEvent', {detail: {funcname: functionname, species: species, handlername: "geneSetEnrichmentHandler"},
+        var event = new CustomEvent('GaggleDataAddEvent', {detail: {funcname: functionname, species: species,
+                                        handlername: "geneSetEnrichmentHandler", description: desc},
                                         bubbles: true, cancelable: false});
         document.dispatchEvent(event);
 

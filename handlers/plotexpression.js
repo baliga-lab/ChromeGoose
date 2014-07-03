@@ -1,5 +1,5 @@
 var gaggleplotexpression = {
-    parseData: function(host, packagename, functionname, sessionid, species)
+    parseData: function(host, packagename, functionname, sessionid, species, desc)
     {
       /*var queries = {};
       $.each(document.location.search.substr(1).split('&'),function(c,q){
@@ -16,7 +16,8 @@ var gaggleplotexpression = {
       $(wrapdiv).html(html);
       document.body.appendChild(wrapdiv);
       console.log("Send GaggleDataAddEvent event...");
-      var event = new CustomEvent('GaggleDataAddEvent', {detail: {funcname: functionname, species: species, handlername: "plotExpressionHandler"},
+      var event = new CustomEvent('GaggleDataAddEvent', {detail: {funcname: functionname, species: species,
+                                    handlername: "plotExpressionHandler", description: desc},
                                       bubbles: true, cancelable: false});
       document.dispatchEvent(event);
     }

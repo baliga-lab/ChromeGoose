@@ -31,7 +31,7 @@ var gaggletfoefilter = {
     },
 
 
-    parseData: function(host, packagename, functionname, sessionid, species)
+    parseData: function(host, packagename, functionname, sessionid, species, desc)
     {
         var url = host + "/tmp/" + sessionid + "/graphics/1";
         console.log("opencpu tfoe graphics url: " + url);
@@ -89,7 +89,7 @@ var gaggletfoefilter = {
             $(wrapdiv).html(outputhtml);
 
             console.log("Send GaggleDataAddEvent event...");
-            var event = new CustomEvent('GaggleDataAddEvent', {detail: {funcname: functionname, species: "mtu", handlername: "tfoefilter", output: outputlines},
+            var event = new CustomEvent('GaggleDataAddEvent', {detail: {funcname: functionname, species: "mtu", handlername: "tfoefilter", output: outputlines, description: desc},
                                          bubbles: true, cancelable: false});
             document.dispatchEvent(event);
         });
