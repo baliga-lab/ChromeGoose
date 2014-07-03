@@ -77,8 +77,8 @@ var gaggletfoefilter = {
                     html += "<span class='gaggle-species hidden'>" + "mtb" + "</span>";
                     html += "<span class='gaggle-size hidden'>" + allgenes.length + "</span>";
                     html += "<div class='gaggle-namelist'><ul>";
-                    for (var i = 0; i < allgenes.length; i++) {
-                        html += "<li>" + allgenes[i].trim() + "</li>";
+                    for (var j = 0; j < allgenes.length; j++) {
+                        html += "<li>" + allgenes[j].trim() + "</li>";
                     }
                     html += "</ul></div></div>";
                     outputhtml += html;
