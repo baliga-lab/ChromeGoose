@@ -89,7 +89,7 @@ var gaggletfoefilter = {
             $(wrapdiv).html(outputhtml);
 
             console.log("Send GaggleDataAddEvent event...");
-            var event = new CustomEvent('GaggleDataAddEvent', {detail: {funcname: functionname, species: "mtb", handlername: "tfoefilter", output: outputlines},
+            var event = new CustomEvent('GaggleDataAddEvent', {detail: {funcname: functionname, species: "mtu", handlername: "tfoefilter", output: outputlines},
                                          bubbles: true, cancelable: false});
             document.dispatchEvent(event);
         });

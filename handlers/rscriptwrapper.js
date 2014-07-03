@@ -520,7 +520,8 @@ function runScript(event)
                     var textinput = $(this).find(".inputTextData");
                     console.log("text input: " + ($(textinput[0])).val());
                     var text = ($(textinput[0])).val();
-                    parameters[paramname] = text;
+                    var splitted = text.split(' ');
+                    parameters[paramname] = splitted;
                 }
                 else if ($(paramvalueinput).val() == "OtherFile") {
                     var fileinput = $(this).find(".inputFileData");

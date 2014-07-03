@@ -7,6 +7,43 @@ function init()
     // Load web handler content script
     webHandlers = webhandlers.loadContentPageHandlers();
 
+    window.addEventListener( "message",
+      function (e) {
+            console.log("Received post message: " + e.data);
+            if (window.self == top) {
+                console.log("Top level window handle message...");
+                if (e.data != null) {
+                    for (var i = 0; i < e.data.length; i++) {
+                        var dataitem = e.data[i];
+                        var guid = dataitem.guid;
+                        if (cg_util.findDataByGuid(pageGaggleData, guid) == null) {
+                            var gaggleData = new GaggleData(dataitem.name,
+                                                            dataitem.type,
+                                                            dataitem.size,
+                                                            dataitem.species,
+                                                            dataitem.data);
+
+
+                            var pagedata = {};
+                            pagedata.data = gaggleData;
+                            pagedata.guid = dataitem.guid;
+                            var jsondata = JSON.stringify(pagedata);
+                            console.log("page data " + pageGaggleData.length + " " + jsondata);
+                            pagedata.jsondata = jsondata;
+                            pagedata.source = "Page";
+                            //alert(pagedata.source);
+                            pageGaggleData.push(pagedata);
+                        }
+                    }
+                }
+            }
+            else {
+                console.log("Post message to parent");
+                window.parent.postMessage(e.data, "*");
+            }
+      },
+      false);
+
     document.addEventListener("IFrameGaggleDataEvent", function(e) {
         console.log("Received IFrameGaggleDataEvent " + e.detail.data);
         // Save the iframe gaggle data to pageGaggleData
@@ -22,8 +59,25 @@ function init()
                 }
             }
         }
-        else
-            console.log("Iframe data ignored");
+        else {
+            console.log("Send iframe data to parent " + e.detail + " " + e.origin);
+            var receivedPageData = e.detail.data;
+            if (receivedPageData != null) {
+                var msgobj = new Array();
+                for (var i = 0; i < receivedPageData.length; i++) {
+                    var gaggledata = receivedPageData[i].data;
+                    var guid = receivedPageData[i].guid;
+                    if (gaggledata != null) {
+                        //gaggledata.getData();
+                        console.log(gaggledata.getName() + " " + gaggledata.getType() + " " + gaggledata.getSpecies());
+                        var dataobj = {name: gaggledata.getName(), type: gaggledata.getType(),
+                            species: gaggledata.getSpecies(), size: gaggledata.getSize(), guid: guid, data: gaggledata.getData()};
+                        msgobj.push(dataobj);
+                    }
+                }
+                window.parent.postMessage(msgobj, "*");
+            }
+        }
     });
 
     document.addEventListener("GaggleOutputInitEvent", function(e) {
@@ -109,7 +163,28 @@ function execRScript(broadcastData) {
                   parameters[k] = originaldata["gaggle-data"];
                else
                   parameters[k] = originaldata.getData();
-               console.log("Gaggle data: " + parameters[k]);
+
+               // HACK HACK
+               // convert mtu to lowercase
+               var source = parameters[k];
+               console.log("Processing mtu data if applicable: " + source);
+               if (source != null) {
+                  for (var i = 0; i < source.length; i++) {
+                    var srcdata = source[i];
+                    if (srcdata.indexOf("RV") == 0) {
+                        srcdata = srcdata.replace("RV", "Rv");
+                        var last = srcdata.charAt(srcdata.length - 1);
+                        if (last == last.toUpperCase() && last != last.toLowerCase()) {
+                            var firstpart = srcdata.substr(0, srcdata.length - 1);
+                            srcdata = firstpart + last.toLowerCase();
+                        }
+                        console.log("Processed RV data: " + srcdata);
+                        source[i] = srcdata;
+                    }
+                  }
+                  parameters[k] = source;
+               }
+               console.log("Parameter Gaggle data: " + parameters[k]);
            }
         }
     }
@@ -323,7 +398,11 @@ chrome.runtime.onMessage.addListener(function(msg, sender, response) {
 
                 /* Directly respond to the sender (popup),
                  * through the specified callback */
-                //alert("Sending page data: " + pageGaggleData.length);
+                console.log("Sending page data: " + pageGaggleData.length);
+                /*for (var i = 0; i < pageGaggleData.length; i++)
+                    if (pageGaggleData[i].data != null && pageGaggleData[i].data.getData != null) {
+                        console.log("Call lazy load: " + pageGaggleData[i].data.getData());
+                    } */
                 if (response != null)
                     response(pageGaggleData);
             }
