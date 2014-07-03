@@ -73,8 +73,8 @@ var gaggletfoefilter = {
 
 
                     var html = "<div class='gaggle-data' style='display:none'>";
-                    html += "<span class='gaggle-name hidden'>" + "mtb expression genes for " + gene + "</span>";
-                    html += "<span class='gaggle-species hidden'>" + "mtb" + "</span>";
+                    html += "<span class='gaggle-name hidden'>" + "mtu expression genes for " + gene + "</span>";
+                    html += "<span class='gaggle-species hidden'>" + "mtu" + "</span>";
                     html += "<span class='gaggle-size hidden'>" + allgenes.length + "</span>";
                     html += "<div class='gaggle-namelist'><ul>";
                     for (var j = 0; j < allgenes.length; j++) {
