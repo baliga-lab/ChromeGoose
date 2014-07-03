@@ -16,7 +16,7 @@ function init()
                     for (var i = 0; i < e.data.length; i++) {
                         var dataitem = e.data[i];
                         var guid = dataitem.guid;
-                        if (cg_util.findDataByGuid(pageGaggleData, guid) == null) {
+                        if (guid != null && cg_util.findDataByGuid(pageGaggleData, guid) == null) {
                             var gaggleData = new GaggleData(dataitem.name,
                                                             dataitem.type,
                                                             dataitem.size,
