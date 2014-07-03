@@ -7,14 +7,18 @@ function init()
     // Load web handler content script
     webHandlers = webhandlers.loadContentPageHandlers();
 
+    // Handle gaggle data passed to top level from iframe
     window.addEventListener( "message",
       function (e) {
-            console.log("Received post message: " + e.data);
-            if (window.self == top) {
-                console.log("Top level window handle message...");
-                if (e.data != null) {
-                    for (var i = 0; i < e.data.length; i++) {
-                        var dataitem = e.data[i];
+            console.log("Received post message: " + e.data.type);
+            if (e.data != null && e.data.type == "gaggle") {
+                if (window.self == top) {
+                    console.log("Top level window handle message " + e.data.type);
+
+                    var dataobj = e.data.data;
+                    console.log("Data array: " + dataobj.length);
+                    for (var i = 0; i < dataobj.length; i++) {
+                        var dataitem = dataobj[i];
                         var guid = dataitem.guid;
                         if (guid != null && cg_util.findDataByGuid(pageGaggleData, guid) == null) {
                             var gaggleData = new GaggleData(dataitem.name,
@@ -36,10 +40,11 @@ function init()
                         }
                     }
                 }
-            }
-            else {
-                console.log("Post message to parent");
-                window.parent.postMessage(e.data, "*");
+                else {
+                    // If I'm not the top level, pass the data up to my parent
+                    console.log("Post message to parent");
+                    window.parent.postMessage(e.data, "*");
+                }
             }
       },
       false);
@@ -49,9 +54,10 @@ function init()
         // Save the iframe gaggle data to pageGaggleData
         // Only do it on top level window
         if (window.self == top) {
+            // This should never be reached....
             console.log("Received iframe data " + e.detail.data);
             var receivedData = e.detail.data;
-            if (receivedData != null) {
+            if (receivedData != null && e.detail.type == "gaggle") {
                 console.log("Received " + receivedData.length + " data items");
                 for (var i = 0; i < receivedData.length; i++) {
                     console.log("Data item " + i + ": " + receivedData[i]);
@@ -60,10 +66,15 @@ function init()
             }
         }
         else {
-            console.log("Send iframe data to parent " + e.detail + " " + e.origin);
+            console.log("Send iframe data to parent " + e.detail);
             var receivedPageData = e.detail.data;
-            if (receivedPageData != null) {
-                var msgobj = new Array();
+            if (receivedPageData != null && e.detail.type == "gaggle") {
+                // We need to call the lazy loader of each data item, and then
+                // wrap the data in a duplicable object to be passed in postMessage to
+                // the parent window
+                var msgobj = {type: "gaggle"};
+                var dataarray = new Array();
+                msgobj.data = dataarray;
                 for (var i = 0; i < receivedPageData.length; i++) {
                     var gaggledata = receivedPageData[i].data;
                     var guid = receivedPageData[i].guid;
@@ -72,7 +83,7 @@ function init()
                         console.log(gaggledata.getName() + " " + gaggledata.getType() + " " + gaggledata.getSpecies());
                         var dataobj = {name: gaggledata.getName(), type: gaggledata.getType(),
                             species: gaggledata.getSpecies(), size: gaggledata.getSize(), guid: guid, data: gaggledata.getData()};
-                        msgobj.push(dataobj);
+                        dataarray.push(dataobj);
                     }
                 }
                 window.parent.postMessage(msgobj, "*");
@@ -392,19 +403,14 @@ chrome.runtime.onMessage.addListener(function(msg, sender, response) {
     {
         if (msg.subject) {
             if (msg.subject == MSG_SUBJECT_PAGEDATA) {
-                /* Collect the necessary data
-                 * (For your specific requirements `document.querySelectorAll(...)`
-                 *  should be equivalent to jquery's `$(...)`)*/
-
-                /* Directly respond to the sender (popup),
-                 * through the specified callback */
                 console.log("Sending page data: " + pageGaggleData.length);
                 /*for (var i = 0; i < pageGaggleData.length; i++)
                     if (pageGaggleData[i].data != null && pageGaggleData[i].data.getData != null) {
                         console.log("Call lazy load: " + pageGaggleData[i].data.getData());
                     } */
-                if (response != null)
+                if (response != null) {
                     response(pageGaggleData);
+                }
             }
             else if (msg.subject == MSG_SUBJECT_GETDATABYINDEX) {
                 //alert("Getting page data by index " + msg.data);
