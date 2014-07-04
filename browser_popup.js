@@ -54,6 +54,10 @@ function init()
     $("#ahrefGeneSetEnrichment").click(geneSetEnrichmentSelected);
     $("#ahrefplotexpression").click(plotDataSelected);
 
+    $("#btnCytoscape").click(startCytoscape);
+    $("#btnR").click(startR);
+    $("#btnMeV").click(startMeV);
+
     // Get geese and boss connect status
     var geeseHandlers = new Array();
     var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_GETGEESE,
@@ -531,6 +535,21 @@ function broadcastData()
             }
         }); */
     }
+}
+
+function startCytoscape()
+{
+    window.open("http://networks.systemsbiology.net/static/jnlp/cytoscape.jnlp");
+}
+
+function startMeV()
+{
+    window.open("http://networks.systemsbiology.net/static/jnlp/mev.jnlp");
+}
+
+function startR()
+{
+    window.open("http://gaggle.systemsbiology.net/2007-04/gaggle_1.19.2.tar.gz");
 }
 
 function tfoefilterSelected()
