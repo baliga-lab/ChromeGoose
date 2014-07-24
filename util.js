@@ -16,7 +16,8 @@ var GAGGLE_OUTPUT_PAGE = GAGGLE_SERVER + "/static/gaggle_output.html";
 var BOSS_JNLP = GAGGLE_SERVER + "/static/jnlp/boss.jnlp";
 var HTTPBOSS_ADDRESS = "ws://localhost:8083/BossWebSocket";
 var WEBHANDLER_BASEURL = GAGGLE_SERVER + "/static/javascripts/handlers/";
-var OPENCPU_SERVER = "http://10.10.3.175/ocpu";
+//var OPENCPU_SERVER = "http://10.10.3.175/ocpu";
+var OPENCPU_SERVER = "http://54.191.211.80/ocpu";
 
 var cg_util = {
 
@@ -286,12 +287,16 @@ findDataByGuid: function(dataarray, guid) {
     if (dataarray == null || guid == null)
         return null;
 
+    console.log("data array length " + dataarray.length);
+
     for (var i = 0; i < dataarray.length; i++) {
         var data = dataarray[i];
         if (data != null && data.jsondata != null) {
             var pagedataobj = JSON.parse(data.jsondata);
             var dataguid = pagedataobj["guid"];
+            console.log("Data item GUID: " + dataguid);
             if (guid == dataguid) {
+                console.log("GUID matched!");
                 return data;
             }
         }
