@@ -48,51 +48,32 @@
 
       {
         "matches": ["http://david.abcc.ncifcrf.gov/*"],
-        "js": ["jquery-1.11.0.min.js","jquery-ui-1.10.4.js", "message.js", "util.js", "ufmt.js",
-                "handlers/handler.js",
-                "handlers/david.js",
-                "handlers/webhandler.js",
-                "data/gaggle_data.js", "data/namelist.js", "data/datamatrix.js", "data/cluster.js", "gaggle.js"],
+        "js": [
+                "handlers/david.js"
+              ],
         "all_frames": true
       },
       {
           "matches": ["http://string.embl.de/*"],
-          "js": ["jquery-1.11.0.min.js","jquery-ui-1.10.4.js", "message.js", "util.js", "ufmt.js",
-                  "handlers/handler.js",
-                  "handlers/emblstring.js",
-                  "handlers/webhandler.js",
-                  "data/gaggle_data.js", "data/namelist.js", "data/datamatrix.js", "data/cluster.js", "gaggle.js"],
+          "js": [
+                  "handlers/emblstring.js"
+                ],
           "all_frames": true
       },
       {
         "matches": ["http://maggie.systemsbiology.net/*"],
-        "js": ["jquery-1.11.0.min.js","jquery-ui-1.10.4.js", "message.js", "util.js", "ufmt.js",
-                "handlers/handler.js",
-                "handlers/maggie.js",
-                "handlers/webhandler.js",
-                "data/gaggle_data.js", "data/namelist.js", "data/datamatrix.js", "data/cluster.js", "gaggle.js"],
+        "js": [
+                "handlers/maggie.js"
+              ],
         "all_frames": true
       },
       {
           "matches": ["http://www.genome.jp/*"],
-          "js": ["jquery-1.11.0.min.js","jquery-ui-1.10.4.js", "message.js", "util.js", "ufmt.js",
-                  "handlers/handler.js",
-                  "handlers/kegg.js",
-                  "handlers/webhandler.js",
-                  "data/gaggle_data.js", "data/namelist.js", "data/datamatrix.js", "data/cluster.js", "gaggle.js"],
+          "js": [
+                  "handlers/kegg.js"
+                ],
           "all_frames": true
-      },
-      {
-        "matches": ["http://string.embl.de/*"],
-        "js": ["jquery-1.11.0.min.js","jquery-ui-1.10.4.js", "message.js", "util.js", "ufmt.js",
-                "handlers/handler.js",
-                "handlers/emblstring.js",
-                "handlers/webhandler.js",
-                "data/gaggle_data.js", "data/namelist.js", "data/datamatrix.js", "data/cluster.js", "gaggle.js"],
-        "all_frames": true
       }
-
-
     ],
 
   //"page_action": {
@@ -106,7 +87,7 @@
 
   "browser_action": {
       "default_title": "Gaggle Chrome Goose",
-      "default_icon": "img/icon.png",
+      "default_icon": {"19": "img/chromegoose-logo19px.png", "38": "img/chromegoose-logo38px.png"},
       "default_popup": "browser_popup.html"
   },
 
