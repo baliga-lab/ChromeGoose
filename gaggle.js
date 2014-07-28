@@ -410,8 +410,10 @@ chrome.runtime.onMessage.addListener(function(msg, sender, response) {
                     if (pageGaggleData[i].data != null && pageGaggleData[i].data.getData != null) {
                         console.log("Call lazy load: " + pageGaggleData[i].data.getData());
                     } */
-                if (response != null) {
-                    response(pageGaggleData);
+                if (pageGaggleData.length > 0) {
+                    if (response != null) {
+                        response(pageGaggleData);
+                    }
                 }
             }
             else if (msg.subject == MSG_SUBJECT_GETDATABYINDEX) {
