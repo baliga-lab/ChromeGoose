@@ -75,11 +75,18 @@ NetworkPortal.prototype.handleNameList = function(namelist) {
 	if (namelist == null)
 	    return;
 
+    var names = namelist.getData();
+    var url = this._pageUrl + "/search?q=";
+    for (var i=0; i<names.length; i++) {
+        url += names[i];
+        if (i < names.length - 1)
+            url += "+";
+    }
     // open url in a new tab
     // And then scanPage will be called, which retrieves data from the background page, and calls processData
-    console.log("Injecting " + this._pageUrl);
-    this.openTabAndExecute(this._pageUrl, this._extensionUrl, "networkPortal.scanPage();", null);
-    //chrome.tabs.create({ url: this._pageUrl });
+    console.log("Injecting " + url);
+    //this.openTabAndExecute(this._pageUrl, this._extensionUrl, "networkPortal.scanPage();", null);
+    chrome.tabs.create({ url: url });
 };
 
 
