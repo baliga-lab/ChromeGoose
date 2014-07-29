@@ -100,7 +100,7 @@ NetworkPortal.prototype.insertNamelistIntoPasteBox = function(doc, species, name
 	if (inputbox) {
 		// construct a string out of the name list
 		console.log("NetworkPortal: Inserting names into the paste box..." + inputbox);
-		inputbox.value = cg_util.join(names, "\n");
+		inputbox.value = cg_util.join(names, " ");
 	}
 }
 
