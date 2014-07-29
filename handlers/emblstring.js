@@ -150,7 +150,7 @@ EMBLString.prototype.processData = function(jsondata) {//stringSpeciesName, name
                 console.log("STRING: names = " + names);
                 console.log("STRING: names.length = " + names.length);
 
-                if (names && names.length>1) {
+                if (names && names.length > 0) {
 
                     // remove the event listener
                     //var browser = getBrowser().getBrowserForTab(getBrowser().selectedTab);
@@ -181,6 +181,7 @@ EMBLString.prototype.processData = function(jsondata) {//stringSpeciesName, name
                         queryString += "\n";
                         queryString += names[i];
                     }
+                    console.log("STRING: query string " + queryString);
 
                     var multiple_identifiers = doc.getElementById("multiple_identifiers");
                     if (multiple_identifiers) {
