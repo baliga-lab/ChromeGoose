@@ -110,5 +110,5 @@ var networkPortal = new NetworkPortal();
 // If I am injected in an iframe within the gaggle_output.html,
 // I need to check if there is data for me
 if (window.self != top)
-    NetworkPortal.scanPage();
+    networkPortal.scanPage();
 //david.scanPage();

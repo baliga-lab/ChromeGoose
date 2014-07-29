@@ -81,8 +81,12 @@
                   "handlers/webhandler.js",
                   "data/gaggle_data.js", "data/namelist.js", "data/datamatrix.js", "data/cluster.js", "gaggle.js"],
           "all_frames": true
+      },
+      {
+          "matches": ["http://networks.systemsbiology.net/*"],
+          "js": ["handlers/networkportalHandler.js"],
+          "all_frames": true
       }
-
     ],
 
 
