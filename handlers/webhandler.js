@@ -25,6 +25,7 @@ var webhandlers = {
            handlers[17] = new PDDB();
            handlers[18] = new SGD(SGD.GO_SLIM_MAPPER, "SGD GO Slim Mapper");
            handlers[19] = new SGD(SGD.GO_TERM_FINDER, "SGD GO Term Finder");
+           handlers[20] = new NetworkPortal();
        }
        catch (e) {
            console.log("Failed to load handler: " + e);
