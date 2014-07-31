@@ -6,6 +6,7 @@
   "permissions": [
     "storage", "tabs", "http://*/*", "https://*/*"
   ],
+  "content_security_policy": "script-src 'self' https://ssl.google-analytics.com; object-src 'self'",
 
   "web_accessible_resources": ["jquery-1.11.0.min.js", "jquery-ui-1.10.4.js", "opencpu-0.4.js", "message.js", "util.js",
                                 "handlers/handler.js",
@@ -22,7 +23,7 @@
 
   "background": {
           "persistent": true,
-          "scripts": ["jquery-1.11.0.min.js", "util.js", "message.js", "websocket.js", "data/gaggle_data.js", "background.js"]
+          "page": "background.html"
       },
 
   "content_scripts": [

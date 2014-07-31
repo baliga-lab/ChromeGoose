@@ -28,6 +28,7 @@ var MSG_SUBJECT_STARTGAGGLEOUTPUT = "StartGaggleOutput";
 var MSG_SUBJECT_GETGEESE = "GetGeese";
 var MSG_SUBJECT_DISCONNECTBOSS = "DisconnectBoss";
 var MSG_SUBJECT_CONNECTTOBOSS = "ConnectBoss";
+var MSG_SUBJECT_GOOGLEANALYTICS = "RecordGoogleAnalytics";
 
 
 function Message(from, to, targetid, subject, data, callback)

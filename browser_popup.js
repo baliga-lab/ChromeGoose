@@ -331,6 +331,11 @@ function broadcastFetchedData(jsonobj, handler)
             var data = jsonObj["data"];
             var type = (data["_type"] != null) ? data["_type"] : data["type"];
             console.log("Data type: " + type + " Handler: " + handler.getName());
+
+            var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_GOOGLEANALYTICS,
+                                       { category: 'Broadcast', data: type, action: handler.getName() }, null);
+            msg.send();
+
             var gaggledata = null;
             if (type.toLowerCase() == "namelist") {
                 gaggledata = new Namelist("", 0, "", null);
@@ -409,6 +414,12 @@ function broadcastFetchedData(jsonobj, handler)
             // The handler might be a script wrapper, we need to show the UI.
             if (handler.processUI != null)
                 console.log("Processing script wrapper...");
+
+                // Record event in google analytics
+                var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_GOOGLEANALYTICS,
+                                           { category: 'OpenCPU', data: 'data', action: handler.getName() }, null);
+                msg.send();
+
                 var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_GETORGANISMSHTML,
                                      null, function(organismshtml) {
                                         handler.processUI(currentPageData, organismshtml);
@@ -464,6 +475,7 @@ function broadcastData()
         if (handler != null) {
             console.log("broadcastData: Fetching async data ");
             try {
+
                 var pagedata = null;
                 var source = null;
                 if (selecteddataindex == "OtherText") {

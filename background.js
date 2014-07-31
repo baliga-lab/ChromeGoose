@@ -444,6 +444,21 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                         sendResponse(organismSelectionHtml);
                     }
                 }
+                else if (msg.subject == MSG_SUBJECT_GOOGLEANALYTICS) {
+                    console.log("GOOGLE Analytics data " + msg.data);
+                    if (!DEBUGGING) {
+                        var data = JSON.parse(msg.data);
+                        var category = data['category'];
+                        var action = data['action'];
+                        var datapoint = data['data'];
+                        console.log("Category: " + category + " Action: " + action + " Data: " + datapoint);
+                        _gaq.push(['_trackEvent', category, action, datapoint]);
+                    }
+
+                    if (sendResponse != null) {
+                        sendResponse(organismSelectionHtml);
+                    }
+                }
             }
         }
         else if (msg.from && (msg.from == MSG_FROM_WEBSOCKET)) {
@@ -494,6 +509,25 @@ function getOrganisms(callback) {
     });
 }
 getOrganisms(null);
+
+
+// Google analytics
+var _gaq = _gaq || [];
+_gaq.push(['_setAccount', 'UA-53406317-1']);
+if (!DEBUGGING) {
+    console.log("Logging page on google analytics");
+    _gaq.push(['_trackPageview']);
+}
+
+(function() {
+  console.log("Initializing google analytics...");
+  var ga = document.createElement('script');
+  ga.type = 'text/javascript';
+  ga.async = true;
+  ga.src = 'https://ssl.google-analytics.com/ga.js';
+  var s = document.getElementsByTagName('script')[0];
+  s.parentNode.insertBefore(ga, s);
+})();
 
 /* Enable the page-action for the requesting tab */
             //chrome.pageAction.show(sender.tab.id);
