@@ -417,7 +417,7 @@ function broadcastFetchedData(jsonobj, handler)
 
                 // Record event in google analytics
                 var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_GOOGLEANALYTICS,
-                                           { category: 'OpenCPU', data: 'data', action: handler.getName() }, null);
+                                           { category: handler.getName(), data: 'data', action: 'View' }, null);
                 msg.send();
 
                 var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_GETORGANISMSHTML,

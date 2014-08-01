@@ -234,6 +234,12 @@ function execRScript(broadcastData) {
                 });
     }, 500);
 
+
+    // Record the opencpu function has actually been executed
+    var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_GOOGLEANALYTICS,
+                          { category: packagename, data: funcname, action: 'Run' }, null);
+    msg.send();
+
     var req = ocpu.call(funcname, parameters, function(session){
         console.log("Session ID: " + session.getKey() + " session URl: " + session.getLoc());
 
