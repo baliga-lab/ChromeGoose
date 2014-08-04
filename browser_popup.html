@@ -64,6 +64,7 @@
     <!--<button type="button" id="btnGaggleOutput" class="btn btn-default" data-toggle="tooltip" data-placement="left" title="Go to Gaggle Output Page"><span class="glyphicon glyphicon-new-window"></span><sub> Output</sub></button> -->
     <!--<button type="button" class="btn btn-default" data-toggle="tooltip" data-placement="left" title="Send message to websocket"><span class="glyphicon glyphicon-flash"></span></button> -->
     <button type="button" class="btn btn-default" data-toggle="tooltip" data-placement="left" title="Get help"><span class="glyphicon glyphicon-question-sign"></span><sub> Help</sub></button>
+    <button type="button" id="btnSendFeedback" class="btn btn-default" data-toggle="tooltip" data-placement="left" title="Send Feedback"><span class="glyphicon glyphicon-envelope"></span><sub>Feedback</sub></button>
     <button type="button" id="btnGaggleWebsite" class="btn btn-default" data-toggle="tooltip" data-placement="left" title="Go to Gaggle Website"><span class="glyphicon glyphicon-link"></span></button>
 </div>
 </p>
@@ -148,7 +149,7 @@
             <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenuProcessing">
                 <li role="presentation" class="dropdown-header">Normalization</li>
                 <!--<li role="presentation"><a role="menuitem" tabindex="-1" href="#">Quantile Normalization | <span class="glyphicon glyphicon-question-sign"></span></a></li> -->
-                <li role="presentation"><a id="ahrefplotexpression" role="menuitem" tabindex="-1" href="#">Plot Data | <span class="glyphicon glyphicon-question-sign"></span></a></li>
+                <li role="presentation"><a id="ahrefplotexpression" role="menuitem" tabindex="-1" href="#">Plot Data | <span class="glyphicon glyphicon-question-sign" title="Plot data function will produce simple plots of expression data for a given set of genes. This function accepts a gene list captured in the ChromeGoose or uploaded files or text input. Input can be a tab-delimited file of single column with a header. Each gene is listed in a separate row. It will also require selecting an organisms to collect gene expression matrix. Currently 3 different types of plots are supported line plot, heat map and smoothed plot."></span></a></li>
                 <!--<li role="presentation"><a role="menuitem" tabindex="-1" href="#">Data Statistics | <span class="glyphicon glyphicon-question-sign"></span></a></li> -->
                 <li role="presentation"><a id="ahreftfoefilter" role="menuitem" tabindex="-1" href="#">MTB TFOE Filtering | <span class="glyphicon glyphicon-question-sign"></span></a></li>
                 <li role="presentation" class="divider"></li>
@@ -166,7 +167,7 @@
             </button>
             <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenuAnalysis">
                 <li role="presentation" class="dropdown-header">Gene Set</li>
-                <li role="presentation"><a id="ahrefGeneSetEnrichment" role="menuitem" tabindex="-1" href="#">Gene Set Enrichment | <span class="glyphicon glyphicon-question-sign"></span></a></li>
+                <li role="presentation"><a id="ahrefGeneSetEnrichment" role="menuitem" tabindex="-1" href="#">Gene Set Enrichment | <span class="glyphicon glyphicon-question-sign" title="Geneset enrichment analysis finds enrichment of gene regulatory network modules for a given set of genes. This function compares the overlap of genes in each module to given set of genes by using hypergeometric distribution. For each comparison, p-value is calculated and corrected for multiple testing by using the method of Benjamini, Hochberg. Modules enriched for given set of genes are listed along with total number of genes in the module, number of genes in the list, number of overlapping genes and p-values. Modules are linked to module pages in the network portal. Overlapping genes are captured in the ChromeGoose for further analysis. This function accepts a gene list captured in the ChromeGoose or uploaded files or text input. Gene list is a tab-delimited file of single column with a header. Each gene is listed in a separate row. It will also require selecting an organisms to collect regulatory network information."></span></a></li>
                 <!--<li role="presentation"><a role="menuitem" tabindex="-1" href="#">Module Enrichment | <span class="glyphicon glyphicon-question-sign"></span></a></li> -->
                 <!--<li role="presentation"><a role="menuitem" tabindex="-1" href="#"></a></li> -->
                 <!--<li role="presentation" class="divider"></li>

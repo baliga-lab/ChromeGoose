@@ -45,6 +45,7 @@ function init()
     $("#btnBossConnected").click(toggleConnectToBoss);
     $("#btnGaggleWebsite").click(openGaggleWebsite);
     $("#btnGaggleOutput").click(openGaggleOutputPage);
+    $("#btnSendFeedback").click(sendFeedback);
 
     $(".selGaggleData").change(gaggleDataItemSelected);
     $(".btnCancelTextInput").click(cancelTextInput);
@@ -149,6 +150,11 @@ function setDOMInfo(pageData) {
             }
         }
     }
+}
+
+function sendFeedback()
+{
+    window.open("https://mail.google.com/mail/?view=cm&fs=1&to=gaggle-chrome-goose@googlegroups.com");
 }
 
 function startBossFromButton()
