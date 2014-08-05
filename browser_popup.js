@@ -39,6 +39,7 @@ function init()
     currentPageData = new Array();
     currentScriptToRun = null;
     //$("#divScript").empty();
+    $(".glyphicon-question-sign").tooltip({html: true });
 
     $("#selGaggleMenu").change(gaggleMenuItemSelected);
     $("#btnStartBoss").click(startBossFromButton);
@@ -46,6 +47,7 @@ function init()
     $("#btnGaggleWebsite").click(openGaggleWebsite);
     $("#btnGaggleOutput").click(openGaggleOutputPage);
     $("#btnSendFeedback").click(sendFeedback);
+    $("#btnHelp").click(openHelp);
 
     $(".selGaggleData").change(gaggleDataItemSelected);
     $(".btnCancelTextInput").click(cancelTextInput);
@@ -209,6 +211,11 @@ function startBoss(forceStart, callback)
     });
 
 
+}
+
+function openHelp()
+{
+    cg_util.openNewTab("http://gaggle.systemsbiology.net/docs/geese/chromegoose/", null);
 }
 
 function openGaggleWebsite()

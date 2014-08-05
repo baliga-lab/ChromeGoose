@@ -27,7 +27,16 @@ var gagglefunctionalenrichment = {
                 var ftype="value";
                 if (i == 1) {
                     ftype = "url";
-                    fieldvalue = "http://networks.systemsbiology.net/" + species + "/network/1/module/" + linefields[i];
+                    if (species.toLowerCase() == "mtu") {
+                        var prefix = "";
+                        // We need to prefix the bicluster number to make its length to be 4.
+                        // For example, 303 becomes 0303
+                        for (var j = 0; j < 4 - linefields[i].length; j++)
+                            prefix += "0";
+                        fieldvalue = "http://networks.systemsbiology.net/mtb/biclusters/bicluster_" + prefix + linefields[i];
+                    }
+                    else
+                        fieldvalue = "http://networks.systemsbiology.net/" + species + "/network/1/module/" + linefields[i];
                 }
                 html += "<label><input value='" + propertyfields[i] + "' /><input value='" + fieldvalue + "' /><input value='" + ftype + "' /></label>";
             }

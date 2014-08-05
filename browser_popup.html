@@ -10,6 +10,13 @@
           background: white;
         }-->
 
+        div.tooltip-inner {
+            max-width: 700px;
+            width: 700px;
+            height: 100%;
+            text-align: left;
+            white-space: pre-wrap;
+        }
     </style>
 
     <link type="text/css" rel="stylesheet" href="jquery-ui-1.10.4.css" />
@@ -63,7 +70,7 @@
     <button type="button" id="btnStartBoss" class="btn btn-default" data-toggle="tooltip" data-placement="left" title="Click to start Gaggle Boss" ><span class="glyphicon glyphicon-off"></span> <sub> Boss</sub></button>
     <!--<button type="button" id="btnGaggleOutput" class="btn btn-default" data-toggle="tooltip" data-placement="left" title="Go to Gaggle Output Page"><span class="glyphicon glyphicon-new-window"></span><sub> Output</sub></button> -->
     <!--<button type="button" class="btn btn-default" data-toggle="tooltip" data-placement="left" title="Send message to websocket"><span class="glyphicon glyphicon-flash"></span></button> -->
-    <button type="button" class="btn btn-default" data-toggle="tooltip" data-placement="left" title="Get help"><span class="glyphicon glyphicon-question-sign"></span><sub> Help</sub></button>
+    <button type="button" id="btnHelp" class="btn btn-default" data-toggle="tooltip" data-placement="left" title="Get help"><span class="glyphicon glyphicon-question-sign"></span><sub> Help</sub></button>
     <button type="button" id="btnSendFeedback" class="btn btn-default" data-toggle="tooltip" data-placement="left" title="Send Feedback"><span class="glyphicon glyphicon-envelope"></span><sub>Feedback</sub></button>
     <button type="button" id="btnGaggleWebsite" class="btn btn-default" data-toggle="tooltip" data-placement="left" title="Go to Gaggle Website"><span class="glyphicon glyphicon-link"></span></button>
 </div>
@@ -167,7 +174,7 @@
             </button>
             <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenuAnalysis">
                 <li role="presentation" class="dropdown-header">Gene Set</li>
-                <li role="presentation"><a id="ahrefGeneSetEnrichment" role="menuitem" tabindex="-1" href="#">Gene Set Enrichment | <span class="glyphicon glyphicon-question-sign" title="Geneset enrichment analysis finds enrichment of gene regulatory network modules for a given set of genes. This function compares the overlap of genes in each module to given set of genes by using hypergeometric distribution. For each comparison, p-value is calculated and corrected for multiple testing by using the method of Benjamini, Hochberg. Modules enriched for given set of genes are listed along with total number of genes in the module, number of genes in the list, number of overlapping genes and p-values. Modules are linked to module pages in the network portal. Overlapping genes are captured in the ChromeGoose for further analysis. This function accepts a gene list captured in the ChromeGoose or uploaded files or text input. Gene list is a tab-delimited file of single column with a header. Each gene is listed in a separate row. It will also require selecting an organisms to collect regulatory network information."></span></a></li>
+                <li role="presentation"><a id="ahrefGeneSetEnrichment" role="menuitem" tabindex="-1" href="#">Gene Set Enrichment | <span class="glyphicon glyphicon-question-sign" title="<p>Geneset enrichment analysis finds enrichment of gene regulatory network modules for a given set of genes. This function compares the overlap of genes in each module to<br/>given set of genes by using hypergeometric distribution.<br />For each comparison, p-value is calculated and corrected for multiple testing by using the method of Benjamini, Hochberg. Modules enriched for given set of genes are listed along with total number of genes in the module, number of genes in the list, number of overlapping genes and p-values. Modules are linked to module pages in the network portal. Overlapping genes are captured in the ChromeGoose for further analysis.</p><p>This function accepts a gene list captured in the ChromeGoose or uploaded files or text input. Gene list is a tab-delimited file of single column with a header. Each gene is listed in a separate row. It will also require selecting an organisms to collect regulatory network information.</p>"></span></a></li>
                 <!--<li role="presentation"><a role="menuitem" tabindex="-1" href="#">Module Enrichment | <span class="glyphicon glyphicon-question-sign"></span></a></li> -->
                 <!--<li role="presentation"><a role="menuitem" tabindex="-1" href="#"></a></li> -->
                 <!--<li role="presentation" class="divider"></li>

@@ -379,9 +379,10 @@ function setOrganism()
       var currSelect = $(this);
       $(this).find("option").each(function () {
         console.log("Select organism option value: " + $(this).val());
+        var species = ($(this).val() == "mtu") ? "mtb" : $(this).val();
         if (document.URL.toLowerCase().indexOf("networks.systemsbiology.net") >= 0
-            && document.URL.indexOf($(this).val()) >= 0) {
-            console.log("Setting select vale to " + $(this).val());
+            && document.URL.indexOf(species) >= 0) {
+            console.log("Setting select vale to " + species);
             $(currSelect).val($(this).val());
             return;
         }
