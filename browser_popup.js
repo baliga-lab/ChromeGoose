@@ -354,6 +354,12 @@ function broadcastFetchedData(jsonobj, handler)
                 gaggledata = new Namelist("", 0, "", null);
                 //alert(handler.getName() + " " + data);
                 gaggledata.parseJSON(data);
+                //alert(gaggledata.getSpecies());
+                if (gaggledata.getSpecies().toLowerCase().indexOf("mycobacterium tuberculosis h37rv") >= 0) {
+                    console.log("Processing for TB namelist");
+                    gaggledata = cg_util.handleTBNamelist(gaggledata);
+                    console.log("Processed namelist: " + gaggledata.getData());
+                }
                 if (handler.handleNameList != null) {
                     // First pass the data to the Event page
                     console.log("Sending data to event page");
@@ -386,7 +392,9 @@ function broadcastFetchedData(jsonobj, handler)
                                                    gaggledata.getSpecies(),
                                                    namelist);
                         //alert(namelist);
-
+                        if (gaggledata.getSpecies().toLowerCase().indexOf("tuberculosis") >= 0)  {
+                            newdata = cg_util.handleTBNamelist(newdata);
+                        }
                         var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_STOREDATA,
                                              { handler: handler.getName(), source: newdata }, handlerResponse);
                         msg.send();
@@ -411,6 +419,9 @@ function broadcastFetchedData(jsonobj, handler)
                                                    gaggledata.getSpecies(),
                                                    namelist);
                         //alert(namelist);
+                        if (gaggledata.getSpecies().toLowerCase().indexOf("tuberculosis") >= 0) {
+                            newdata = cg_util.handleTBNamelist(newdata);
+                        }
 
                         var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_STOREDATA,
                                              { handler: handler.getName(), source: newdata }, handlerResponse);

@@ -446,6 +446,30 @@ readTextFile: function(file, callback) {
     reader.readAsText(file);
 },
 
+handleTBNamelist: function(namelist) {
+    if (namelist != null) {
+        if ((namelist.getSpecies().toLowerCase() == "mycobacterium tuberculosis h37rv") || namelist.getSpecies().toLowerCase() == "mtu") {
+            var data = namelist.getData();
+            if (data != null) {
+                for (var i = 0; i < data.length; i++) {
+                    if (data[i].indexOf("RV") == 0) {
+                        srcdata = data[i].replace("RV", "Rv");
+                        var last = data[i].charAt(data[i].length - 1);
+                        if (last == last.toUpperCase() && last != last.toLowerCase()) {
+                            var firstpart = srcdata.substr(0, srcdata.length - 1);
+                            srcdata = firstpart + last.toLowerCase();
+                        }
+                        console.log("Processed RV data: " + srcdata);
+                        data[i] = srcdata;
+                    }
+                }
+                return namelist;
+            }
+        }
+    }
+    return null;
+},
+
 httpGet: function(theUrl, callback)
 {
     console.log("Http Get " + theUrl);
