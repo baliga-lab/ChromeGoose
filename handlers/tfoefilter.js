@@ -49,6 +49,7 @@ var gaggletfoefilter = {
             var i = 0;
             var outputlines = "";
             while (i < splitted.length) {
+                splitted[i] = splitted[i].replace(/\s/g, "&nbsp;");
                 outputlines += splitted[i] + "<br />";
                 var start = splitted[i].indexOf("Expression of ");
                 if (start >= 0 && splitted[i].indexOf("TFOE experiments...") >= 0) {
