@@ -49,16 +49,20 @@ var gaggletfoefilter = {
             var i = 0;
             var outputlines = "";
             while (i < splitted.length) {
-                splitted[i] = splitted[i].replace(/\s/g, "&nbsp;");
+                //splitted[i] = splitted[i].replace(/\s/g, "&nbsp;");
+                console.log("Parsing line: " + splitted[i]);
                 outputlines += splitted[i] + "<br />";
-                var start = splitted[i].indexOf("Expression of ");
-                if (start >= 0 && splitted[i].indexOf("TFOE experiments...") >= 0) {
-                    var genes = new Array();
+                //var start = splitted[i].indexOf("Expression of ");
+                //if (start >= 0 &&
+                var start = splitted[i].indexOf("TFOE experiments");
+                if  (start >= 0) {
+                    /*var genes = new Array();
                     var loc = splitted[i].indexOf("changes");
                     var len = "Expression of ".length;
                     var gene = splitted[i].substr(start + len, loc - start - len - 1);
                     console.log("Gene " + gene);
                     genes.push(gene.trim());
+
                     outputlines += splitted[i + 1] + "<br />";
                     i += 2;
                     line = splitted[i];
@@ -71,18 +75,37 @@ var gaggletfoefilter = {
                     console.log("Gene string: " + genestring);
                     var splittedgenes = genestring.split(":");
                     var allgenes = genes.concat(splittedgenes);
+                    */
+                    var genes = new Array();
+                    var loc1 = splitted[i].lastIndexOf("is", start);
+                    if (loc1 >= 0) {
+                        var loc2 = splitted[i].lastIndexOf(">", loc1);
+                        if (loc2 >= 0) {
+                            var gene = splitted[i].substr(loc2 + 1, loc1 - loc2 - 1).trim();
+                            console.log("Target gene: " + gene);
+                            var geneline = splitted[i + 1].trim();
+                            console.log("geneline: " + geneline);
+                            var allgenes = gaggletfoefilter.getFields(geneline, ' ');
+                            console.log("Genes: " + allgenes);
 
+                            var html = "<div class='gaggle-data' style='display:none'>";
+                            html += "<span class='gaggle-name hidden'>" + "mtu expression genes for " + gene + "</span>";
+                            html += "<span class='gaggle-species hidden'>" + "mtu" + "</span>";
+                            html += "<span class='gaggle-size hidden'>" + allgenes.length + "</span>";
+                            html += "<div class='gaggle-namelist'><ul>";
+                            for (var j = 0; j < allgenes.length; j++) {
+                                html += "<li>" + allgenes[j].trim() + "</li>";
+                            }
+                            html += "</ul></div></div>";
+                            outputhtml += html;
 
-                    var html = "<div class='gaggle-data' style='display:none'>";
-                    html += "<span class='gaggle-name hidden'>" + "mtu expression genes for " + gene + "</span>";
-                    html += "<span class='gaggle-species hidden'>" + "mtu" + "</span>";
-                    html += "<span class='gaggle-size hidden'>" + allgenes.length + "</span>";
-                    html += "<div class='gaggle-namelist'><ul>";
-                    for (var j = 0; j < allgenes.length; j++) {
-                        html += "<li>" + allgenes[j].trim() + "</li>";
-                    }
-                    html += "</ul></div></div>";
-                    outputhtml += html;
+                            for (var k = 0; k < 3; k++) {
+                                line = splitted[i + k + 1].replace(/\s/g, "&nbsp;");
+                                outputlines += line + "<br />";
+                            }
+                            i += 3;
+                        }
+                     }
                 }
                 i++;
             }
