@@ -48,6 +48,7 @@ var gaggletfoefilter = {
             var splitted = data.split("\n");
             var i = 0;
             var outputlines = "";
+            var genecnt = 0;
             while (i < splitted.length) {
                 //splitted[i] = splitted[i].replace(/\s/g, "&nbsp;");
                 console.log("Parsing line: " + splitted[i]);
@@ -76,6 +77,7 @@ var gaggletfoefilter = {
                     var splittedgenes = genestring.split(":");
                     var allgenes = genes.concat(splittedgenes);
                     */
+                    genecnt++;
                     var genes = new Array();
                     var loc1 = splitted[i].lastIndexOf("is", start);
                     if (loc1 >= 0) {
@@ -87,7 +89,6 @@ var gaggletfoefilter = {
                             console.log("geneline: " + geneline);
                             var allgenes = gaggletfoefilter.getFields(geneline, ' ');
                             console.log("Genes: " + allgenes);
-
                             var html = "<div class='gaggle-data' style='display:none'>";
                             html += "<span class='gaggle-name hidden'>" + "mtu expression genes for " + gene + "</span>";
                             html += "<span class='gaggle-species hidden'>" + "mtu" + "</span>";
@@ -99,10 +100,13 @@ var gaggletfoefilter = {
                             html += "</ul></div></div>";
                             outputhtml += html;
 
-                            for (var k = 0; k < 3; k++) {
+                            /*for (var k = 0; k < 3; k++) {
                                 line = splitted[i + k + 1].replace(/\s/g, "&nbsp;");
                                 outputlines += line + "<br />";
-                            }
+                            }*/
+
+                            var geneploturl = host + "/tmp/" + sessionid + "/graphics/" + (genecnt + 1).toString();
+                            outputlines += "<img src='" + geneploturl + "' /><br />";
                             i += 3;
                         }
                      }
