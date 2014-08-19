@@ -13,6 +13,8 @@ KEGG.prototype.scanPage = function ()
 
     this.checkData();
 
+    //"http://*/static/gaggle_output.html"
+    /*
     if (window.self != top) {
         // Executed if in an iframe
         var statusdiv = document.getElementById("all_status");
@@ -57,7 +59,7 @@ KEGG.prototype.scanPage = function ()
                     var iframeid = cg_util.generateUUID();
                     var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_OPENURL,
                                           {GeneId: geneId, GeneName: geneName, Target: "IFrame", Url: href, Source: "KEGG",
-                                           TabUrlSearchPattern: "http://*/static/gaggle_output.html",
+                                           TabUrlSearchPattern: ,
                                            ContainerClass: ".divResultIFrames", IFrameId: iframeid, IFrameDivClass: "iframediv",
                                            IFrameClass: "gaggleiframe", EmbedHtml: embedhtml},
                                           function() {
@@ -68,7 +70,7 @@ KEGG.prototype.scanPage = function ()
 
             //var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_GAGGLEPARSERESULT,
             //                      {GeneId: geneId, GeneName: geneName, Type: "detail",
-            //                       TabUrlSearchPattern: "http://*/static/gaggle_output.html",
+            //                       TabUrlSearchPattern: ,
             //                       Url: iframeurl, Source: "KEGG", Description: "Search Result",
             //                       IFrameUrl: (window.location)["href"]},
             //                      function() {
@@ -90,7 +92,7 @@ KEGG.prototype.scanPage = function ()
                         src = cg_util.processRelativeUrl(window.location, src);
                         var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_GAGGLEPARSERESULT,
                                               {GeneId: geneId, GeneName: geneName, Type: "iframe",
-                                               TabUrlSearchPattern: "http://*/static/gaggle_output.html",
+                                               TabUrlSearchPattern:
                                                Url: iframeurl, Source: "KEGG", Description: "KEGG Pathway",
                                                IFrameUrl: (window.location)["href"]},
                                               function() {
@@ -108,14 +110,14 @@ KEGG.prototype.scanPage = function ()
             var geneId = cg_util.mapGeneNameToGeneId(geneName);
             var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_GAGGLEPARSERESULT,
                                   {GeneId: geneId, GeneName: geneName, Type: "iframe",
-                                   TabUrlSearchPattern: "http://*/static/gaggle_output.html",
+                                   TabUrlSearchPattern:
                                    Url: iframeurl, Source: "KEGG", Description: "KEGG Gene Information",
                                    IFrameUrl: (window.location)["href"]},
                                   function() {
                                   });
             msg.send();
         }
-    }
+    } */
 }
 
 KEGG.prototype.handleNameList = function(namelist) {

@@ -39,7 +39,8 @@ var gaggletfoefilter = {
         console.log("html: " + outputhtml);
         var wrapdiv = document.createElement("div");
         wrapdiv.setAttribute("id", "divNewGaggledData");
-        document.body.appendChild(wrapdiv);
+        var containerdiv = document.getElementById("divGaggledData");
+        containerdiv.appendChild(wrapdiv);
 
         url = host + "/tmp/" + sessionid + "/stdout";
         $.get(url, function(data){

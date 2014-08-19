@@ -302,7 +302,7 @@ function parsePage() {
         var jsInitChecktimer = setInterval (checkForJS_Finish, 2000);
 
         function checkForJS_Finish () {
-            if ($("#inputDataParsingFinishSignal").val() == "True")
+            if ($("#inputDataParsingFinishSignal").val() == "Goose")
             {
                 // Clear the array since we are on the same page, and we do not want to
                 // show the same data item multiple times

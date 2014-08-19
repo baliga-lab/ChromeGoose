@@ -147,9 +147,6 @@ var gagglefunctionalenrichment = {
                 if (html != null) {
                   console.log("Generated html: " + html);
                   gaggledhtml += html;
-
-                  //var existinghtml = $("#divGaggledData").html();
-                  //$("#divGaggledData").html(existinghtml + html);
                 }
               }
               while (modulecnt < modules.length && i < splitted.length);
@@ -233,7 +230,8 @@ var gagglefunctionalenrichment = {
         }
         console.log("gaggled html: " + gaggledhtml);
         $(wrapdiv).html(gaggledhtml);
-        document.body.appendChild(wrapdiv);
+        var containerdiv = document.getElementById("divGaggledData");
+        containerdiv.appendChild(wrapdiv);
         // Send custom event to page
         console.log("Send GaggleDataAddEvent event...");
         var event = new CustomEvent('GaggleDataAddEvent', {detail: {funcname: functionname, species: species,
@@ -250,7 +248,7 @@ var gagglefunctionalenrichment = {
         //$(".divGaggleOutputUnit").draggable({
 
         //});
-        $("#inputDataParsingFinishSignal").val("True");
+        //$("#inputDataParsingFinishSignal").val("True");
       });
     }
 };
