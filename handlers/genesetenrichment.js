@@ -50,7 +50,7 @@ var gagglefunctionalenrichment = {
         if (propertyfields != null && fields != null) {
             var html = "<div class='gaggle-pvalue' style='display: none'>";
             for (var i = 0; i < fields.length; i++) {
-                html += "<label><input value='" + propertyfields[i] + "'><input value='" + fields[i] + "' /></label>";
+                html += "<label><input value='Module'><input value='" + moduleid + "' /></label><label><input value='" + propertyfields[i] + "'><input value='" + fields[i] + "' /></label>";
             }
             html += "</div>";
             return html;
@@ -100,155 +100,189 @@ var gagglefunctionalenrichment = {
       var url = host + "/tmp/" + sessionid + "/R/.val";
       console.log("opencpu url: " + url);
       $.get(url, function(data){
-        console.log("Received data: " + data);
+           console.log("Received data: " + data);
 
-        var splitted = data.split("\n");
-        var newdata = splitted[0] + "<br />";
-        var enrichmentfields = gagglefunctionalenrichment.getFields(splitted[0], ' ');
-        console.log("Enrichment fields: " + enrichmentfields);
+           var splitted = data.split("\n");
+           var enrichmentfields = gagglefunctionalenrichment.getFields(splitted[0], ' ');
+           console.log("Enrichment fields: " + enrichmentfields);
 
-        var i = 1;
-        var modules = new Array();
-        var namelists = new Array();
-        var wrapdiv = document.createElement("div");
-        wrapdiv.setAttribute("id", "divNewGaggledData");
+           var i = 1;
+           var modules = new Array();
+           var namelists = new Array();
+           var wrapdiv = document.createElement("div");
+           wrapdiv.setAttribute("id", "divNewGaggledData");
 
-        var gaggledhtml = "";
-        while(i < splitted.length) {
+           var gaggledhtml = "";
+           var parsedobj = {};
+
            var line = splitted[i];
-           if (line == null || line.length == 0)
-              break;
-           /*if (i == 1) {
-             for (var k = 0; k < line.length; k++)
-                console.log("Line 1 char " + k + ": " + line.charCodeAt(k));
-           } */
-           console.log("Original line: " + line);
-
-           // Overlap.genes could be empty, and the line could be interleaved with the p.value line
-           if (line.indexOf("overlap.genes") >= 0 && line.indexOf("Enrichment.p.value") < 0) {
-              newdata += line + "<br />";
-              console.log("Parsing overlapping genes " + modules.length);
-              var modulecnt = 0;
-              do {
-                var line = splitted[++i];
-                newdata += line + "<br />";
-                console.log("Overlapping gene module " + line);
-                var loc = line.indexOf(" ");
-                var moduleidstr = line.substr(0, loc);
-                var moduleid = parseInt(moduleidstr);
-                modulecnt++;
-                var geneline = line.substr(loc);
-                console.log("Gene names: " + geneline);
-                /*if (modulecnt == 1)
-                  for (var k = 0; k < geneline.length; k++)
-                    console.log("Line 1 char " + k + ": " + geneline.charCodeAt(k)); */
-                var genenames = geneline.split(":");
-                var html = gagglefunctionalenrichment.generateGaggleDataHtml(species, moduleid, genenames);
-                if (html != null) {
-                  console.log("Generated html: " + html);
-                  gaggledhtml += html;
-                }
-              }
-              while (modulecnt < modules.length && i < splitted.length);
-              i++;
+           while ((line == null || line.length == 0) && i < splitted.length) {
+              line = splitted[++i];
            }
-           else if (line.indexOf("Enrichment.p.value") >= 0) {
-              line = line.replace("overlap.genes", "");
-              line = "Module  " + line;  // Insert the module id property
 
-              var propertyfields = gagglefunctionalenrichment.getFields(line, ' ');
-              console.log("p value property fields: " + propertyfields);
+           if (i < splitted.length) {
+               // First process the Input.Name, Enriched.Module, etc fields
 
-              var modulecnt = 0;
-              do {
-                  var line = splitted[++i];
-                  var linefields = gagglefunctionalenrichment.getFields(line, ' ');
-                  console.log("P value fields: " + linefields);
-                  var loc = line.indexOf(" ");
-                  var moduleidstr = linefields[0];
-                  var moduleid = parseInt(moduleidstr);
-                  modulecnt++;
-
-                  var html = gagglefunctionalenrichment.generateGagglePValueHtml(species, moduleid, propertyfields, linefields);
-                  if (html != null) {
-                    console.log("Generated pvalue html: " + html);
-                    gaggledhtml += html;
+               do {
+                  line = splitted[i];
+                  if (line.indexOf("overlap.genes") >= 0) {
+                     break;
                   }
-              }
-              while (modulecnt < modules.length && i < splitted.length);
-              i++;
-           }
-           else {
-             i++;
-
-             line = line.replace("x", " ");
-             var linefields = gagglefunctionalenrichment.getFields(line, ' ');
-             console.log("Line fields: " + linefields);
-             var enrichmenthtml = gagglefunctionalenrichment.generateEnrichmentHtml(species, linefields, enrichmentfields);
-             console.log("enrichment line html: " + enrichmenthtml);
-             gaggledhtml += enrichmenthtml;
-
-
-             var newline = "";
-             var findex = 0;
-             var start = 0;
-
-             do {
-               var loc = line.indexOf(" ", start);
-               if (loc < 0)
-                 loc = line.length;
-               if (loc > start) {
-                 var value = line.substr(start, loc - start);
-                 console.log("Field " + findex + ": " + value);
-                 if (findex == 2 && value.indexOf(".") < 0) {
-                    var moduleid = value;
-                    console.log("Module ID: " + moduleid);
-                    modules.push(moduleid);
-
-                    var modulestr = "<a target='_blank' href='http://networks.systemsbiology.net/" + species + "/network/1/module/" + moduleid + "'>" + moduleid + "</a>";
-                    newline += modulestr;
-                    console.log("Module link: " + modulestr);
-                 }
-                 else
-                    newline += value;
-                 start = loc;
-                 while (line[start] == ' ' && start < line.length) {
-                   newline += line[start];
-                   start++;
-                 }
-
-                 findex++;
+                  var linefields = gagglefunctionalenrichment.getFields(line, ' ');
+                  if (linefields.length > 0) {
+                      var moduleid = linefields[0];
+                      console.log("Encountered module " + moduleid);
+                      modules.push(moduleid);
+                      var moduleinfo = {};
+                      for (var p = 0; p < enrichmentfields.length; p++)  {
+                           moduleinfo[enrichmentfields[p]] = linefields[p];
+                           console.log("Module " + moduleid + " Field " + enrichmentfields[p] + " Value " + linefields[p] + " " + moduleinfo);
+                      }
+                      parsedobj[moduleid] = moduleinfo;
+                  }
+                  i++;
                }
-               else {
-                 newline += line[start];
-                 start++;
+               while (i < splitted.length);
+               console.log("parsed obj: " + parsedobj);
+
+               // Now parse the overlap.genes info
+               console.log("Overlap gene line: " + line);
+               if (i < splitted.length) {
+                   if (line.indexOf("overlap.genes") >= 0) {
+                      var modulecnt = 0;
+                      var linefields = gagglefunctionalenrichment.getFields(line, ' ');
+                      while (modulecnt < modules.length) {
+                          line = splitted[++i];
+                          console.log("====>Line: " + line);
+                          var loc = line.indexOf(" ");
+                          var moduleidstr = line.substr(0, loc);
+                          var moduleid = parseInt(moduleidstr);
+                          modulecnt++;
+                          var targetmodule = (modulecnt < modules.length) ? modules[modulecnt] : "-1";
+                          // Some overlapped genes could span multiple lines, we need to append them properly
+                          var nextmodule = "";
+                          var linetoprocess = line;
+                          if (linefields.length == 1)
+                            linetoprocess += " ";
+                          console.log("Initial line to process: " + linetoprocess);
+                          i++;
+                          while (i < splitted.length) {
+                              var nextline = splitted[i];
+                              console.log("Inspecting next line " + nextline + " for module id " + modules[modulecnt]);
+                              if (nextline == null || nextline.length == 0) {
+                                 i++;
+                                 continue;
+                              }
+
+                              if (nextline.indexOf(".p.value") >= 0)
+                                 // We finished processing overlap.gene and possibly pvalues
+                                 break;
+
+                              var nextlinefields = gagglefunctionalenrichment.getFields(nextline, ' ');
+                              nextmodule = nextlinefields[0];
+                              console.log("Next module: " + nextmodule + " target module: " + targetmodule);
+                              if (nextmodule.trim() != targetmodule.trim()) {
+                                  linetoprocess += nextline;
+                              }
+                              else
+                                break;
+                              i++;
+                          }
+                          console.log("Line to be processed: " + linetoprocess);
+                          var moduleinfo = parsedobj[moduleidstr];
+                          console.log("Got parsed module info: " + moduleinfo);
+                          var fieldvalues = gagglefunctionalenrichment.getFields(linetoprocess, ' ');
+                          for (var p = 0; p < linefields.length; p++) {
+                            moduleinfo[linefields[p]] = fieldvalues[p + 1];
+                            console.log("Module " + moduleid + " Field " + linefields[p] + " Value " + fieldvalues[p + 1]);
+                          }
+                          i--;
+                      }
+                   }
+
+                   // Now handle the rest of the output (if any)
+                   i++;
+                   while (i < splitted.length) {
+                      line = splitted[i];
+                      while ((line == null || line.length == 0) && i < splitted.length) {
+                         line = splitted[++i];
+                      }
+
+                      if (i < splitted.length && line.indexOf(".p.value") >= 0) {
+                         console.log("Processing pvalue line " + line);
+                         var pvaluefields = gagglefunctionalenrichment.getFields(line, ' ');
+                         i++;
+                         while (i < splitted.length) {
+                            line = splitted[i];
+                            console.log("Pvalue line: " + line);
+                            if (line != null && line.length > 0) {
+                                var linevalues = gagglefunctionalenrichment.getFields(line, ' ');
+                                if (linevalues.length > 0) {
+                                    var moduleidstr = linevalues[0];
+                                    var moduleinfo = parsedobj[moduleidstr];
+                                    console.log("Handling obj for " + moduleidstr + " moduleinfo " + moduleinfo);
+                                    for (var p = 0; p < pvaluefields.length; p++) {
+                                        moduleinfo[pvaluefields[p]] = linevalues[p + 1];
+                                        console.log("Module " + moduleidstr + " Field " + pvaluefields[p] + " Value " + linevalues[p + 1]);
+                                    }
+                                }
+                            }
+                            i++;
+                         }
+                      }
+                      else
+                        i++;
+                   }
                }
-             }
-             while (start < line.length);
-             newdata += newline + "<br />";
            }
-        }
-        console.log("gaggled html: " + gaggledhtml);
-        $(wrapdiv).html(gaggledhtml);
-        var containerdiv = document.getElementById("divGaggledData");
-        containerdiv.appendChild(wrapdiv);
-        // Send custom event to page
-        console.log("Send GaggleDataAddEvent event...");
-        var event = new CustomEvent('GaggleDataAddEvent', {detail: {funcname: functionname, species: species,
-                                        handlername: "geneSetEnrichmentHandler", description: desc},
-                                        bubbles: true, cancelable: false});
-        document.dispatchEvent(event);
 
-        console.log(newdata);
-        //newdata = newdata.replace(/\n/g, "<br />");
-        //newdata = "<p><div class='panel panel-primary divGaggleOutputUnit'><div class='panel-heading'><h4 class='panel-title'> Output - Gene Set Enrichment - " + species + "</h4></div><div class='divGaggleDataSet'><div class='panel-body'>" + newdata + "</div></div></div></p>";
-        //var html = $("#divGaggleOutput").html();
-        //html += newdata;
-        //$("#divGaggleOutput").html(html);
-        //$(".divGaggleOutputUnit").draggable({
+           // Now we generate the gaggled data html and output html
+           console.log("---->Generating html " + parsedobj);
+           var pvalueproperties = ["Enrichment.p.value", "Corrected.p.value"];
+           for (var p = 0; p < modules.length; p++) {
+               var moduleid = modules[p];
+               console.log("Generating html for module " + moduleid);
+               var moduleinfo = parsedobj[moduleid];
 
-        //});
-        //$("#inputDataParsingFinishSignal").val("True");
+               var enrichmentvalues = [];
+               for (var k = 0; k < enrichmentfields.length; k++) {
+                    console.log("Enrichment field " + enrichmentfields[k] + " Value " + moduleinfo[enrichmentfields[k]]);
+                    enrichmentvalues.push(moduleinfo[enrichmentfields[k]]);
+               }
+               var html = gagglefunctionalenrichment.generateEnrichmentHtml(species, enrichmentvalues, enrichmentfields);
+               if (html != null)  {
+                  console.log("Enrichment html: " + html);
+                  gaggledhtml += html;
+               }
+
+               var names = moduleinfo["overlap.genes"].split(":");
+               html = gagglefunctionalenrichment.generateGaggleDataHtml(species, moduleid, names);
+               if (html != null) {
+                   console.log("Generated gaggled data html: " + html);
+                   gaggledhtml += html;
+               }
+
+               var pvalues = [];
+               pvalues.push(moduleinfo["Enrichment.p.value"]);
+               pvalues.push(moduleinfo["Corrected.p.value"]);
+               html = gagglefunctionalenrichment.generateGagglePValueHtml(species, moduleid, pvalueproperties, pvalues);
+               if (html != null) {
+                   console.log("Generated pvalue html: " + html);
+                   gaggledhtml += html;
+               }
+
+
+           }
+           console.log("gaggled html: " + gaggledhtml);
+           $(wrapdiv).html(gaggledhtml);
+           var containerdiv = document.getElementById("divGaggledData");
+           containerdiv.appendChild(wrapdiv);
+           // Send custom event to page
+           console.log("Send GaggleDataAddEvent event...");
+           var event = new CustomEvent('GaggleDataAddEvent', {detail: {funcname: functionname, species: species,
+                                            handlername: "geneSetEnrichmentHandler", description: desc},
+                                            bubbles: true, cancelable: false});
+           document.dispatchEvent(event);
       });
     }
 };
