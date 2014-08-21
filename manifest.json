@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Gaggle Chrome Goose",
   "description": "Parse web pages for gaggle data and interact with other Gaggle Geese",
-  "version": "1.0.0.5",
+  "version": "1.0.0.6",
   "permissions": [
     "storage", "tabs", "http://*/*", "https://*/*"
   ],
