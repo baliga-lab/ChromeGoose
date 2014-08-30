@@ -329,8 +329,12 @@ function shouldStoreParameter(paramtype)
     if (paramtype == null || paramtype.length == 0)
         return false;
 
-    if (paramtype.toLowerCase() == "data" || paramtype.toLowerCase() == "file")
-        return true;
+    // TODO
+    // Need to figure out how to pass the saved file object to the r scripts to run.
+    // Before that, we do not store any parameters to the server
+    
+    //if (paramtype.toLowerCase() == "data" || paramtype.toLowerCase() == "file")
+    //    return true;
 
     return false;
 }
