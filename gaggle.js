@@ -1,6 +1,8 @@
 var pageGaggleData = [];
 var webHandlers = null;
 var receivedData = null;
+var parameterSessions = {};
+
 var halConvertTable = {
 'VNG7001'	:	'VNG5001H'	,
 'VNG7002'	:	'VNG5003H'	,
@@ -303,6 +305,18 @@ function init()
         }
     });
 
+    document.addEventListener("RScriptRerunFromOutputPageEvent", function(e) {
+        console.log("Received rscript rerun event: " + e.detail);
+        // Now we pass the event to background page, which will send it to the gaggle.js of the source tab
+        var guid = e.detail.rscriptGuid;
+        var tabid = e.detail.sourceTabId;
+        var parameters = e.detail.parameters;
+        console.log("page received rscript guid " + guid);
+        var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_RERUNEVENT,
+                              {rscriptGuid: guid, sourceTabId: tabid, parameters: parameters}, null);
+        msg.send();
+    });
+
     var control = document.getElementById("inputDataParsingFinishSignal");
     if (control == null)
         getPageData();
@@ -310,8 +324,172 @@ function init()
         parsePage();
 }
 
+function storeParameterOnOpencpuServer(parameterToBeStoredOnServer, paramIndex, storedParamSessionIDs, callback)
+{
+    if (parameterToBeStoredOnServer == null)
+        return;
+
+    if (paramIndex >= parameterToBeStoredOnServer.length) {
+        if (callback != null) {
+            console.log("Calling opencpu function...");
+            callback(storedParamSessionIDs);
+        }
+        return;
+    }
+
+    var data = null;
+    var dataindex = -1;
+    do {
+        dataindex = parameterToBeStoredOnServer[paramIndex]["index"];
+        data = parameterToBeStoredOnServer[paramIndex]["data"];
+        paramIndex++;
+    }
+    while (data == null && paramIndex < parameterToBeStoredOnServer.length);
+
+    console.log("Calling ocpu to store " + data);
+    if (data != null) {
+        var req = ocpu.call("saveData", {x: data}, function(session){
+            console.log("Stored parameter " + data + " to Session ID: " + session.getKey() + " session URl: " + session.getLoc());
+            var sessionparamobj = {paramIndex: dataindex, sessionObj: session };
+            storedParamSessionIDs.push(sessionparamobj);
+            storeParameterOnOpencpuServer(parameterToBeStoredOnServer, paramIndex, storedParamSessionIDs, callback);
+        });
+    }
+}
+
+function callOpencpu(parametersessionobj, parameters, parameterToBeStoredOnServer, progressbar, progessid) {
+    var storedParamSessions = [];
+    var packagename = parametersessionobj.package;
+    var funcname = parametersessionobj["functionname"];
+    var species = parameters["org"];
+    var desc = parametersessionobj["description"];
+    var guid = parametersessionobj["id"];
+    console.log("Package species: " + species + " package: " + packagename + " function: " + funcname + " guid: " + guid);
+
+    // Record the opencpu function has actually been executed
+    var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_GOOGLEANALYTICS,
+                          { category: packagename, data: funcname, action: 'Run' }, null);
+    msg.send();
+
+    // First store the data
+    //var storedParamSessionIDs = [];
+    ocpu.seturl(OPENCPU_SERVER + "/library/" + packagename + "/R");
+    storeParameterOnOpencpuServer(parameterToBeStoredOnServer, 0, storedParamSessions, function(storeParameterOnOpencpuServer) {
+        if (storedParamSessions != null) {
+            // replace the stored parameter with their session obj
+            for (var i = 0; i < storedParamSessions.length; i++) {
+                var sessiondataobj = storedParamSessions[i];
+                var index = sessiondataobj["paramIndex"];
+                var sessionobj = sessiondataobj["sessionObj"];
+                console.log("Fetching stored param session info " + index + " " + sessionobj);
+                parameters[index] = sessionobj;
+            }
+        }
+        // store the parameters of this run for future rerun reference
+        parametersessionobj.parameters = parameters;
+
+        console.log("Parameter JSON string: " + JSON.stringify(parameters));
+
+
+        var req = ocpu.call(funcname, parameters, function(session){
+            console.log("Session ID: " + session.getKey() + " session URl: " + session.getLoc());
+            if (progressbar) {
+                progressbar.progressbar( "option", {
+                  value: 100
+                });
+                clearInterval(progessid);
+                // remove the dialog
+                $(".ui-dialog").remove();
+            }
+
+            /*$("#divProgressBar").progressbar( "option", {
+                value: 100
+            }); */
+
+
+            var openurl = OPENCPU_SERVER + "/library/" + packagename + "/www/" + funcname
+                + "_output.html?host=" + OPENCPU_SERVER + "&sessionID=" + session.getKey() + "&species=" + species;
+            console.log("Open output html page: " + openurl);
+            var scripturl = "handlers/" + funcname.toLowerCase() + ".js";
+            // Note that the variable name of the corresponding handler should be the same as the package name
+            var code = packagename + ".parseData('" + OPENCPU_SERVER + "', '" + packagename + "', '" + funcname + "', '" + session.getKey() + "', '" + species + "', '" + desc + "', '" + guid + "');"; // All the opencpu output data page should have this function
+
+            // Call background page to verify if the gaggle_output.html is already opened, and inject the script and
+            // execute the code
+            var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_RSCRIPTEVENT,
+                                  {outputurl: openurl, script: scripturl, code: code}, function() {
+                                  });
+            msg.send();
+
+
+            /*session.getObject(function(data) {
+                console.log("Function return: " + JSON.stringify(data));
+                var result = data["message"];
+                console.log("Result text: " + result + " result div: " + resultdiv);
+                if (result != null) {
+                    // Open a tab and show the result
+                    $(resultdiv).show();
+                    $(resultdiv).html(result);
+                }
+            }); */
+        });
+
+        req.fail(function(){
+            if (progressbar) {
+                progressbar.progressbar( "option", {
+                  value: 100
+                });
+                clearInterval(progessid);
+            }
+            alert("OPENCPU Server error: " + req.responseText);
+        });
+    });
+}
+
+
+function reExecRScript(guid, newParameters)
+{
+    if (guid != null && newParameters != null && newParameters.length > 0) {
+        console.log("Re exec rscript " + guid + " " + newParameters);
+        var parametersessionobj = parameterSessions[guid];
+        var parameters = parametersessionobj["parameters"];
+        if (parametersessionobj != null) {
+            var existingparameters = parametersessionobj.parameters;
+            for (var i = 0; i < newParameters.length; i++) {
+                var paramobj = newParameters[i];
+                var paramname = paramobj["paramName"];
+                var paramvalue = paramobj["paramValue"];
+                var paramvaluetype = paramobj["paramValueType"];
+                console.log("New param name: " + paramname + " value: " + paramvalue + " type: " + paramvaluetype);
+                if (paramvaluetype == "string")
+                    parameters[paramname] = paramvalue;
+                else if (paramvaluetype == "double")
+                    parameters[paramname] = parseFloat(paramvalue);
+                else if (paramvaluetype == "integer")
+                    parameters[paramname] = parseInt(paramvalue);
+            }
+            callOpencpu(parametersessionobj, parameters, [], null, -1);
+        }
+    }
+}
+
 function execRScript(broadcastData) {
+    console.log("Rscript event data: " + receivedData);
+    var funcname = receivedData["functionName"];
+    var packagename = receivedData["packageName"];
+    console.log("Package name: " + packagename + ", Function name: " + funcname);
+
+
+    var desc = receivedData["description"];
+    console.log("Desc: " + desc);
     var parameters = receivedData["scriptParameters"];
+    var parameterToBeStoredOnServer = [];
+    var storedParamSessions = [];
+    var guid = cg_util.generateUUID();
+    //storedParamSessions = [];
+    var parametersessionobj = {id: guid, package: packagename, functionname: funcname, description: desc };
+    parameterSessions[guid] = parametersessionobj;
+
     // Get data using GUID if parameter is gaggled data on page
     for (var k in parameters) {
         if (parameters.hasOwnProperty(k)) {
@@ -353,36 +531,35 @@ function execRScript(broadcastData) {
                     }
                   }
                   parameters[k] = source;
+                  // We store the data on opencpu server first and then reference them
+                  var paramstoreobj = {index: k, data: source};
+                  parameterToBeStoredOnServer.push(paramstoreobj);
                }
                console.log("Parameter Gaggle data: " + parameters[k]);
            }
+           else {
+             console.log("Data is a file object: " + (p.fileName));
+             if (p.fileName != null) {
+                var paramstoreobj = {index: k, data: p};
+                parameterToBeStoredOnServer.push(paramstoreobj);
+             }
+           }
         }
     }
-
-    var funcname = receivedData["functionName"];
-    var packagename = receivedData["packageName"];
-    console.log("Package name: " + packagename + ", Function name: " + funcname);
-    ocpu.seturl(OPENCPU_SERVER + "/library/" + packagename + "/R");
-    console.log("Parameter JSON string: " + JSON.stringify(parameters));
-    var species = parameters["org"];
-    console.log("Package species: " + species);
-    var desc = receivedData["description"];
-    console.log("Desc: " + desc);
-
 
     $("#divProgressBar").show();
     var progressbar = $( "#divProgressBar" );
     progressbarValue = progressbar.find( ".ui-progressbar-value" );
     $("#divProgressBar").progressbar({value: 0});
     progressbarValue.css({
-      "background": '#' + Math.floor( Math.random() * 16777215 ).toString( 16 )
+        "background": '#' + Math.floor( Math.random() * 16777215 ).toString( 16 )
     });
 
     var progress = 0;
     var step = 10;
     var progessid = setInterval(function() {
         progress += step;
-        if (progress == 80)
+        if (progress == 70)
             step = 2;
         else if (progress == 90)
             step = 1;
@@ -393,60 +570,8 @@ function execRScript(broadcastData) {
                 });
     }, 500);
 
-
-    // Record the opencpu function has actually been executed
-    var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_GOOGLEANALYTICS,
-                          { category: packagename, data: funcname, action: 'Run' }, null);
-    msg.send();
-
-    var req = ocpu.call(funcname, parameters, function(session){
-        console.log("Session ID: " + session.getKey() + " session URl: " + session.getLoc());
-
-        progressbar.progressbar( "option", {
-          value: 100
-        });
-        clearInterval(progessid);
-        // remove the dialog
-        $(".ui-dialog").remove();
-
-        /*$("#divProgressBar").progressbar( "option", {
-            value: 100
-        }); */
-
-        var openurl = OPENCPU_SERVER + "/library/" + packagename + "/www/" + funcname
-            + "_output.html?host=" + OPENCPU_SERVER + "&sessionID=" + session.getKey() + "&species=" + species;
-        console.log("Open output html page: " + openurl);
-        var scripturl = "handlers/" + funcname.toLowerCase() + ".js";
-        // Note that the variable name of the corresponding handler should be the same as the package name
-        var code = packagename + ".parseData('" + OPENCPU_SERVER + "', '" + packagename + "', '" + funcname + "', '" + session.getKey() + "', '" + species + "', '" + desc + "');"; // All the opencpu output data page should have this function
-
-        // Call background page to verify if the gaggle_output.html is already opened, and inject the script and
-        // execute the code
-        var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_RSCRIPTEVENT,
-                              {outputurl: openurl, script: scripturl, code: code}, function() {
-                              });
-        msg.send();
-
-
-        /*session.getObject(function(data) {
-            console.log("Function return: " + JSON.stringify(data));
-            var result = data["message"];
-            console.log("Result text: " + result + " result div: " + resultdiv);
-            if (result != null) {
-                // Open a tab and show the result
-                $(resultdiv).show();
-                $(resultdiv).html(result);
-            }
-        }); */
-    });
-
-    req.fail(function(){
-        progressbar.progressbar( "option", {
-          value: 100
-        });
-        clearInterval(progessid);
-        alert("OPENCPU Server error: " + req.responseText);
-    });
+    console.log("Parameter JSON string: " + JSON.stringify(parameters));
+    callOpencpu(parametersessionobj, parameters, parameterToBeStoredOnServer, progressbar, progessid);
 }
 
 // The output page of rscriptwrapper has javascript code to generate gaggled data.
@@ -512,7 +637,27 @@ chrome.runtime.onMessage.addListener(function(msg, sender, response) {
     //alert("Content script message received from " + msg.from + " subject: " + msg.subject);
     if (msg.from && (msg.from == MSG_FROM_BACKGROUND)) {
         if (msg.subject) {
-            if (msg.subject == MSG_SUBJECT_OPENURL) {
+            if (msg.subject == MSG_SUBJECT_RERUNTOPAGE) {
+                console.log("Received opencpu rerun " + msg.data);
+                var data = JSON.parse(msg.data);
+                var guid = data["rscriptGuid"];
+                var receivedParameters = data["parameters"];
+                var newparams = [];
+                var index = 0;
+                do {
+                    var paramobj = receivedParameters[index.toString()];
+                    if (paramobj != null) {
+                        newparams.push(paramobj);
+                        console.log("Got param: " + paramobj);
+                        index++;
+                    }
+                    else
+                        break;
+                }
+                while(true);
+                reExecRScript(guid, newparams);
+            }
+            else if (msg.subject == MSG_SUBJECT_OPENURL) {
                 console.log("Open url: " + msg.data);
                 var data = JSON.parse(msg.data);
                 var url = data["Url"];

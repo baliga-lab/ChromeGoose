@@ -49,13 +49,18 @@ function stopPolling() {
 startPolling(poll);
 
 // Inject data to the gaggle output page
-function injectOutput(tab, data)
+function injectOutput(tab, data, senderTabId)
 {
     if (tab != null && data != null) {
         var scripturl = data["script"];
         var codetorun = data["code"];
+        var loc = codetorun.lastIndexOf(")");
+        var code = codetorun.substr(0, loc);
+        code += (", '" + senderTabId + "');");
+        console.log("Code to be injected: " + code);
+
         cg_util.injectJavascriptToTab(tab.id, scripturl, function(result) {
-            cg_util.injectCodeToTab(tab.id, codetorun, null);
+            cg_util.injectCodeToTab(tab.id, code, null);
         });
     }
 }
@@ -152,13 +157,36 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                     if (sendResponse != null)
                         sendResponse(datatosend);
                 }
+                else if (msg.subject == MSG_SUBJECT_RERUNEVENT) {
+                    console.log("Background received opencpu rerun event: " + msg.data);
+                    var data = JSON.parse(msg.data);
+                    var tabid = data["sourceTabId"];
+                    var guid = data["rscriptGuid"];
+                    var parameters = data["parameters"];
+                    console.log("Background tabid " + tabid + " guid: " + guid);
+                    if (tabid != null) {
+                        cg_util.getTabById(parseInt(tabid), function(tab) {
+                            if (tab != null) {
+                                console.log("Found original tab, now send message...");
+                                var msg = new Message(MSG_FROM_BACKGROUND, chrome.tabs, tab.id, MSG_SUBJECT_RERUNTOPAGE,
+                                                     {rscriptGuid: guid,
+                                                      parameters: data["parameters"],
+                                                     }, null);
+                                msg.send();
+                            }
+                        });
+                    }
+                    if (sendResponse != null)
+                        sendResponse();
+                }
                 else if (msg.subject == MSG_SUBJECT_RSCRIPTEVENT) {
                     console.log("Received RScriptEvent from content script: " + msg.data);
                     var data = JSON.parse(msg.data);
                     if (data != null) {
                         var url = data['outputurl'];
                         var scripturl = data['script'];
-                        console.log("Open url for RScript: " + url + " script url: " + scripturl);
+                        var senderTabId = sender.tab.id;
+                        console.log("Open url for RScript: " + url + " script url: " + scripturl + " sender tab: " + senderTabId);
                         // We inject the data to the output page
                         chrome.tabs.getAllInWindow(null, function(tabs){
                             var found = false;
@@ -166,14 +194,14 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                                 if (tabs[i].url.toLowerCase().indexOf(GAGGLE_OUTPUT_PAGE) >= 0) {
                                     found = true;
                                     chrome.tabs.update(tabs[i].id, {active: true}, function(tab) {
-                                        injectOutput(tabs[i], data);
+                                        injectOutput(tabs[i], data, senderTabId);
                                     });
                                     break;
                                 }
                             }
                             if (!found) {
                                 cg_util.openNewTab(GAGGLE_SERVER + "/static/" + GAGGLE_OUTPUT_PAGE, function(tab) {
-                                    injectOutput(tab, data);
+                                    injectOutput(tab, data, senderTabId);
                                 });
                             }
                         });

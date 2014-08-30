@@ -543,12 +543,13 @@ function runScript(event)
             else if (paramtype.toLowerCase() == "select") {
                 var selectedvalue = $(paramvalueinput).val();
                 console.log("Selected value: " + selectedvalue);
-                $(paramvalueinput).children().each(function () {
+                /*$(paramvalueinput).children().each(function () {
                     var value = $(this).val();
                     var text = $(this).text();
                     console.log("Option text " + text + " value: " + value);
                     parameters[value] = (value == selectedvalue) ? "T" : "F";
-                });
+                }); */
+                parameters[paramname] = selectedvalue;
 
             }
             else {
@@ -568,7 +569,7 @@ function runScript(event)
 
             // Send event to the extension to execute the rscript
             var event = new CustomEvent('RScriptWrapperEvent', {detail: {packageName: packagename,
-                                            functionName: funcname, scriptParameters : parameters, species: species, description: datadesc},
+                                            functionName: funcname, scriptParameters : parameters, species: species, description: datadesc, initialRun: "true"},
                                             bubbles: true, cancelable: false});
             document.dispatchEvent(event);
         }

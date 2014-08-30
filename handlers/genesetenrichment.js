@@ -88,7 +88,7 @@ var gagglefunctionalenrichment = {
         return fields;
     },
 
-    parseData: function(host, packagename, functionname, sessionid, species, desc)
+    parseData: function(host, packagename, functionname, sessionid, species, desc, runscriptguid, tabid)
     {
       /*var queries = {};
       $.each(document.location.search.substr(1).split('&'),function(c,q){
@@ -112,7 +112,8 @@ var gagglefunctionalenrichment = {
            var wrapdiv = document.createElement("div");
            wrapdiv.setAttribute("id", "divNewGaggledData");
 
-           var gaggledhtml = "";
+           var gaggledhtml = "<div id='" + runscriptguid + "' ><div class='gaggle-genesetenrichment-info' style='display: none'><input type='text' value='"
+                             + tabid + "' /><input type='text' value='" + runscriptguid  + "' /></div>";
            var parsedobj = {};
 
            var line = splitted[i];
@@ -273,6 +274,7 @@ var gagglefunctionalenrichment = {
 
 
            }
+           gaggledhtml += "</div>";
            console.log("gaggled html: " + gaggledhtml);
            $(wrapdiv).html(gaggledhtml);
            var containerdiv = document.getElementById("divGaggledData");

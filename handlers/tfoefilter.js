@@ -31,11 +31,12 @@ var gaggletfoefilter = {
     },
 
 
-    parseData: function(host, packagename, functionname, sessionid, species, desc)
+    parseData: function(host, packagename, functionname, sessionid, species, desc, runscriptguid, tabid)
     {
         var url = host + "/tmp/" + sessionid + "/graphics/1";
         console.log("opencpu tfoe graphics url: " + url);
-        var outputhtml = "<div class='gaggle-plottfoe' style='display: none'><input type='text' value='" +url + "' /></div>";
+        var outputhtml = "<div id='" + runscriptguid +  "' ><div class='gaggle-plottfoe' style='display: none'><input type='text' value='" +url
+            + "' /><input type='text' value='" + tabid + "' /><input type='text' value='" + runscriptguid  + "' /></div>";
         console.log("html: " + outputhtml);
         var wrapdiv = document.createElement("div");
         wrapdiv.setAttribute("id", "divNewGaggledData");
@@ -114,6 +115,7 @@ var gaggletfoefilter = {
                 }
                 i++;
             }
+            outputhtml += "</div>";
             console.log("Final html: " + outputhtml);
             $(wrapdiv).html(outputhtml);
 

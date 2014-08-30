@@ -29,6 +29,8 @@ var MSG_SUBJECT_GETGEESE = "GetGeese";
 var MSG_SUBJECT_DISCONNECTBOSS = "DisconnectBoss";
 var MSG_SUBJECT_CONNECTTOBOSS = "ConnectBoss";
 var MSG_SUBJECT_GOOGLEANALYTICS = "RecordGoogleAnalytics";
+var MSG_SUBJECT_RERUNEVENT = "ReRunOpencpuToBackground";
+var MSG_SUBJECT_RERUNTOPAGE = "ReRunOpencpuToPage";
 
 
 function Message(from, to, targetid, subject, data, callback)

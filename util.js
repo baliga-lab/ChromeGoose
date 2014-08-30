@@ -182,6 +182,21 @@ getActiveTab: function(callback) {
       });
 },
 
+getTabById: function(id, callback) {
+    chrome.tabs.query({currentWindow: true},
+    function (tabs) {
+        for (var i = 0; i < tabs.length; i++) {
+            if (tabs[i].id == id) {
+                if (callback != null)
+                    callback(tabs[i]);
+                return;
+            }
+        }
+        if (callback != null)
+            callback(null);
+    });
+},
+
 openNewTab: function(url, callback) {
     var newURL = url;
     chrome.tabs.create({ url: newURL }, function(tab) {
