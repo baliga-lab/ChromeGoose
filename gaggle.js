@@ -324,6 +324,17 @@ function init()
         parsePage();
 }
 
+function shouldStoreParameter(paramtype)
+{
+    if (paramtype == null || paramtype.length == 0)
+        return false;
+
+    if (paramtype.toLowerCase() == "data" || paramtype.toLowerCase() == "file")
+        return true;
+
+    return false;
+}
+
 function storeParameterOnOpencpuServer(parameterToBeStoredOnServer, paramIndex, storedParamSessionIDs, callback)
 {
     if (parameterToBeStoredOnServer == null)
@@ -477,7 +488,8 @@ function execRScript(broadcastData) {
     console.log("Rscript event data: " + receivedData);
     var funcname = receivedData["functionName"];
     var packagename = receivedData["packageName"];
-    console.log("Package name: " + packagename + ", Function name: " + funcname);
+    var paramtypes = receivedData["paramTypes"];
+    console.log("Package name: " + packagename + ", Function name: " + funcname + " param types: " + paramtypes);
 
 
     var desc = receivedData["description"];
@@ -494,6 +506,8 @@ function execRScript(broadcastData) {
     for (var k in parameters) {
         if (parameters.hasOwnProperty(k)) {
            var p = parameters[k];
+           var paramtype = paramtypes[k];
+           console.log("Parameter " + k + " type " + paramtype);
            var data = cg_util.findDataByGuid(broadcastData, p);
            if (data == null)
                data = cg_util.findDataByGuid(pageGaggleData, p);
@@ -531,18 +545,15 @@ function execRScript(broadcastData) {
                     }
                   }
                   parameters[k] = source;
-                  // We store the data on opencpu server first and then reference them
-                  var paramstoreobj = {index: k, data: source};
-                  parameterToBeStoredOnServer.push(paramstoreobj);
                }
                console.log("Parameter Gaggle data: " + parameters[k]);
            }
-           else {
-             console.log("Data is a file object: " + (p.fileName));
-             if (p.fileName != null) {
-                var paramstoreobj = {index: k, data: p};
-                parameterToBeStoredOnServer.push(paramstoreobj);
-             }
+
+           // Store data on opencpu server first if necessary
+           if (shouldStoreParameter(paramtype)) {
+              console.log("Store parameter " + k);
+              var paramstoreobj = {index: k, data: parameters[k]};
+              parameterToBeStoredOnServer.push(paramstoreobj);
            }
         }
     }

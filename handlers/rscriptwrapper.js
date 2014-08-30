@@ -481,6 +481,7 @@ function runScript(event)
         var source = event.target; // The Run button
         var parentdiv = $(source).parent();
         var datadesc = "";
+        var paramtypes = {};
         $(parentdiv).find("li").each(function () {
             console.log("Parameter li: " + $(this));
             //var selected = $(this).val();
@@ -494,6 +495,8 @@ function runScript(event)
 
             console.log("Parameter Name: " + paramname + " Param type: " + paramtype + " Param value: " + $(paramvalueinput).val());
             //if (selected == "OtherText") {
+            paramtypes[paramname] = paramtype;
+
             if (paramtype.toLowerCase() == "organism" || paramtype.toLowerCase() == "organism") {
                 //var textinput = $(this).find(".inputTextData");
                 var paramvalue = $(paramvalueinput).val();
@@ -523,7 +526,18 @@ function runScript(event)
                     console.log("text input: " + ($(textinput[0])).val());
                     var text = ($(textinput[0])).val();
                     var splitted = text.split(' ');
-                    parameters[paramname] = splitted;
+                    if (splitted.length == 1)
+                    {
+                        splitted = text.split(',');
+                        if (splitted.length == 1)
+                            splitted = text.split(";");
+                    }
+                    if (splitted.length == 1) {
+                        parameters[paramname] = [];
+                        parameters[paramname].push(splitted[0]);
+                    }
+                    else
+                        parameters[paramname] = splitted;
                     datadesc = text;
                 }
                 else if ($(paramvalueinput).val() == "OtherFile") {
@@ -569,7 +583,7 @@ function runScript(event)
 
             // Send event to the extension to execute the rscript
             var event = new CustomEvent('RScriptWrapperEvent', {detail: {packageName: packagename,
-                                            functionName: funcname, scriptParameters : parameters, species: species, description: datadesc, initialRun: "true"},
+                                            functionName: funcname, scriptParameters : parameters, paramTypes: paramtypes, species: species, description: datadesc, initialRun: "true"},
                                             bubbles: true, cancelable: false});
             document.dispatchEvent(event);
         }
