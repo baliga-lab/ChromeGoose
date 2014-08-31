@@ -329,12 +329,9 @@ function shouldStoreParameter(paramtype)
     if (paramtype == null || paramtype.length == 0)
         return false;
 
-    // TODO
-    // Need to figure out how to pass the saved file object to the r scripts to run.
-    // Before that, we do not store any parameters to the server
-    
-    //if (paramtype.toLowerCase() == "data" || paramtype.toLowerCase() == "file")
-    //    return true;
+
+    if (paramtype.toLowerCase() == "data" || paramtype.toLowerCase() == "file")
+        return true;
 
     return false;
 }
@@ -396,8 +393,18 @@ function callOpencpu(parametersessionobj, parameters, parameterToBeStoredOnServe
                 var sessiondataobj = storedParamSessions[i];
                 var index = sessiondataobj["paramIndex"];
                 var sessionobj = sessiondataobj["sessionObj"];
-                console.log("Fetching stored param session info " + index + " " + sessionobj);
-                parameters[index] = sessionobj;
+                console.log("Fetching stored param session info " + index + " " + sessionobj + " "
+                    + parameters[index].name + " session id: " + sessionobj.getKey());
+                if (parameters[index].name != null && parameters[index].name.length > 0) {
+                    // if it's a file obj, we pass the path of the file stored on the opencpu server
+                    console.log("OCPU File path: " + sessionobj.getFileURL(parameters[index].name));
+                    var sessionid = sessionobj.getKey();
+                    var filepath = OPENCPU_SERVER + "/tmp/" + sessionid + "/files/" + parameters[index].name;
+                    console.log("File path: " + filepath);
+                    parameters[index] = filepath;
+                }
+                else
+                    parameters[index] = sessionobj;
             }
         }
         // store the parameters of this run for future rerun reference
@@ -583,7 +590,7 @@ function execRScript(broadcastData) {
         progressbar.progressbar( "option", {
                   value: progress
                 });
-    }, 500);
+    }, 1000);
 
     console.log("Parameter JSON string: " + JSON.stringify(parameters));
     callOpencpu(parametersessionobj, parameters, parameterToBeStoredOnServer, progressbar, progessid);

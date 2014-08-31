@@ -522,6 +522,7 @@ function runScript(event)
             else if (paramtype.toLowerCase() == "data") {
                 console.log("Select element" + $(paramvalueinput).val());
                 if ($(paramvalueinput).val() == "OtherText") {
+                    paramtypes[paramname] = "string";  // We do not store string inputs on opencpu server
                     var textinput = $(this).find(".inputTextData");
                     console.log("text input: " + ($(textinput[0])).val());
                     var text = ($(textinput[0])).val();
