@@ -42,7 +42,7 @@ var webhandlers = {
            handlers.push(new gaggleXml());
            handlers.push(new GaggleMicroformatHandler());
            handlers.push(new Pipe2Goose());
-           handlers.push(new OpenCPUHandler());
+           //handlers.push(new OpenCPUHandler());
            handlers.push(new EMBLString());
            handlers.push(new Metlin());
            handlers.push(new SGD(SGD.GO_SLIM_MAPPER, "SGD GO Slim Mapper"));

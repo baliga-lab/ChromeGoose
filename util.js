@@ -128,7 +128,7 @@ retrieveFrom: function(key, url, callback) {
             });
 
             //alert(result);
-            //if (result == null || result == undefined)
+            if (result == null || result == undefined)
             {
                 // Get updated file, and if found, save it.
                 cg_util.getFileFromUrl(url, function(downloadedcode) {
@@ -142,8 +142,8 @@ retrieveFrom: function(key, url, callback) {
                         callback(downloadedcode);
                 });
             }
-            //else if (callback != null) // Cached data is available, use it
-            //    callback(result);
+            else if (callback != null) // Cached data is available, use it
+                callback(result);
         });
     }
     catch (e) {

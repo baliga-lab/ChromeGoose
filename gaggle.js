@@ -659,7 +659,14 @@ chrome.runtime.onMessage.addListener(function(msg, sender, response) {
     //alert("Content script message received from " + msg.from + " subject: " + msg.subject);
     if (msg.from && (msg.from == MSG_FROM_BACKGROUND)) {
         if (msg.subject) {
-            if (msg.subject == MSG_SUBJECT_RERUNTOPAGE) {
+            if (msg.subject == MSG_SUBJECT_PAGEDATA) {
+                // This is from the background polling function to set badge text
+                console.log("Sending page data: " + pageGaggleData.length);
+                if (response != null) {
+                    response(pageGaggleData);
+                }
+            }
+            else if (msg.subject == MSG_SUBJECT_RERUNTOPAGE) {
                 console.log("Received opencpu rerun " + msg.data);
                 var data = JSON.parse(msg.data);
                 var guid = data["rscriptGuid"];

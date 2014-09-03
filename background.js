@@ -8,7 +8,47 @@ var dictIFrameIdUrl = new Array();
 var dictIframeIdHandler = new Array();
 var geeseJSONString = null;  //  JSON result of calling GetGeese from the Boss
 var bossConnected = false;
-var pollerId = null;
+var bossPollerId = null;
+var constantPollerId = null;
+
+function startPolling(pollerId, pollfunc) {
+    // Stop existing polling first
+    if (pollerId != null)
+        clearInterval(pollerId);
+    pollerId = setInterval(pollfunc, 3000);
+    console.log("Polling started: " + pollerId);
+    return pollerId;
+}
+
+function stopPolling(pollerId) {
+    console.log("Clearing polling: " + pollerId);
+    clearInterval(pollerId);
+    pollerId = null;
+}
+
+
+function constantPoll()
+{
+    cg_util.getActiveTab(function (tab) {
+        if (tab != null) {
+            // get the page data from gaggle.js of the page
+            var msg = new Message(MSG_FROM_BACKGROUND, chrome.tabs, tab.id, MSG_SUBJECT_PAGEDATA, null,
+                                  function(pageData) {
+                                    if (pageData != null && pageData.length > 0) {
+                                        chrome.browserAction.setBadgeText({text: pageData.length.toString()});
+                                    }
+                                    else {
+                                        console.log("Clean badge text");
+                                        chrome.browserAction.setBadgeText({text: ""});
+                                    }
+                                  });
+            msg.send();
+        }
+        else
+            chrome.browserAction.setBadgeText({text: ""});
+    });
+}
+constantPollerId = startPolling(constantPollerId, constantPoll);
 
 function poll()
 {
@@ -32,21 +72,7 @@ function pollAndStartBossIfNotConnected()
     });
 }
 
-function startPolling(pollfunc) {
-    // Stop existing polling first
-    if (pollerId != null)
-        clearInterval(pollerId);
-    pollerId = setInterval(pollfunc, 3000);
-    console.log("Polling started: " + pollerId);
-}
-
-function stopPolling() {
-    console.log("Clearing polling: " + pollerId);
-    clearInterval(pollerId);
-    pollerId = null;
-}
-
-startPolling(poll);
+bossPollerId = startPolling(bossPollerId, poll);
 
 // Inject data to the gaggle output page
 function injectOutput(tab, data, senderTabId)
@@ -386,7 +412,8 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                 }
                 else if (msg.subject == MSG_SUBJECT_DISCONNECTBOSS) {
                     console.log("Background disconnecting Boss...");
-                    stopPolling();
+                    stopPolling(bossPollerId);
+                    bossPollerId = null;
                     if (websocketconnection != null)
                         // HACK HACK
                         // the onclose function might be reset by pollAndStartBossIfNotConnected
