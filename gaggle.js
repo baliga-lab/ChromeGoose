@@ -662,7 +662,8 @@ chrome.runtime.onMessage.addListener(function(msg, sender, response) {
             if (msg.subject == MSG_SUBJECT_PAGEDATA) {
                 // This is from the background polling function to set badge text
                 console.log("Sending page data: " + pageGaggleData.length);
-                if (response != null) {
+                if (window.self == top && response != null) {
+                    // only the top level gaggle.js reports the pageGaggleData
                     response(pageGaggleData);
                 }
             }
