@@ -815,24 +815,27 @@ chrome.runtime.onMessage.addListener(function(msg, sender, response) {
                                 document.body.appendChild(div);
                             }
 
-                            cg_util.injectJavascript("jquery-1.11.0.min.js", function() {
-                                cg_util.injectJavascript("jquery-ui-1.10.4.js", function() {
-                                    cg_util.injectJavascript("opencpu-0.4.js", function() {
-                                        cg_util.injectJavascript("handlers/handler.js", function() {
-                                            cg_util.injectJavascript(injectscripturl, function() {
-                                                cg_util.injectCode(injectcode,
-                                                //("var rscriptwrapper;var currentScriptToRun;var opencpuserver;processRScriptInputDataUI('" + rpackagename + "', '" + opencpuurl + "');",
-                                                    function() {
-                                                        if (response != null) {
-                                                            response(null);
+                            if (window.self == top) {
+                                // Only inject to top window, not iframes
+                                cg_util.injectJavascript("jquery-1.11.0.min.js", function() {
+                                    cg_util.injectJavascript("jquery-ui-1.10.4.js", function() {
+                                        cg_util.injectJavascript("opencpu-0.4.js", function() {
+                                            cg_util.injectJavascript("handlers/handler.js", function() {
+                                                cg_util.injectJavascript(injectscripturl, function() {
+                                                    cg_util.injectCode(injectcode,
+                                                    //("var rscriptwrapper;var currentScriptToRun;var opencpuserver;processRScriptInputDataUI('" + rpackagename + "', '" + opencpuurl + "');",
+                                                        function() {
+                                                            if (response != null) {
+                                                                response(null);
+                                                            }
                                                         }
-                                                    }
-                                                );
+                                                    );
+                                                });
                                             });
                                         });
                                     });
                                 });
-                            });
+                            }
                          }
                          catch (e) {
                             console.log("Failed to inject R html code to page: " + e);
