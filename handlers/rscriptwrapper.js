@@ -525,7 +525,7 @@ function runScript(event)
                     paramtypes[paramname] = "string";  // We do not store string inputs on opencpu server
                     var textinput = $(this).find(".inputTextData");
                     console.log("text input: " + ($(textinput[0])).val());
-                    var text = ($(textinput[0])).val();
+                    var text = ($(textinput[0])).val().toUpperCase();
                     var splitted = text.split(' ');
                     if (splitted.length == 1)
                     {
