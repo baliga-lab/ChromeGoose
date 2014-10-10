@@ -49,6 +49,7 @@ function init()
     $("#btnSendFeedback").click(sendFeedback);
     $("#btnHelp").click(openHelp);
 
+    $("#selOrganisms").change(gaggleOrganismSelected);
     $(".selGaggleData").change(gaggleDataItemSelected);
     $(".btnCancelTextInput").click(cancelTextInput);
     $(".btnCancelFileInput").click(cancelFileInput);
@@ -113,6 +114,23 @@ function init()
     webhandlers.loadOpenCPU(selGaggleDataParent, function(handlers) {
         opencpuHandlers = handlers;
     });
+
+    // Populate species select
+    var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_GETORGANISMSHTML,
+                              {}, function(organismSelectionHtml) {
+                                  if (organismSelectionHtml != null) {
+                                      console.log("Organism html: " + organismSelectionHtml);
+                                      var start = organismSelectionHtml.indexOf("<option ");
+                                      var end = organismSelectionHtml.indexOf("</select>");
+                                      var optiontext = organismSelectionHtml.substr(start, end - start);
+                                      console.log("Option html: " + optiontext);
+                                      optiontext = "<option value='-1'>----- Select a species to explore -----</option>" + optiontext;
+                                      $("#selOrganisms").html(optiontext);
+                                  }
+                              }
+                          );
+    msg.send();
+
 
     /*webhandlers.loadWorkflowComponents("selGaggleData", function(rscriptwrapper) {
         if (rscriptwrapper != null)
@@ -291,6 +309,21 @@ function showDataInput(source, inputclass)
     }
 }
 
+function gaggleOrganismSelected(event)
+{
+    console.log("Organism selected...");
+
+    var source = event.target;
+    console.log("gaggle organism: event source: " + source);
+    var selected = $(source).val();
+    console.log("Selected data value: " + selected);
+    var url = GAGGLE_SERVER + "/" + selected;
+    if (selected == "mtu") {
+       url = GAGGLE_SERVER + "/" + "mtu";
+    }
+    cg_util.openNewTab(url, null);
+}
+
 function gaggleDataItemSelected(event)
 {
     console.log("Gaggle data item selected "); // + $("#selGaggleMenu").val());
@@ -431,7 +464,32 @@ function broadcastFetchedData(jsonobj, handler)
                 }
             }
             else if (type.toLowerCase() == "network") {
+                gaggledata = new Network("", "", null, null);
+                gaggledata.parseJSON(data);
+                if (gaggledata.getData() != null) {
+                    if (handler.handleNetwork != null)
+                    {
+                        var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_STOREDATA,
+                                             { handler: handler.getName(), source: gaggledata }, handlerResponse);
+                        msg.send();
+                        handler.handleNetwork(gaggledata);
+                    }
+                    else if (gaggledata.getDataAsNameList != null) {
+                        var namelist = gaggledata.getDataAsNameList();
+                        var newdata = new Namelist(gaggledata.getName(), gaggledata.getSize(),
+                                                   gaggledata.getSpecies(),
+                                                   namelist);
+                        //alert(namelist);
+                        if (gaggledata.getSpecies().toLowerCase().indexOf("tuberculosis") >= 0) {
+                            newdata = cg_util.handleTBNamelist(newdata);
+                        }
 
+                        var msg = new Message(MSG_FROM_POPUP, chrome.runtime, null, MSG_SUBJECT_STOREDATA,
+                                             { handler: handler.getName(), source: newdata }, handlerResponse);
+                        msg.send();
+                        handler.handleNameList(namelist);
+                    }
+                }
             }
         }
         else {
