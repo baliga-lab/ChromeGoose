@@ -555,8 +555,8 @@ function getOrganisms(callback) {
         for (var i in organismsobj) {
 
             var organism = organismsobj[i];
-            //alert(organism);
-            organismSelectionHtml += "<option value='" + organism.shortname + "'>" + organism.name + "</option>";
+            if (organism.name != "Generic")
+                organismSelectionHtml += "<option value='" + organism.shortname + "'>" + organism.name + "</option>";
         }
         organismSelectionHtml += "</select>";
         if (callback)
