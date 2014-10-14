@@ -10,7 +10,10 @@
 function Phytozome()
 {
     //alert("This is david!");
+    var keywords = [];
+    keywords.push("chlamy");
     handler_base.call(this, "Phytozome", true, "handlers/phytozome.js", "http://phytozome.jgi.doe.gov/");
+    this._keywords = keywords;
 }
 
 Phytozome.prototype = new handler_base();

@@ -103,10 +103,24 @@ function init()
                                          console.log("Handler " + i + ": " + e);
                                      }
                              }
+
+                             // Auto-select handler according to current page url
+                             cg_util.getActiveTab(function (tab) {
+                                 if (tab != null) {
+                                     console.log("Get handler by url " + tab.url + " " + webHandlers);
+                                     var handler = webhandlers.getHandlerByUrl(tab.url, webHandlers);
+                                     if (handler != null) {
+                                         $("#selTarget option").each(function() {
+                                            var text = $(this).html();
+                                            console.log("Option text: " + text);
+                                            if (text.indexOf(handler.getName() >= 0))
+                                                $("#selTarget").val($(this).val());
+                                         });
+                                     }
+                                 }
+                             });
                           });
     msg.send();
-
-
 
     // Load R packages from OpenCPU
     var selGaggleDataParent = $(".selGaggleData").parent();
@@ -130,6 +144,7 @@ function init()
                               }
                           );
     msg.send();
+
 
 
     /*webhandlers.loadWorkflowComponents("selGaggleData", function(rscriptwrapper) {
@@ -164,6 +179,11 @@ function setDOMInfo(pageData) {
                 if (gaggledata != null && gaggledata.length > 0)
                     text += " (" + gaggledata.length + ")";
                 $(".selGaggleData").append($("<option></option>").attr("value", guid).text(text));  //(i).toString()
+                var textlower = text.toLowerCase();
+                // select the item if it's a gene namelist
+                if (textlower.indexOf("gene") >= 0 || textlower.indexOf("regulon") >= 0 || textlower.indexOf("regulator") >= 0) {
+                    $(".selGaggleData").val(guid);
+                }
 
                 // Change the text of the "no data" option
                 //$(".selGaggleData option[value=-2]").text("--- Select a data item ----");

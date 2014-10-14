@@ -125,5 +125,25 @@ var webhandlers = {
             while (true);
         }
     });
+    },
+
+    getHandlerByUrl: function(url, handlers) {
+        if (url != null && handlers != null) {
+            var urllower = url.toLowerCase();
+            for (var i = 0; i < handlers.length; i++) {
+                var handler = handlers[i];
+                console.log("Processing handler " + handler.getName() + " " + handler.getKeywords());
+                if (handler != null && handler.showInMenu() && handler.getKeywords() != null)
+                {
+                    var keywords = handler.getKeywords();
+                    for (var j = 0; j < keywords.length; j++) {
+                        console.log("Handler keyword: " + keywords[j]);
+                        if (urllower.indexOf(keywords[j].toLowerCase()) >= 0)
+                            return handlers[i];
+                    }
+                }
+            }
+        }
+        return null;
     }
 }
