@@ -113,8 +113,10 @@ function init()
                                          $("#selTarget option").each(function() {
                                             var text = $(this).html();
                                             console.log("Option text: " + text);
-                                            if (text.indexOf(handler.getName() >= 0))
+                                            if (text.indexOf(handler.getName()) >= 0) {
+                                                console.log("Setting handler " + $(this).val());
                                                 $("#selTarget").val($(this).val());
+                                            }
                                          });
                                      }
                                  }
@@ -341,6 +343,8 @@ function gaggleOrganismSelected(event)
     if (selected == "mtu") {
        url = GAGGLE_SERVER + "/" + "mtu";
     }
+    else if (selected == "chlamy")
+       url = GAGGLE_SERVER + "/" + "chlamy-portal";
     cg_util.openNewTab(url, null);
 }
 

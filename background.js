@@ -558,6 +558,10 @@ function getOrganisms(callback) {
             if (organism.name != "Generic")
                 organismSelectionHtml += "<option value='" + organism.shortname + "'>" + organism.name + "</option>";
         }
+
+        // manually add option for chlamy
+        organismSelectionHtml += "<option value='chlamy'>Chlamydomonas reinhardtii</option>";
+
         organismSelectionHtml += "</select>";
         if (callback)
             callback(organismSelectionHtml);
