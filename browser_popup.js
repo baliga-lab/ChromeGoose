@@ -428,7 +428,7 @@ function broadcastFetchedData(jsonobj, handler)
                     handler.handleNameList(gaggledata); //.getData());
                 }
             }
-            else if (type.toLowerCase() == "datamatrix") {
+            else if (type.toLowerCase() == "datamatrix" || type.toLowerCase() == "matrix") {
                 console.log("Handling data matrix...");
                 gaggledata = new DataMatrix("", "", null, 0, 0, null, null, null);
                 gaggledata.parseJSON(data);
