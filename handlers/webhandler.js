@@ -11,7 +11,7 @@ var webhandlers = {
            handlers.push(new David());
            handlers.push(new KEGG());
            handlers.push(new EMBLString());
-           handlers.push(new HaloBacterium());
+           //handlers.push(new HaloBacterium());
            handlers.push(new HaloAnnotations());
            handlers.push(new NetworkPortal());
            handlers.push(new Phytozome());

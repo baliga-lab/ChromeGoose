@@ -23,7 +23,10 @@ Server message number=8621 severity=17 state=88 line=2 server=TITAN text=Interna
 
 function HaloAnnotations()
 {
+	var keywords = [];
+    keywords.push("networks.systemsbiology.net/hal");
     handler_base.call(this, "Halo Annotations", true, "handlers/haloAnnotations.js", "http://baliga.systemsbiology.net/halobacterium/");
+    this._keywords = keywords;
 }
 
 HaloAnnotations.prototype = new handler_base();
