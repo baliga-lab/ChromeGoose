@@ -337,7 +337,7 @@ function init()
                                     var names = [];
                                     for (var k = 0; k < m.geneinfolist.length; k++) {
                                         var gene = m.geneinfolist[k];
-                                        names.push(gene.name);
+                                        names.push(gene.locus);
                                     }
                                     var gaggleData = new Namelist(m.moduleName,
                                                                   names.length,
