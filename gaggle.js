@@ -317,6 +317,53 @@ function init()
         msg.send();
     });
 
+    document.addEventListener("GagglePageRequest", function(e) {
+        console.log("Received data from ggbweb " + e.detail.data);
+        // We need to clean up all the ggbweb data
+        pageGaggleData = [];
+        if (e.detail != null) {
+            var jsonData = JSON.parse(e.detail.data);
+            var species = jsonData["species"];
+            var tabs = jsonData["tabs"];
+            if (tabs.length > 0) {
+                for (var i = 0; i < tabs.length; i++) {
+                    var tab = tabs[i];
+                    if (tab != null) {
+                        if (tab.type == "moduleTab") {
+                            if (tab.modules != null) {
+                                for (var j = 0; j < tab.modules.length; j++)
+                                {
+                                    var m = tab.modules[j];
+                                    var names = [];
+                                    for (var k = 0; k < m.geneinfolist.length; k++) {
+                                        var gene = m.geneinfolist[k];
+                                        names.push(gene.name);
+                                    }
+                                    var gaggleData = new Namelist(m.moduleName,
+                                                                  names.length,
+                                                                  species,
+                                                                  names);
+
+
+                                    var pagedata = {};
+                                    pagedata.data = gaggleData;
+                                    pagedata.guid = cg_util.generateUUID();
+                                    var jsondata = JSON.stringify(pagedata);
+                                    console.log("page data " + pageGaggleData.length + " " + jsondata);
+                                    pagedata.jsondata = jsondata;
+                                    pagedata.source = "Page";
+                                    //alert(pagedata.source);
+                                    pageGaggleData.push(pagedata);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    });
+
     var control = document.getElementById("inputDataParsingFinishSignal");
     if (control == null)
         getPageData();
