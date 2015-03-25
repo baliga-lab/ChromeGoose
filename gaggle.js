@@ -475,32 +475,48 @@ function callOpencpu(parametersessionobj, parameters, parameterToBeStoredOnServe
                 value: 100
             }); */
 
+            if (packagename == "gaggletbfilter") {
+                // we pass the data to the background page, which then hand it over to the ggbweb page
+                var url = OPENCPU_SERVER + "/tmp/" + session.getKey() +"/R/.val/json";
+                $.get(url, null, function(data){
+                    //data is the object returned by the R function
+                    //console("Array of length " + data.length + ".\nFirst few values:" + data.slice(0,1));
+                    var msgdata = {};
+                    msgdata.type = "TBFilter";
+                    msgdata.data = {species: "Tuberculosis", results: data, opencpuSessionId: session.getKey()};
+                    var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_GGBWEB,
+                                          msgdata, function() {
+                                          });
+                    msg.send();
+                });
+            }
+            else {
+                var openurl = OPENCPU_SERVER + "/library/" + packagename + "/www/" + funcname
+                    + "_output.html?host=" + OPENCPU_SERVER + "&sessionID=" + session.getKey() + "&species=" + species;
+                console.log("Open output html page: " + openurl);
+                var scripturl = "handlers/" + funcname.toLowerCase() + ".js";
+                // Note that the variable name of the corresponding handler should be the same as the package name
+                var code = packagename + ".parseData('" + OPENCPU_SERVER + "', '" + packagename + "', '" + funcname + "', '" + session.getKey() + "', '" + species + "', '" + desc + "', '" + guid + "');"; // All the opencpu output data page should have this function
 
-            var openurl = OPENCPU_SERVER + "/library/" + packagename + "/www/" + funcname
-                + "_output.html?host=" + OPENCPU_SERVER + "&sessionID=" + session.getKey() + "&species=" + species;
-            console.log("Open output html page: " + openurl);
-            var scripturl = "handlers/" + funcname.toLowerCase() + ".js";
-            // Note that the variable name of the corresponding handler should be the same as the package name
-            var code = packagename + ".parseData('" + OPENCPU_SERVER + "', '" + packagename + "', '" + funcname + "', '" + session.getKey() + "', '" + species + "', '" + desc + "', '" + guid + "');"; // All the opencpu output data page should have this function
-
-            // Call background page to verify if the gaggle_output.html is already opened, and inject the script and
-            // execute the code
-            var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_RSCRIPTEVENT,
-                                  {outputurl: openurl, script: scripturl, code: code}, function() {
-                                  });
-            msg.send();
+                // Call background page to verify if the gaggle_output.html is already opened, and inject the script and
+                // execute the code
+                var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_RSCRIPTEVENT,
+                                      {outputurl: openurl, script: scripturl, code: code}, function() {
+                                      });
+                msg.send();
 
 
-            /*session.getObject(function(data) {
-                console.log("Function return: " + JSON.stringify(data));
-                var result = data["message"];
-                console.log("Result text: " + result + " result div: " + resultdiv);
-                if (result != null) {
-                    // Open a tab and show the result
-                    $(resultdiv).show();
-                    $(resultdiv).html(result);
-                }
-            }); */
+                /*session.getObject(function(data) {
+                    console.log("Function return: " + JSON.stringify(data));
+                    var result = data["message"];
+                    console.log("Result text: " + result + " result div: " + resultdiv);
+                    if (result != null) {
+                        // Open a tab and show the result
+                        $(resultdiv).show();
+                        $(resultdiv).html(result);
+                    }
+                }); */
+            }
         });
 
         req.fail(function(){
@@ -713,7 +729,19 @@ chrome.runtime.onMessage.addListener(function(msg, sender, response) {
     //alert("Content script message received from " + msg.from + " subject: " + msg.subject);
     if (msg.from && (msg.from == MSG_FROM_BACKGROUND)) {
         if (msg.subject) {
-            if (msg.subject == MSG_SUBJECT_PAGEDATA) {
+            if (msg.subject == MSG_SUBJECT_GGBWEB) {
+                var jsondata = JSON.parse(msg.data);
+                var event = new CustomEvent("GoosePageDataEvent",
+                                   {detail:
+                                    {
+                                        type: jsondata["type"],
+                                        data: jsondata["data"]
+                                    },
+                                    bubbles: true,
+                                    cancelable: false});
+                document.dispatchEvent(event);
+            }
+            else if (msg.subject == MSG_SUBJECT_PAGEDATA) {
                 // This is from the background polling function to set badge text
                 console.log("Sending page data: " + pageGaggleData.length);
                 if (window.self == top && response != null) {

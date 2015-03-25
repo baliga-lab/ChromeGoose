@@ -205,6 +205,43 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                     if (sendResponse != null)
                         sendResponse();
                 }
+                else if (msg.subject == MSG_SUBJECT_GGBWEB) {
+                    var jsondata = JSON.parse(msg.data);
+                    if (jsondata != null) {
+                        var type = jsondata.type;
+                        var data = jsondata.data;
+                        chrome.tabs.getAllInWindow(null, function(tabs){
+                            var found = false;
+                            for (var i = 0; i < tabs.length; i++) {
+                                if (tabs[i].url.toLowerCase().indexOf(GGBWEB_SERVER) >= 0) {
+                                    found = true;
+                                    chrome.tabs.update(tabs[i].id, {active: true}, function(tab) {
+                                        /*cg_util.injectJavascriptToTab(tabs[i].id, 'handlers/ggbweb.js', function(result) {
+                                            cg_util.injectCodeToTab(tabs[i].id, "", null);
+                                        });*/
+                                        // Send data to the gaggle.js of the ggbweb page
+                                        var ggbmsg = new Message(MSG_FROM_BACKGROUND, chrome.tabs, tabs[i].id,
+                                                              MSG_SUBJECT_GGBWEB,
+                                                              {type: type, data: data }, null);
+                                        ggbmsg.send();
+                                    });
+                                    break;
+                                }
+                            }
+                            if (!found) {
+                                cg_util.openNewTab(GGBWEB_SERVER, function(tab) {
+                                    // Send data to the gaggle.js of the ggbweb page
+                                    var ggbmsg = new Message(MSG_FROM_BACKGROUND, chrome.tabs, tab.id,
+                                                          MSG_SUBJECT_GGBWEB,
+                                                          {type: type, data: data }, null);
+                                    ggbmsg.send();
+                                });
+                            }
+                        });
+                    }
+                    if (sendResponse != null)
+                        sendResponse();
+                }
                 else if (msg.subject == MSG_SUBJECT_RSCRIPTEVENT) {
                     console.log("Received RScriptEvent from content script: " + msg.data);
                     var data = JSON.parse(msg.data);

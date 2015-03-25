@@ -55,6 +55,7 @@ function init()
     $(".btnCancelFileInput").click(cancelFileInput);
 
     $("#ahreftfoefilter").click(tfoefilterSelected);
+    $("#ahreftbfilter").click(tbfilterSelected);
     $("#ahrefGeneSetEnrichment").click(geneSetEnrichmentSelected);
     $("#ahrefplotexpression").click(plotDataSelected);
 
@@ -674,6 +675,13 @@ function tfoefilterSelected()
 {
     var handler = opencpuHandlers["gaggletfoefilter"];
     console.log("tfoe filter " + handler.getName());
+    broadcastFetchedData(null, handler);
+}
+
+function tbfilterSelected()
+{
+    var handler = opencpuHandlers["gaggletbfilter"];
+    console.log("tb filter " + handler.getName());
     broadcastFetchedData(null, handler);
 }
 

@@ -31,6 +31,7 @@ var MSG_SUBJECT_CONNECTTOBOSS = "ConnectBoss";
 var MSG_SUBJECT_GOOGLEANALYTICS = "RecordGoogleAnalytics";
 var MSG_SUBJECT_RERUNEVENT = "ReRunOpencpuToBackground";
 var MSG_SUBJECT_RERUNTOPAGE = "ReRunOpencpuToPage";
+var MSG_SUBJECT_GGBWEB = "GGBWEB";
 
 
 function Message(from, to, targetid, subject, data, callback)

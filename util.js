@@ -18,6 +18,7 @@ var HTTPBOSS_ADDRESS = "ws://localhost:8083/BossWebSocket";
 var WEBHANDLER_BASEURL = GAGGLE_SERVER + "/static/javascripts/handlers/";
 //var OPENCPU_SERVER = "http://10.10.3.175/ocpu";
 var OPENCPU_SERVER = "http://54.69.117.206/ocpu";
+var GGBWEB_SERVER = "http://ggbweb.systemsbiology.net";
 var DEBUGGING = false;// Set this to false in production. It controls whether we log data on google analytics
 
 var cg_util = {
