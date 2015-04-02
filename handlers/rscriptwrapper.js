@@ -517,6 +517,7 @@ function runScript(event)
                 console.log("File parameter: " + file);
                 if (file != null) {
                     parameters[paramname] = file;
+                    datadesc += (" [" + paramname + ": " + file.name + "]");
                 }
             }
             else if (paramtype.toLowerCase() == "data") {
@@ -539,20 +540,20 @@ function runScript(event)
                     }
                     else
                         parameters[paramname] = splitted;
-                    datadesc = text;
+                    datadesc += (" [" + paramname + ": " + text + "]");
                 }
                 else if ($(paramvalueinput).val() == "OtherFile") {
                     var fileinput = $(this).find(".inputFileData");
                     var file = $(fileinput)[0].files[0];
                     parameters[paramname] = file;
-                    datadesc = file.name;
+                    datadesc += (" [" + paramname + ": " + file.name + "]");
                 }
                 else {
                     // page data
                     parameters[paramname] = $(paramvalueinput).val();
                     var option = $(paramvalueinput).find("option[value='" + $(paramvalueinput).val() + "']");
                     console.log("Selected data option: " + option + " text: " + $(option).text());
-                    datadesc = $(option).text();
+                    datadesc += (" [" + paramname + ": " + $(option).text() + "]");
                 }
             }
             else if (paramtype.toLowerCase() == "select") {
@@ -565,11 +566,13 @@ function runScript(event)
                     parameters[value] = (value == selectedvalue) ? "T" : "F";
                 }); */
                 parameters[paramname] = selectedvalue;
+                datadesc += (" [" + paramname + ": " + selectedvalue + "]");
 
             }
             else {
                 // User selected a data item (either from the gaggled web page or received from broadcast)
                 parameters[paramname] = $(paramvalueinput).val(); //selected;
+                datadesc += (" [" + paramname + ": " + parameters[paramname] + "]");
             }
         });
 

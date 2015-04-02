@@ -483,7 +483,7 @@ function callOpencpu(parametersessionobj, parameters, parameterToBeStoredOnServe
                     //console("Array of length " + data.length + ".\nFirst few values:" + data.slice(0,1));
                     var msgdata = {};
                     msgdata.type = "TBFilter";
-                    msgdata.data = {species: "Tuberculosis", results: data, opencpuSessionId: session.getKey()};
+                    msgdata.data = {species: "Tuberculosis", description: desc, results: data, opencpuSessionId: session.getKey()};
                     var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_GGBWEB,
                                           msgdata, function() {
                                           });
