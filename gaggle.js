@@ -357,6 +357,31 @@ function init()
                                 }
                             }
                         }
+                        else if (tab.type == "Results") {
+                            if (tab.modules != null) {
+                                for (var j = 0; j < tab.modules.length; j++)
+                                {
+                                    var treeobj = tab.modules[j];
+                                    for (var k = 0; k < treeobj.geneLists.length; k++) {
+                                        var genelist = treeobj.geneLists[k];
+                                        var gaggleData = new Namelist(genelist.name,
+                                              genelist.genes.length,
+                                              treeobj.species,
+                                              genelist.genes);
+
+                                        var pagedata = {};
+                                        pagedata.data = gaggleData;
+                                        pagedata.guid = cg_util.generateUUID();
+                                        var jsondata = JSON.stringify(pagedata);
+                                        console.log("page data " + pageGaggleData.length + " " + jsondata);
+                                        pagedata.jsondata = jsondata;
+                                        pagedata.source = "Page";
+                                        //alert(pagedata.source);
+                                        pageGaggleData.push(pagedata);
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
