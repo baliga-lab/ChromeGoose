@@ -756,15 +756,31 @@ chrome.runtime.onMessage.addListener(function(msg, sender, response) {
         if (msg.subject) {
             if (msg.subject == MSG_SUBJECT_GGBWEB) {
                 var jsondata = JSON.parse(msg.data);
-                var event = new CustomEvent("GoosePageDataEvent",
-                                   {detail:
-                                    {
-                                        type: jsondata["type"],
-                                        data: jsondata["data"]
-                                    },
-                                    bubbles: true,
-                                    cancelable: false});
-                document.dispatchEvent(event);
+                // Wait a bit for the page to load
+                if (jsondata["newpage"]) {
+                    setTimeout(function() {
+                        var event = new CustomEvent("GoosePageDataEvent",
+                                           {detail:
+                                            {
+                                                type: jsondata["type"],
+                                                data: jsondata["data"]
+                                            },
+                                            bubbles: true,
+                                            cancelable: false});
+                        document.dispatchEvent(event);
+                    }, 3000);
+                }
+                else {
+                    var event = new CustomEvent("GoosePageDataEvent",
+                                       {detail:
+                                        {
+                                            type: jsondata["type"],
+                                            data: jsondata["data"]
+                                        },
+                                        bubbles: true,
+                                        cancelable: false});
+                    document.dispatchEvent(event);
+                }
             }
             else if (msg.subject == MSG_SUBJECT_PAGEDATA) {
                 // This is from the background polling function to set badge text

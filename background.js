@@ -233,7 +233,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                                     // Send data to the gaggle.js of the ggbweb page
                                     var ggbmsg = new Message(MSG_FROM_BACKGROUND, chrome.tabs, tab.id,
                                                           MSG_SUBJECT_GGBWEB,
-                                                          {type: type, data: data }, null);
+                                                          {type: type, data: data, newpage: "1" }, null);
                                     ggbmsg.send();
                                 });
                             }
