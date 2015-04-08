@@ -361,13 +361,29 @@ function init()
                             if (tab.modules != null) {
                                 for (var j = 0; j < tab.modules.length; j++)
                                 {
-                                    var treeobj = tab.modules[j];
-                                    for (var k = 0; k < treeobj.geneLists.length; k++) {
-                                        var genelist = treeobj.geneLists[k];
-                                        var gaggleData = new Namelist(genelist.name,
-                                              genelist.genes.length,
-                                              treeobj.species,
-                                              genelist.genes);
+                                    var module = tab.modules[j];
+                                    // We need to generate two lists of genes: bicluster.genes
+                                    // and BiclusterGene.Overlap genes. Name is stored in geneinfo.description
+                                    // See ChromeGooseHandler.js of ggbweb
+                                    var geneLists = {};
+                                    for (var k = 0; k < module.geneinfolist.length; k++) {
+                                        // key is the gene name
+                                        var geneinfo = module.geneinfolist[k];
+                                        if (geneLists[geneinfo.description] == null) {
+                                            var geneobj = {};
+                                            geneobj.genes = [];
+                                            geneLists[geneinfo.description] = geneobj;
+                                        }
+                                        var geneobj = geneLists[geneinfo.description];
+                                        geneobj.genes.push(geneinfo.name);
+                                    }
+
+                                    // Now we generate the namelists for the two lists
+                                    for (var key in geneLists) {
+                                        var gaggleData = new Namelist((module.moduleName + " " + key),
+                                              geneLists[key].genes.length,
+                                              "mtb", // species
+                                              geneLists[key].genes);
 
                                         var pagedata = {};
                                         pagedata.data = gaggleData;
