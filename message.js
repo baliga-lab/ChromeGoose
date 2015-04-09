@@ -32,6 +32,7 @@ var MSG_SUBJECT_GOOGLEANALYTICS = "RecordGoogleAnalytics";
 var MSG_SUBJECT_RERUNEVENT = "ReRunOpencpuToBackground";
 var MSG_SUBJECT_RERUNTOPAGE = "ReRunOpencpuToPage";
 var MSG_SUBJECT_GGBWEB = "GGBWEB";
+var MSG_SUBJECT_ECHO = "ECHOMESSAGE";
 
 
 function Message(from, to, targetid, subject, data, callback)

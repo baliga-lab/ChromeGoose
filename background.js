@@ -205,6 +205,11 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                     if (sendResponse != null)
                         sendResponse();
                 }
+                else if (msg.subject == MSG_SUBJECT_ECHO) {
+                    // If the extension is installed and enabled, the background page should be able to echo back
+                    if (sendResponse != null)
+                        sendResponse();
+                }
                 else if (msg.subject == MSG_SUBJECT_GGBWEB) {
                     var jsondata = JSON.parse(msg.data);
                     if (jsondata != null) {

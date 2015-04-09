@@ -320,70 +320,49 @@ function init()
     document.addEventListener("GagglePageRequest", function(e) {
         console.log("Received data from ggbweb " + e.detail.data);
         // We need to clean up all the ggbweb data
-        pageGaggleData = [];
-        if (e.detail != null) {
-            var jsonData = JSON.parse(e.detail.data);
-            var species = jsonData["species"];
-            var tabs = jsonData["tabs"];
-            if (tabs.length > 0) {
-                for (var i = 0; i < tabs.length; i++) {
-                    var tab = tabs[i];
-                    if (tab != null) {
-                        if (tab.type == "moduleTab") {
-                            if (tab.modules != null) {
-                                for (var j = 0; j < tab.modules.length; j++)
-                                {
-                                    var m = tab.modules[j];
-                                    var names = [];
-                                    for (var k = 0; k < m.geneinfolist.length; k++) {
-                                        var gene = m.geneinfolist[k];
-                                        names.push(gene.locus);
-                                    }
-                                    var gaggleData = new Namelist(m.moduleName,
-                                                                  names.length,
-                                                                  species,
-                                                                  names);
+        if (e.detail.type == "Echo") {
+            //// If the extension is installed and enabled, the background page should be able to echo back
+            var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_ECHO,
+                                 {},
+                                 function() {
+                                    var event = new CustomEvent("GoosePageDataEvent",
+                                                       {detail:
+                                                        {
+                                                            type: "Echo",
+                                                            data: ""
+                                                        },
+                                                        bubbles: true,
+                                                        cancelable: false});
+                                    document.dispatchEvent(event);
+                                 });
+            msg.send();
 
-
-                                    var pagedata = {};
-                                    pagedata.data = gaggleData;
-                                    pagedata.guid = cg_util.generateUUID();
-                                    var jsondata = JSON.stringify(pagedata);
-                                    console.log("page data " + pageGaggleData.length + " " + jsondata);
-                                    pagedata.jsondata = jsondata;
-                                    pagedata.source = "Page";
-                                    //alert(pagedata.source);
-                                    pageGaggleData.push(pagedata);
-                                }
-                            }
-                        }
-                        else if (tab.type == "Results") {
-                            if (tab.modules != null) {
-                                for (var j = 0; j < tab.modules.length; j++)
-                                {
-                                    var module = tab.modules[j];
-                                    // We need to generate two lists of genes: bicluster.genes
-                                    // and BiclusterGene.Overlap genes. Name is stored in geneinfo.description
-                                    // See ChromeGooseHandler.js of ggbweb
-                                    var geneLists = {};
-                                    for (var k = 0; k < module.geneinfolist.length; k++) {
-                                        // key is the gene name
-                                        var geneinfo = module.geneinfolist[k];
-                                        if (geneLists[geneinfo.description] == null) {
-                                            var geneobj = {};
-                                            geneobj.genes = [];
-                                            geneLists[geneinfo.description] = geneobj;
+        }
+        else if (e.detail.type == "Data") {
+            pageGaggleData = [];
+            if (e.detail != null) {
+                var jsonData = JSON.parse(e.detail.data);
+                var species = jsonData["species"];
+                var tabs = jsonData["tabs"];
+                if (tabs.length > 0) {
+                    for (var i = 0; i < tabs.length; i++) {
+                        var tab = tabs[i];
+                        if (tab != null) {
+                            if (tab.type == "moduleTab") {
+                                if (tab.modules != null) {
+                                    for (var j = 0; j < tab.modules.length; j++)
+                                    {
+                                        var m = tab.modules[j];
+                                        var names = [];
+                                        for (var k = 0; k < m.geneinfolist.length; k++) {
+                                            var gene = m.geneinfolist[k];
+                                            names.push(gene.locus);
                                         }
-                                        var geneobj = geneLists[geneinfo.description];
-                                        geneobj.genes.push(geneinfo.name);
-                                    }
+                                        var gaggleData = new Namelist(m.moduleName,
+                                                                      names.length,
+                                                                      species,
+                                                                      names);
 
-                                    // Now we generate the namelists for the two lists
-                                    for (var key in geneLists) {
-                                        var gaggleData = new Namelist((module.moduleName + " " + key),
-                                              geneLists[key].genes.length,
-                                              "mtb", // species
-                                              geneLists[key].genes);
 
                                         var pagedata = {};
                                         pagedata.data = gaggleData;
@@ -397,12 +376,52 @@ function init()
                                     }
                                 }
                             }
+                            else if (tab.type == "Results") {
+                                if (tab.modules != null) {
+                                    for (var j = 0; j < tab.modules.length; j++)
+                                    {
+                                        var module = tab.modules[j];
+                                        // We need to generate two lists of genes: bicluster.genes
+                                        // and BiclusterGene.Overlap genes. Name is stored in geneinfo.description
+                                        // See ChromeGooseHandler.js of ggbweb
+                                        var geneLists = {};
+                                        for (var k = 0; k < module.geneinfolist.length; k++) {
+                                            // key is the gene name
+                                            var geneinfo = module.geneinfolist[k];
+                                            if (geneLists[geneinfo.description] == null) {
+                                                var geneobj = {};
+                                                geneobj.genes = [];
+                                                geneLists[geneinfo.description] = geneobj;
+                                            }
+                                            var geneobj = geneLists[geneinfo.description];
+                                            geneobj.genes.push(geneinfo.name);
+                                        }
+
+                                        // Now we generate the namelists for the two lists
+                                        for (var key in geneLists) {
+                                            var gaggleData = new Namelist((module.moduleName + " " + key),
+                                                  geneLists[key].genes.length,
+                                                  "mtb", // species
+                                                  geneLists[key].genes);
+
+                                            var pagedata = {};
+                                            pagedata.data = gaggleData;
+                                            pagedata.guid = cg_util.generateUUID();
+                                            var jsondata = JSON.stringify(pagedata);
+                                            console.log("page data " + pageGaggleData.length + " " + jsondata);
+                                            pagedata.jsondata = jsondata;
+                                            pagedata.source = "Page";
+                                            //alert(pagedata.source);
+                                            pageGaggleData.push(pagedata);
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             }
         }
-
     });
 
     var control = document.getElementById("inputDataParsingFinishSignal");
@@ -524,7 +543,7 @@ function callOpencpu(parametersessionobj, parameters, parameterToBeStoredOnServe
                     //console("Array of length " + data.length + ".\nFirst few values:" + data.slice(0,1));
                     var msgdata = {};
                     msgdata.type = "TBFilter";
-                    msgdata.data = {species: "Tuberculosis", description: desc, results: data, opencpuSessionId: session.getKey()};
+                    msgdata.data = {species: "mtb", description: desc, results: data, opencpuSessionId: session.getKey()};
                     var msg = new Message(MSG_FROM_CONTENT, chrome.runtime, null, MSG_SUBJECT_GGBWEB,
                                           msgdata, function() {
                                           });
