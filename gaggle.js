@@ -803,7 +803,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, response) {
                                             bubbles: true,
                                             cancelable: false});
                         document.dispatchEvent(event);
-                    }, 3000);
+                    }, 6000);
                 }
                 else {
                     var event = new CustomEvent("GoosePageDataEvent",
