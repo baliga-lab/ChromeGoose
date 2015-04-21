@@ -19,6 +19,9 @@
 //
 
 
+
+
+
 /**
  * constructor.
  */
@@ -113,6 +116,144 @@ Metlin.prototype.insertNamelistIntoPasteBox = function(doc, names) {
 		console.log(exception);
 	}
 }
+
+
+/**
+ * check the given doc to see if we can parse it.
+ */
+Metlin.prototype.recognize = function(doc) {
+	if (doc) {
+		var url = doc.location.href;
+		return url.indexOf("http://metlin.scripps.edu/metabo_batch_list") >=0 ||
+			   url.indexOf("http://metlin.scripps.edu/metabo_list") >=0;
+	}
+	else
+		return false;
+}
+
+
+/**
+ * retrieve the data from the page.
+ */
+Metlin.prototype.getPageData = function(doc) {
+	var results = [];
+
+	// read kegg compound ids
+	var names = [];
+
+	// add a function that takes another list and
+	// pushes all it's members into this list.
+	names.pushAll = function(list) {
+		for (var i=0; i<list.length; i++) {
+			this.push(list[i]);
+		}
+	}
+
+	var tableElements = doc.getElementsByTagName("table");
+	for (var i=0; i<tableElements.length; i++) {
+		names.pushAll(this.readTableColumn(tableElements[i], "KEGG"));
+	}
+
+    var gaggleData = new GaggleData("KEGG Compounds from Metlin",
+                                    "NameList",
+                                    names.length,
+                                    "Unknown",
+                                    names);
+
+    var pagedata = {};
+    pagedata.data = gaggleData;
+    pagedata.guid = cg_util.generateUUID();
+    var jsondata = JSON.stringify(pagedata);
+    pagedata.jsondata = jsondata;
+    pagedata.source = "Page";
+    //alert(pagedata.source);
+    pageGaggleData.push(pagedata);
+
+	results.push(gaggleData);
+
+	return results;
+}
+
+Metlin.prototype.scanPage = function() {
+    this.checkData();
+    if (this.recognize(document))
+        this.getPageData(document);
+}
+
+/**
+ * read a column of a table with the given title (in the first row
+ * of the table). Return the columns contents as a list.
+ */
+Metlin.prototype.readTableColumn = function(tableElement, columnTitle) {
+	var result = [];
+	if (tableElement) {
+
+		var rows = tableElement.getElementsByTagName("TR");
+		var foundColumn = -1;
+
+		// find column with title equal to columnTitle
+		if (rows.length > 0) {
+			var row = rows[0];
+
+			// for each table cell
+			for (var j=0,k=0; k<row.childNodes.length; k++) {
+				if (row.childNodes[k].tagName=="TD" || row.childNodes[k].tagName=="TH") {
+					var cell = row.childNodes[k];
+					if (columnTitle == ufmt.trim(this.getTextInsideAnchorTags(cell))) {
+						foundColumn = j;
+						break;
+					}
+					j++;
+				}
+			}
+
+			// if a column was found, read it's identifiers
+			if (foundColumn >= 0) {
+				for (var i=1; i<rows.length; i++) {
+					row = rows[i];
+
+					// for each table cell
+					for (var j=0,k=0; k<row.childNodes.length; k++) {
+						if (row.childNodes[k].tagName=="TD" || row.childNodes[k].tagName=="TH") {
+							if (j == foundColumn) {
+								var cellContents = ufmt.trim(this.getTextInsideAnchorTags(row.childNodes[k]));
+								if (cellContents && cellContents.length > 0) {
+									result.push(cellContents);
+								}
+								break;
+							}
+							j++;
+						}
+					}
+				}
+			}
+		}
+
+	}
+	return result;
+}
+
+
+/**
+ * get the text contained by the given node
+ * recursing into anchor tags to get their contained
+ * text as well.
+ */
+Metlin.prototype.getTextInsideAnchorTags = function(node) {
+	var txt = "";
+	if (node && node.childNodes) {
+		for (var i=0,len=node.childNodes.length; i<len; i++) {
+			if (node.childNodes[i].nodeType == Node.TEXT_NODE) {
+				txt += node.childNodes[i].nodeValue;
+			}
+			else if (node.childNodes[i].tagName && node.childNodes[i].tagName == "A") {
+				txt += this.getTextInsideAnchorTags(node.childNodes[i]);
+			}
+		}
+	}
+	return txt;
+}
+
 
 
 // create and register a websiteHandler

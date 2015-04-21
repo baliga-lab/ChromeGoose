@@ -318,7 +318,7 @@ function init()
     });
 
     document.addEventListener("GagglePageRequest", function(e) {
-        console.log("Received data from ggbweb " + e.detail.data);
+        //console.log("Received data from ggbweb " + e.detail.data);
         // We need to clean up all the ggbweb data
         if (e.detail.type == "Echo") {
             //// If the extension is installed and enabled, the background page should be able to echo back
@@ -408,7 +408,7 @@ function init()
                                             pagedata.data = gaggleData;
                                             pagedata.guid = cg_util.generateUUID();
                                             var jsondata = JSON.stringify(pagedata);
-                                            console.log("page data " + pageGaggleData.length + " " + jsondata);
+                                            //console.log("page data " + pageGaggleData.length + " " + jsondata);
                                             pagedata.jsondata = jsondata;
                                             pagedata.source = "Page";
                                             //alert(pagedata.source);
