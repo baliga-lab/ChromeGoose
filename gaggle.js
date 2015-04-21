@@ -377,42 +377,44 @@ function init()
                                 }
                             }
                             else if (tab.type == "Results") {
-                                if (tab.modules != null) {
-                                    for (var j = 0; j < tab.modules.length; j++)
+                                if (tab.treeObjs != null) {
+                                    for (var j = 0; j < tab.treeObjs.length; j++)
                                     {
-                                        var module = tab.modules[j];
-                                        // We need to generate two lists of genes: bicluster.genes
-                                        // and BiclusterGene.Overlap genes. Name is stored in geneinfo.description
-                                        // See ChromeGooseHandler.js of ggbweb
-                                        var geneLists = {};
-                                        for (var k = 0; k < module.geneinfolist.length; k++) {
-                                            // key is the gene name
-                                            var geneinfo = module.geneinfolist[k];
-                                            if (geneLists[geneinfo.description] == null) {
-                                                var geneobj = {};
-                                                geneobj.genes = [];
-                                                geneLists[geneinfo.description] = geneobj;
+                                        for (var l = 0; l < tab.treeObjs[j].modules.length; l++) {
+                                            var module = tab.treeObjs[j].modules[l];
+                                            // We need to generate two lists of genes: bicluster.genes
+                                            // and BiclusterGene.Overlap genes. Name is stored in geneinfo.description
+                                            // See ChromeGooseHandler.js of ggbweb
+                                            var geneLists = {};
+                                            for (var k = 0; k < module.geneinfolist.length; k++) {
+                                                // key is the gene name
+                                                var geneinfo = module.geneinfolist[k];
+                                                if (geneLists[geneinfo.description] == null) {
+                                                    var geneobj = {};
+                                                    geneobj.genes = [];
+                                                    geneLists[geneinfo.description] = geneobj;
+                                                }
+                                                var geneobj = geneLists[geneinfo.description];
+                                                geneobj.genes.push(geneinfo.name);
                                             }
-                                            var geneobj = geneLists[geneinfo.description];
-                                            geneobj.genes.push(geneinfo.name);
-                                        }
 
-                                        // Now we generate the namelists for the two lists
-                                        for (var key in geneLists) {
-                                            var gaggleData = new Namelist((module.moduleName + " " + key),
-                                                  geneLists[key].genes.length,
-                                                  "mtb", // species
-                                                  geneLists[key].genes);
+                                            // Now we generate the namelists for the two lists
+                                            for (var key in geneLists) {
+                                                var gaggleData = new Namelist((module.moduleName + " " + key),
+                                                      geneLists[key].genes.length,
+                                                      "mtb", // species
+                                                      geneLists[key].genes);
 
-                                            var pagedata = {};
-                                            pagedata.data = gaggleData;
-                                            pagedata.guid = cg_util.generateUUID();
-                                            var jsondata = JSON.stringify(pagedata);
-                                            //console.log("page data " + pageGaggleData.length + " " + jsondata);
-                                            pagedata.jsondata = jsondata;
-                                            pagedata.source = "Page";
-                                            //alert(pagedata.source);
-                                            pageGaggleData.push(pagedata);
+                                                var pagedata = {};
+                                                pagedata.data = gaggleData;
+                                                pagedata.guid = cg_util.generateUUID();
+                                                var jsondata = JSON.stringify(pagedata);
+                                                //console.log("page data " + pageGaggleData.length + " " + jsondata);
+                                                pagedata.jsondata = jsondata;
+                                                pagedata.source = "Page";
+                                                //alert(pagedata.source);
+                                                pageGaggleData.push(pagedata);
+                                            }
                                         }
                                     }
                                 }
